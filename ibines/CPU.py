@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 
-class CPU:
+from Memory import Memory
+
+class CPU(object):
 
     ###########################################################################
     # Métodos públicos
     ###########################################################################
 
     # Constructor
-    def __init__(self):
-        pass
+    def __init__(self, mem):
+        self.mem = mem
 
-    # Leen los registros
+    # Devuelve el contenido los registros
     def getRegPc(self):
         return self.__rereg_pc
 
@@ -29,7 +31,7 @@ class CPU:
     def getRegP(self):
         return self.__rereg_p
 
-    # Escriben los registros
+    # Escribe el contenido de los registros
     def setRegPc(self, r):
         self.__rereg_pc = r
 
@@ -53,10 +55,13 @@ class CPU:
     # Variables privadas
     ###########################################################################
 
-    #registros
+    # Registros
     __reg_pc = 0x0000        # Program Counter (16-bit)
     __reg_sp = 0x00          # Stack Pointer (8-bit)
     __reg_a = 0x00           # Accumulator (8-bit)
     __reg_x = 0x00           # Index X (8-bit)
     __reg_y = 0x00           # Index Y (8-bit)
     __reg_p = 0x00           # Processor Status (8-bit)
+
+    # Referencia al sistema de memoria
+    mem = None

@@ -5,6 +5,7 @@ class Instruction(object):
     def __init__(self):
         pass
 
+    # Ejecuta la instrucción
     def execute(self, cpu):
         pass
 
