@@ -1,8 +1,21 @@
 # -*- coding: utf-8 -*-
 
 from Memory import Memory
+import nesutils
 
 class CPU(object):
+
+    ###########################################################################
+    # Constantes
+    ###########################################################################
+    #Posiciones de los bits del registro de estado
+    REG_P_BIT_C = 0
+    REG_P_BIT_Z = 1
+    REG_P_BIT_I = 2
+    REG_P_BIT_D = 3
+    REG_P_BIT_B = 4
+    REG_P_BIT_V = 6
+    REG_P_BIT_S = 7
 
     ###########################################################################
     # Métodos públicos
@@ -50,71 +63,53 @@ class CPU(object):
     def set_reg_p(self, r):
         self.__reg_p = r
 
+    # Incrementa el registro PC
+    def incr_pc(self):
+        self.__reg_pc += 1
 
     # Devuelve el valor de los bits del registro de estado
     def get_reg_p_c_bit(self):
-        return (0x01 & self.__reg_p)
+        return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_C)
 
     def get_reg_p_z_bit(self):
-        return ((0x02 & self.__reg_p) >> 1)
+        return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_Z)
 
     def get_reg_p_i_bit(self):
-        return ((0x04 & self.__reg_p) >> 2)
+        return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_I)
 
     def get_reg_p_d_bit(self):
-        return ((0x08 & self.__reg_p) >> 3)
+        return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_D)
 
     def get_reg_p_b_bit(self):
-        return ((0x10 & self.__reg_p) >> 4)
+        return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_B)
 
     def get_reg_p_v_bit(self):
-        return ((0x40 & self.__reg_p) >> 6)
+        return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_V)
 
     def get_reg_p_s_bit(self):
-        return ((0x80 & self.__reg_p) >> 7)
+        return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_S)
 
     # Establece el valor de los bits del registro de estado
     def get_seg_p_c_bit(self, v):
-        if v:
-            self.__reg_p = self.__reg_p | 0x01
-        else:
-            self.__reg_p = self.__reg_p & 0xFE
+        nesutils.set_bit(self.__reg_p, self.REG_P_BIT_C, v)
 
     def get_seg_p_z_bit(self, v):
-        if v:
-            self.__reg_p = self.__reg_p | 0x02
-        else:
-            self.__reg_p = self.__reg_p & 0xFD
+        nesutils.set_bit(self.__reg_p, self.REG_P_BIT_Z, v)
 
     def get_seg_p_i_bit(self, v):
-        if v:
-            self.__reg_p = self.__reg_p | 0x04
-        else:
-            self.__reg_p = self.__reg_p & 0xFB
+        nesutils.set_bit(self.__reg_p, self.REG_P_BIT_I, v)
 
     def get_seg_p_d_bit(self, v):
-        if v:
-            self.__reg_p = self.__reg_p | 0x08
-        else:
-            self.__reg_p = self.__reg_p & 0xF7
+        nesutils.set_bit(self.__reg_p, self.REG_P_BIT_D, v)
 
     def get_seg_p_b_bit(self, v):
-        if v:
-            self.__reg_p = self.__reg_p | 0x10
-        else:
-            self.__reg_p = self.__reg_p & 0xEF
+        nesutils.set_bit(self.__reg_p, self.REG_P_BIT_B, v)
 
     def get_seg_p_v_bit(self, v):
-        if v:
-            self.__reg_p = self.__reg_p | 0x40
-        else:
-            self.__reg_p = self.__reg_p & 0xBF
+        nesutils.set_bit(self.__reg_p, self.REG_P_BIT_V, v)
 
     def get_seg_p_s_bit(self, v):
-        if v:
-            self.__reg_p = self.__reg_p | 0x80
-        else:
-            self.__reg_p = self.__reg_p & 0x7F
+        nesutils.set_bit(self.__reg_p, self.REG_P_BIT_S, v)
 
 
     ###########################################################################
