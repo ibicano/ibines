@@ -25,6 +25,14 @@ class CPU(object):
     def __init__(self, mem):
         self.mem = mem
 
+    # TODO: Terminar esta función
+    # Bucle principal de ejecusión de la CPU
+    def run(self):
+        while True:
+            self.incr_pc()
+            inst = self.fetch_inst()
+            inst.execute()
+
     # Devuelve el contenido los registros
     def get_reg_pc(self):
         return self.__reg_pc
@@ -67,6 +75,10 @@ class CPU(object):
     def incr_pc(self):
         self.__reg_pc += 1
 
+    # Devuelve la instrucción actual
+    def fetch_inst(self):
+        pass
+
     # Devuelve el valor de los bits del registro de estado
     def get_reg_p_c_bit(self):
         return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_C)
@@ -90,25 +102,25 @@ class CPU(object):
         return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_S)
 
     # Establece el valor de los bits del registro de estado
-    def get_seg_p_c_bit(self, v):
+    def set_reg_p_c_bit(self, v):
         nesutils.set_bit(self.__reg_p, self.REG_P_BIT_C, v)
 
-    def get_seg_p_z_bit(self, v):
+    def set_reg_p_z_bit(self, v):
         nesutils.set_bit(self.__reg_p, self.REG_P_BIT_Z, v)
 
-    def get_seg_p_i_bit(self, v):
+    def set_reg_p_i_bit(self, v):
         nesutils.set_bit(self.__reg_p, self.REG_P_BIT_I, v)
 
-    def get_seg_p_d_bit(self, v):
+    def set_reg_p_d_bit(self, v):
         nesutils.set_bit(self.__reg_p, self.REG_P_BIT_D, v)
 
-    def get_seg_p_b_bit(self, v):
+    def set_reg_p_b_bit(self, v):
         nesutils.set_bit(self.__reg_p, self.REG_P_BIT_B, v)
 
-    def get_seg_p_v_bit(self, v):
+    def set_reg_p_v_bit(self, v):
         nesutils.set_bit(self.__reg_p, self.REG_P_BIT_V, v)
 
-    def get_seg_p_s_bit(self, v):
+    def set_reg_p_s_bit(self, v):
         nesutils.set_bit(self.__reg_p, self.REG_P_BIT_S, v)
 
 
