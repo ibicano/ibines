@@ -54,26 +54,26 @@ class CPU(object):
 
     # Escribe el contenido de los registros
     def set_reg_pc(self, r):
-        self.__reg_pc = r
+        self.__reg_pc = r & 0xFFFF
 
     def set_reg_sp(self, r):
-        self.__reg_sp = r
+        self.__reg_sp = r & 0xFF
 
     def set_reg_a(self, r):
-        self.__reg_a = r
+        self.__reg_a = r & 0xFF
 
     def set_reg_x(self, r):
-        self.__reg_x = r
+        self.__reg_x = r & 0xFF
 
     def set_reg_y(self, r):
-        self.__reg_y = r
+        self.__reg_y = r & 0xFF
 
     def set_reg_p(self, r):
-        self.__reg_p = r
+        self.__reg_p = r & 0xFF
 
     # Incrementa el registro PC
     def incr_pc(self):
-        self.__reg_pc += 1
+        self.__reg_pc = (self.__reg_pc + 1) & 0xFFFF
 
     # Devuelve la instrucción actual
     def fetch_inst(self):
@@ -122,7 +122,6 @@ class CPU(object):
 
     def set_reg_p_s_bit(self, v):
         nesutils.set_bit(self.__reg_p, self.REG_P_BIT_S, v)
-
 
     ###########################################################################
     # Variables privadas
