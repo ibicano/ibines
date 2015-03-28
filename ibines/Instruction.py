@@ -31,8 +31,13 @@ class Instruction(object):
 ###############################################################################
 # ADC: Add memory to accumulator with carry
 ###############################################################################
+class ADC(Instruction):
 
-class ADC_inmediate(Instruction):
+    def __init__(self, operands, cpu):
+        super(ADC, self).__init__(operands, cpu)
+
+
+class ADC_inmediate(ADC):
 
     def __init__(self, operands, cpu):
         super(ADC_inmediate, self).__init__(operands, cpu)
@@ -41,31 +46,20 @@ class ADC_inmediate(Instruction):
         ac = self.__cpu.get_reg_a()
         op = self.__operands[0]
         carry = self.__cpu.get_reg_p_c_bit()
+
         rst = ac + op + carry
 
         # Establece el bit CARRY del registro P
-        if rst > 0x99:
-            self.__cpu.set_reg_p_c_bit(1)
-        else:
-            self.__cpu.set_reg_p_c_bit(0)
+        self.__cpu.set_carry_bit(rst)
 
         # Establece el bit ZERO del registro P
-        if rst == 0x00:
-            self.__cpu.set_reg_p_z_bit(1)
-        else:
-            self.__cpu.set_reg_p_z_bit(0)
+        self.__cpu.set_zero_bit(rst)
 
         # Establece el bit OVERFLOW del registro P
-        if ((not ((ac ^ op) & 0x80)) and ((ac ^ rst) & 0x80)):
-            self.__cpu.set_reg_p_v(1)
-        else:
-            self.__cpu.set_reg_p_v(0)
+        self.__cpu.set_overflow_bit(op, rst)
 
         # Establece el bit SIGN del registro P
-        if rst & 0x80:
-            self.__cpu.set_reg_p_s_bit(1)
-        else:
-            self.__cpu.set_reg_p_s_bit(0)
+        self.__cpu.set_sign_bit(rst)
 
         self.__cpu.set_reg_a(rst)
 

@@ -123,6 +123,42 @@ class CPU(object):
     def set_reg_p_s_bit(self, v):
         nesutils.set_bit(self.__reg_p, self.REG_P_BIT_S, v)
 
+    # Establece el valor de los bits del registro de estado en función
+    # del resultado de una instrucción
+    def set_carry_bit(self, inst_result):
+        if inst_result > 0x99:
+            self.set_reg_p_c_bit(1)
+            return 1
+        else:
+            self.set_reg_p_c_bit(0)
+            return 0
+
+    def set_zero_bit(self, inst_result):
+        if inst_result == 0x00:
+            self.set_reg_p_z_bit(1)
+            return 1
+        else:
+            self.set_reg_p_z_bit(0)
+            return 0
+
+    def set_sign_bit(self, inst_result):
+        if inst_result & 0x80:
+            self.set_reg_p_s_bit(1)
+            return 1
+        else:
+            self.set_reg_p_s_bit(0)
+            return 0
+
+    def set_overflow_bit(self, src_op, inst_result):
+        ac = self.__get_reg_a()
+        if ((not ((ac ^ src_op) & 0x80)) and ((ac ^ inst_result) & 0x80)):
+            self.__cpu.set_reg_p_v(1)
+            return 1
+        else:
+            self.__cpu.set_reg_p_v(0)
+            return 0
+
+
     ###########################################################################
     # Variables privadas
     ###########################################################################
