@@ -3,6 +3,7 @@
 
 from CPU import CPU
 from Memory import Memory
+from Instruction import *
 
 
 class NES(object):
@@ -14,8 +15,11 @@ class NES(object):
     # Variables privadas
     ###########################################################################
 
+
     # Referencia a la CPU
-    cpu = CPU.CPU()
+    cpu = CPU()
+
+    adc = ADC_inmediate([0x00], cpu)
 
     # Referencia al sistema de memoria
     mem = Memory.Memory()

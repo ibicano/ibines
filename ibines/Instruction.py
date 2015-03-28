@@ -3,7 +3,7 @@
 class Instruction(object):
 
     def __init__(self, operands, cpu):
-        seld.__operands = operands
+        self.__operands = operands
         self.__cpu = cpu
 
     # Ejecuta la instrucción
