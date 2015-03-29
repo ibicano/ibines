@@ -36,15 +36,8 @@ class ADC(Instruction):
     def __init__(self, operands, cpu):
         super(ADC, self).__init__(operands, cpu)
 
-
-class ADC_inmediate(ADC):
-
-    def __init__(self, operands, cpu):
-        super(ADC_inmediate, self).__init__(operands, cpu)
-
-    def execute(self):
+    def execute(self, op):
         ac = self.__cpu.get_reg_a()
-        op = self.__operands[0]
         carry = self.__cpu.get_reg_p_c_bit()
 
         rst = ac + op + carry
@@ -63,20 +56,31 @@ class ADC_inmediate(ADC):
 
         self.__cpu.set_reg_a(rst)
 
+
+class ADC_inmediate(ADC):
+
+    def __init__(self, operands, cpu):
+        super(ADC_inmediate, self).__init__(operands, cpu)
+
+    def execute(self):
+        op = self.__operands[0]
+        super(ADC_inmediate, self).execute(op)
+
     # Variables privadas
     __OPCODE = 0x69
     __BYTES = 2
     __CYCLES = 2
 
 
-# TODO: Completar instrucción
-class ADC_zeropage(Instruction):
+# TODO: Mirar lo del ambito de variables para ver si funciona bien la herencia
+class ADC_absolute(Instruction):
 
     def __init__(self, operands, cpu):
-        super(ADC_zeropage, self).__init__(operands, cpu)
+        super(ADC_absolute, self).__init__(operands, cpu)
 
     def execute(self):
-        pass
+        op = self.__cpu.get_mem().get_data(self.__operands[0])
+        super(ADC_inmediate, self).execute(op)
 
     # Variables privadas
     __OPCODE = 0x65

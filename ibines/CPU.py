@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from Memory import Memory
 import nesutils
 
 class CPU(object):
@@ -23,7 +22,7 @@ class CPU(object):
 
     # Constructor
     def __init__(self, mem):
-        self.mem = mem
+        self.__mem = mem
 
     # TODO: Terminar esta función
     # Bucle principal de ejecusión de la CPU
@@ -32,6 +31,10 @@ class CPU(object):
             self.incr_pc()
             inst = self.fetch_inst()
             inst.execute()
+
+    # Devuelve una referencia a la memoria
+    def get_mem(self):
+        return self.__mem
 
     # Devuelve el contenido los registros
     def get_reg_pc(self):
@@ -172,4 +175,4 @@ class CPU(object):
     __reg_p = 0x00           # Processor Status (8-bit)
 
     # Referencia al sistema de memoria
-    mem = None
+    __mem = None
