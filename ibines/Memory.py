@@ -8,11 +8,11 @@ class Memory(object):
         pass
 
     # Devuelve el contenido de una posición de memoria
-    def get_data(self, addr):
+    def read_data(self, addr):
         pass
 
     # Establece el contenido de una posición de memoria
-    def set_data(self, data, addr):
+    def write_data(self, data, addr):
         pass
 
 

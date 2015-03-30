@@ -72,14 +72,13 @@ class ADC_inmediate(ADC):
     _CYCLES = 2
 
 
-# TODO: Mirar lo del ambito de variables para ver si funciona bien la herencia
-class ADC_absolute(Instruction):
+class ADC_zero(Instruction):
 
     def __init__(self, operands, cpu):
-        super(ADC_absolute, self).__init__(operands, cpu)
+        super(ADC_zero, self).__init__(operands, cpu)
 
     def execute(self):
-        op = self._cpu.get_mem().get_data(self._operands[0])
+        op = self._cpu.get_mem().read_data(self._operands[0])
         super(ADC_inmediate, self).execute(op)
 
     # Variables privadas
@@ -88,9 +87,116 @@ class ADC_absolute(Instruction):
     _CYCLES = 3
 
 
+class ADC_zerox(Instruction):
+
+    def __init__(self, operands, cpu):
+        super(ADC_zerox, self).__init__(operands, cpu)
+
+    def execute(self):
+        reg_x = self.__cpu.get_mem().get_reg_x()
+        op = self._cpu.get_mem().read_data(self._operands[0] + reg_x)
+        super(ADC_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x75
+    _BYTES = 2
+    _CYCLES = 4
 
 
+class ADC_abs(Instruction):
 
+    def __init__(self, operands, cpu):
+        super(ADC_abs, self).__init__(operands, cpu)
+
+    def execute(self):
+        op = self._cpu.get_mem().read_data(self._operands[0])
+        super(ADC_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x60
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class ADC_absx(Instruction):
+
+    def __init__(self, operands, cpu):
+        super(ADC_absx, self).__init__(operands, cpu)
+
+    def execute(self):
+        reg_x = self.__cpu.get_mem().get_reg_x()
+        op = self._cpu.get_mem().read_data(self._operands[0] + reg_x)
+        super(ADC_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x70
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class ADC_absy(Instruction):
+
+    def __init__(self, operands, cpu):
+        super(ADC_absx, self).__init__(operands, cpu)
+
+    def execute(self):
+        reg_y = self.__cpu.get_mem().get_reg_y()
+        op = self._cpu.get_mem().read_data(self._operands[0] + reg_y)
+        super(ADC_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x79
+    _BYTES = 3
+    _CYCLES = 4
+
+class ADC_preindexi(Instruction):
+
+    def __init__(self, operands, cpu):
+        super(ADC_absx, self).__init__(operands, cpu)
+
+    def execute(self):
+        reg_x = self.__cpu.get_mem().get_reg_x()
+
+        # Calcula el índice de la dirección donde se almacena la dirección
+        # final del operando
+        index = self.__operands[0] + reg_x
+
+        # Calcula la dirección final del operando
+        op_addr = self.__cpu.get_mem().read_data(index)
+        op_addr = op_addr + (self.__cpu.get_mem().read_data(index+1) << 2)
+
+        # Lee el operando usando su dirección
+        op = self._cpu.get_mem().read_data(op_addr)
+        super(ADC_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x61
+    _BYTES = 2
+    _CYCLES = 6
+
+
+class ADC_postindexi(Instruction):
+
+    def __init__(self, operands, cpu):
+        super(ADC_absx, self).__init__(operands, cpu)
+
+    def execute(self):
+        reg_y = self.__cpu.get_mem().get_reg_y()
+
+        # Calcula el índice de la dirección donde se almacena la dirección
+        # base del operando a la que se sumará el desplazamiento Y
+        base_addr = self.__cpu.get_mem().read_data(self.__operands[0])
+        base_addr = base_addr + (self.__cpu.get_mem().read_data(self.__operands[0]+1)) << 2
+
+        op_addr = base_addr + reg_y
+
+        op = self._cpu.get_mem().read_data(op_addr)
+        super(ADC_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x71
+    _BYTES = 2
+    _CYCLES = 5
 
 
 ###############################################################################
