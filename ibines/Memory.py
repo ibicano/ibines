@@ -9,11 +9,14 @@ class Memory(object):
 
     # Devuelve el contenido de una posición de memoria
     def read_data(self, addr):
-        pass
+        a = addr & 0xFFFF
+        return self._memory[a]
 
     # Establece el contenido de una posición de memoria
     def write_data(self, data, addr):
-        pass
+        a = addr & 0xFFFF
+        d = data & 0xFF
+        self._memory[a] = d
 
 
     ###########################################################################
@@ -21,4 +24,4 @@ class Memory(object):
     ###########################################################################
 
     # Array para almacenar el contenido de la memoria
-    memory = []
+    _memory = []
