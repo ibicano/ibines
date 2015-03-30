@@ -3,8 +3,8 @@
 class Instruction(object):
 
     def __init__(self, operands, cpu):
-        self.__operands = operands
-        self.__cpu = cpu
+        self._operands = operands
+        self._cpu = cpu
 
     # Ejecuta la instrucción
     def execute(self):
@@ -12,20 +12,20 @@ class Instruction(object):
 
     # Devuelve el opcode de la instrucción
     def get_opcode(self):
-        return self.__OPCODE
+        return self._OPCODE
 
     # Devuelve el número de ciclos de reloj en los que se ejecuta la instrucción
     def get_cycles(self):
-        return self.__CYCLES
+        return self._CYCLES
 
     ###########################################################################
     # Variables privadas
     ###########################################################################
-    __operands = None
-    __cpu = None
-    __OPCODE = None
-    __BYTES = None
-    __CYCLES = None
+    _operands = None
+    _cpu = None
+    _OPCODE = None
+    _BYTES = None
+    _CYCLES = None
 
 
 ###############################################################################
@@ -37,24 +37,24 @@ class ADC(Instruction):
         super(ADC, self).__init__(operands, cpu)
 
     def execute(self, op):
-        ac = self.__cpu.get_reg_a()
-        carry = self.__cpu.get_reg_p_c_bit()
+        ac = self._cpu.get_reg_a()
+        carry = self._cpu.get_reg_p_c_bit()
 
         rst = ac + op + carry
 
         # Establece el bit CARRY del registro P
-        self.__cpu.set_carry_bit(rst)
+        self._cpu.set_carry_bit(rst)
 
         # Establece el bit ZERO del registro P
-        self.__cpu.set_zero_bit(rst)
+        self._cpu.set_zero_bit(rst)
 
         # Establece el bit OVERFLOW del registro P
-        self.__cpu.set_overflow_bit(op, rst)
+        self._cpu.set_overflow_bit(op, rst)
 
         # Establece el bit SIGN del registro P
-        self.__cpu.set_sign_bit(rst)
+        self._cpu.set_sign_bit(rst)
 
-        self.__cpu.set_reg_a(rst)
+        self._cpu.set_reg_a(rst)
 
 
 class ADC_inmediate(ADC):
@@ -63,13 +63,13 @@ class ADC_inmediate(ADC):
         super(ADC_inmediate, self).__init__(operands, cpu)
 
     def execute(self):
-        op = self.__operands[0]
+        op = self._operands[0]
         super(ADC_inmediate, self).execute(op)
 
     # Variables privadas
-    __OPCODE = 0x69
-    __BYTES = 2
-    __CYCLES = 2
+    _OPCODE = 0x69
+    _BYTES = 2
+    _CYCLES = 2
 
 
 # TODO: Mirar lo del ambito de variables para ver si funciona bien la herencia
@@ -79,13 +79,13 @@ class ADC_absolute(Instruction):
         super(ADC_absolute, self).__init__(operands, cpu)
 
     def execute(self):
-        op = self.__cpu.get_mem().get_data(self.__operands[0])
+        op = self._cpu.get_mem().get_data(self._operands[0])
         super(ADC_inmediate, self).execute(op)
 
     # Variables privadas
-    __OPCODE = 0x65
-    __BYTES = 2
-    __CYCLES = 3
+    _OPCODE = 0x65
+    _BYTES = 2
+    _CYCLES = 3
 
 
 
@@ -101,14 +101,14 @@ class BCC(Instruction):
         super(BCC, self).__init__(operands, cpu)
 
     def execute(self):
-        if not self.__cpu.get_reg_p_c_bit():
-            self.__cpu.set_reg_pc(self.__cpu.get_reg_pc + self.operand)
+        if not self._cpu.get_reg_p_c_bit():
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc + self.operand)
 
 
     # Variables privadas
-    __OPCODE = 0x90
-    __BYTES = 2
-    __CYCLES = 2
+    _OPCODE = 0x90
+    _BYTES = 2
+    _CYCLES = 2
 
 ###############################################################################
 
@@ -118,15 +118,15 @@ class BCS(Instruction):
         super(BCS, self).__init__(operands, cpu)
 
     def execute(self):
-        if self.__cpu.get_reg_p_c_bit():
-            self.__cpu.set_reg_pc(self.__cpu.get_reg_pc + self.operand)
+        if self._cpu.get_reg_p_c_bit():
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc + self.operand)
 
 
     # Variables privadas
-    __operand = None
-    __OPCODE = 0xB0
-    __BYTES = 2
-    __CYCLES = 2
+    _operand = None
+    _OPCODE = 0xB0
+    _BYTES = 2
+    _CYCLES = 2
 
 ###############################################################################
 
@@ -136,14 +136,14 @@ class BEQ(Instruction):
         super(BEQ, self).__init__(operands, cpu)
 
     def execute(self):
-        if self.__cpu.get_reg_p_z_bit():
-            self.__cpu.set_reg_pc(self.__cpu.get_reg_pc + self.operand)
+        if self._cpu.get_reg_p_z_bit():
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc + self.operand)
 
 
     # Variables privadas
-    __OPCODE = 0xF0
-    __BYTES = 2
-    __CYCLES = 2
+    _OPCODE = 0xF0
+    _BYTES = 2
+    _CYCLES = 2
 
 ###############################################################################
 
@@ -153,14 +153,14 @@ class BMI(Instruction):
         super(BMI, self).__init__(operands, cpu)
 
     def execute(self):
-        if self.__cpu.get_reg_p_n_bit():
-            self.__cpu.set_reg_pc(self.__cpu.get_reg_pc + self.operand)
+        if self._cpu.get_reg_p_n_bit():
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc + self.operand)
 
 
     # Variables privadas
-    __OPCODE = 0x30
-    __BYTES = 2
-    __CYCLES = 2
+    _OPCODE = 0x30
+    _BYTES = 2
+    _CYCLES = 2
 
 ###############################################################################
 
@@ -170,14 +170,14 @@ class BNE(Instruction):
         super(BNE, self).__init__(operands, cpu)
 
     def execute(self):
-        if not self.__cpu.get_reg_p_z_bit():
-            self.__cpu.set_reg_pc(self.__cpu.get_reg_pc + self.operand)
+        if not self._cpu.get_reg_p_z_bit():
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc + self.operand)
 
 
     # Variables privadas
-    __OPCODE = 0xD0
-    __BYTES = 2
-    __CYCLES = 2
+    _OPCODE = 0xD0
+    _BYTES = 2
+    _CYCLES = 2
 
 ###############################################################################
 
@@ -187,11 +187,11 @@ class BPL(Instruction):
         super(BPL, self).__init__(operands, cpu)
 
     def execute(self):
-        if not self.__cpu.get_reg_p_n_bit():
-            self.__cpu.set_reg_pc(self.__cpu.get_reg_pc + self.operand)
+        if not self._cpu.get_reg_p_n_bit():
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc + self.operand)
 
 
     # Variables privadas
-    __OPCODE = 0x10
-    __BYTES = 2
-    __CYCLES = 2
+    _OPCODE = 0x10
+    _BYTES = 2
+    _CYCLES = 2

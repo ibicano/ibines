@@ -153,26 +153,26 @@ class CPU(object):
             return 0
 
     def set_overflow_bit(self, src_op, inst_result):
-        ac = self.__get_reg_a()
+        ac = self.get_reg_a()
         if ((not ((ac ^ src_op) & 0x80)) and ((ac ^ inst_result) & 0x80)):
-            self.__cpu.set_reg_p_v(1)
+            self.set_reg_p_v(1)
             return 1
         else:
-            self.__cpu.set_reg_p_v(0)
+            self.set_reg_p_v(0)
             return 0
 
 
     ###########################################################################
-    # Variables privadas
+    # Variables protegidas
     ###########################################################################
 
     # Registros
-    __reg_pc = 0x0000        # Program Counter (16-bit)
-    __reg_sp = 0x00          # Stack Pointer (8-bit)
-    __reg_a = 0x00           # Accumulator (8-bit)
-    __reg_x = 0x00           # Index X (8-bit)
-    __reg_y = 0x00           # Index Y (8-bit)
-    __reg_p = 0x00           # Processor Status (8-bit)
+    _reg_pc = 0x0000        # Program Counter (16-bit)
+    _reg_sp = 0x00          # Stack Pointer (8-bit)
+    _reg_a = 0x00           # Accumulator (8-bit)
+    _reg_x = 0x00           # Index X (8-bit)
+    _reg_y = 0x00           # Index Y (8-bit)
+    _reg_p = 0x00           # Processor Status (8-bit)
 
     # Referencia al sistema de memoria
-    __mem = None
+    _mem = None
