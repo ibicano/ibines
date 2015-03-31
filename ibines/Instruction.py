@@ -18,46 +18,54 @@ class Instruction(object):
     def get_cycles(self):
         return self._CYCLES
 
-    # Devuelve el dato en función del modo de direccionamiento
+    # Calculan y devuelven el valor del operando y su posición de memoria
+    # (cuando proceda) en forma de tupla (addr, data). Cuando el operando
+    # operando no se ubica en una posición de memoria se devuelve sólo su valor
     def fetch_inmediate_addrmode(self):
         return self._operand
 
+    def fetch_accumulator_addrmode(self):
+        return self._cpu.get_reg_a()
+
     def fetch_absolute_addrmode(self):
-        return self._cpu.get_mem().read_data(self._operand)
+        addr = self._operand
+        data = self._cpu.get_mem().read_data(addr)
+        return (addr, data)
 
     def fetch_indexed_x_addrmode(self):
-        reg_x = self._cpu.get_reg_x()
-        return self._cpu.get_mem().read_data(self._operand + reg_x)
+        addr = self._operand + self._cpu.get_reg_x()
+        data = self._cpu.get_mem().read_data(addr)
+        return (addr, data)
 
     def fetch_indexed_y_addrmode(self):
-        reg_y = self._cpu.get_reg_y()
-        return self._cpu.get_mem().read_data(self._operand + reg_y)
+        addr = self._operand + self._cpu.get_reg_y()
+        data = self._cpu.get_mem().read_data(addr)
+        return (addr, data)
 
     def fetch_preindexed_addrmode(self):
-        reg_x = self._cpu.get_mem().get_reg_x()
-
         # Calcula el índice de la dirección donde se almacena la dirección
         # final del operando
-        index = self._operand + reg_x
+        index = self._operand + self._cpu.get_reg_x()
 
         # Calcula la dirección final del operando
-        op_addr = self._cpu.get_mem().read_data(index)
-        op_addr = op_addr + (self._cpu.get_mem().read_data(index+1) << 2)
+        addr = self._cpu.get_mem().read_data(index)
+        addr = addr + (self._cpu.get_mem().read_data(index+1) << 2)
 
-        # Lee el operando usando su dirección
-        return self._cpu.get_mem().read_data(op_addr)
+        data = self._cpu.get_mem().read_data(addr)
+
+        return (addr, data)
 
     def fetch_postindexed_addrmode(self):
-        reg_y = self._cpu.get_mem().get_reg_y()
-
         # Calcula el índice de la dirección donde se almacena la dirección
         # base del operando a la que se sumará el desplazamiento Y
         base_addr = self._cpu.get_mem().read_data(self._operand)
-        base_addr = base_addr + (self._cpu.get_mem().read_data(self.__operands[0]+1)) << 2
+        base_addr = base_addr + (self._cpu.get_mem().read_data(self._operand+1)) << 2
 
-        op_addr = base_addr + reg_y
+        addr = base_addr + self._cpu.get_reg_y()
 
-        return self._cpu.get_mem().read_data(op_addr)
+        data = self._cpu.get_mem().read_data(addr)
+
+        return (addr, data)
 
 
     ###########################################################################
@@ -120,7 +128,7 @@ class ADC_zero(Instruction):
         super(ADC_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()
+        op = self.fetch_absolute_addrmode()[1]
         super(ADC_zero, self).execute(op)
 
     # Variables privadas
@@ -135,7 +143,7 @@ class ADC_zerox(Instruction):
         super(ADC_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()
+        op = self.fetch_indexed_x_addrmode()[1]
         super(ADC_zerox, self).execute(op)
 
     # Variables privadas
@@ -150,7 +158,7 @@ class ADC_abs(Instruction):
         super(ADC_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()
+        op = self.fetch_absolute_addrmode()[1]
         super(ADC_abs, self).execute(op)
 
     # Variables privadas
@@ -165,7 +173,7 @@ class ADC_absx(Instruction):
         super(ADC_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()
+        op = self.fetch_indexed_x_addrmode()[1]
         super(ADC_absx, self).execute(op)
 
     # Variables privadas
@@ -180,7 +188,7 @@ class ADC_absy(Instruction):
         super(ADC_absy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()
+        op = self.fetch_indexed_y_addrmode()[1]
         super(ADC_absy, self).execute(op)
 
     # Variables privadas
@@ -194,7 +202,7 @@ class ADC_preindexi(Instruction):
         super(ADC_preindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_preindexed_addrmode()
+        op = self.fetch_preindexed_addrmode()[1]
         super(ADC_preindexi, self).execute(op)
 
     # Variables privadas
@@ -209,7 +217,7 @@ class ADC_postindexi(Instruction):
         super(ADC_postindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_postindexed_addrmode()
+        op = self.fetch_postindexed_addrmode()[1]
         super(ADC_postindexi, self).execute(op)
 
     # Variables privadas
@@ -272,7 +280,7 @@ class AND_zerox(Instruction):
         super(AND_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()
+        op = self.fetch_indexed_x_addrmode()[1]
         super(AND_zerox, self).execute(op)
 
     # Variables privadas
@@ -287,7 +295,7 @@ class AND_abs(Instruction):
         super(AND_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()
+        op = self.fetch_absolute_addrmode()[1]
         super(AND_abs, self).execute(op)
 
     # Variables privadas
@@ -302,7 +310,7 @@ class AND_absx(Instruction):
         super(AND_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()
+        op = self.fetch_indexed_x_addrmode()[1]
         super(AND_absx, self).execute(op)
 
     # Variables privadas
@@ -317,7 +325,7 @@ class AND_absy(Instruction):
         super(AND_absy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()
+        op = self.fetch_indexed_y_addrmode()[1]
         super(AND_absy, self).execute(op)
 
     # Variables privadas
@@ -331,7 +339,7 @@ class AND_preindexi(Instruction):
         super(AND_preindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_preindexed_addrmode()
+        op = self.fetch_preindexed_addrmode()[1]
         super(AND_preindexi, self).execute(op)
 
     # Variables privadas
@@ -346,13 +354,111 @@ class AND_postindexi(Instruction):
         super(AND_postindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_postindexed_addrmode()
+        op = self.fetch_postindexed_addrmode()[1]
         super(AND_postindexi, self).execute(op)
 
     # Variables privadas
     _OPCODE = 0x31
     _BYTES = 2
     _CYCLES = 5
+
+
+###############################################################################
+# ASL: Shift Left One Bit (Memory or Accumulator)
+###############################################################################
+
+class ASL(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(ASL, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        result = op << 1
+
+        self._cpu.set_carry_bit(result)
+        self._cpu.set_sign_bit(result)
+        self._cpu.set_zero_bit(result)
+
+        return result
+
+
+class ASL_accumulator(ASL):
+
+    def __init__(self, operand, cpu):
+        super(ASL_accumulator, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_inmediate_addrmode()
+        result = super(ASL_accumulator, self).execute(op)
+        self._cpu.set_reg_a(result)
+
+    # Variables privadas
+    _OPCODE = 0x0A
+    _BYTES = 1
+    _CYCLES = 2
+
+class ASL_zero(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(ASL_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_absolute_addrmode()[1]
+        result = super(ASL_zero, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x06
+    _BYTES = 2
+    _CYCLES = 5
+
+
+class ASL_zerox(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(ASL_zerox, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_indexed_x_addrmode()
+        result = super(ASL_zerox, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x16
+    _BYTES = 2
+    _CYCLES = 6
+
+
+class ASL_abs(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(ASL_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_absolute_addrmode()
+        result = super(ASL_abs, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x0E
+    _BYTES = 3
+    _CYCLES = 6
+
+
+class ASL_absx(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(ASL_absx, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_indexed_x_addrmode()
+        result = super(ASL_absx, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x1E
+    _BYTES = 3
+    _CYCLES = 7
 
 
 ###############################################################################

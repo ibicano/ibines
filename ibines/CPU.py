@@ -63,20 +63,20 @@ class CPU(object):
         self.__reg_sp = r & 0xFF
 
     def set_reg_a(self, r):
-        self.__reg_a = r & 0xFF
+        self._reg_a = r & 0xFF
 
     def set_reg_x(self, r):
-        self.__reg_x = r & 0xFF
+        self._reg_x = r & 0xFF
 
     def set_reg_y(self, r):
-        self.__reg_y = r & 0xFF
+        self._reg_y = r & 0xFF
 
     def set_reg_p(self, r):
-        self.__reg_p = r & 0xFF
+        self._reg_p = r & 0xFF
 
     # Incrementa el registro PC
     def incr_pc(self):
-        self.__reg_pc = (self.__reg_pc + 1) & 0xFFFF
+        self._reg_pc = (self._reg_pc + 1) & 0xFFFF
 
     # Devuelve la instrucción actual
     def fetch_inst(self):
@@ -84,52 +84,52 @@ class CPU(object):
 
     # Devuelve el valor de los bits del registro de estado
     def get_reg_p_c_bit(self):
-        return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_C)
+        return nesutils.get_bit(self._reg_p, self.REG_P_BIT_C)
 
     def get_reg_p_z_bit(self):
-        return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_Z)
+        return nesutils.get_bit(self._reg_p, self.REG_P_BIT_Z)
 
     def get_reg_p_i_bit(self):
-        return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_I)
+        return nesutils.get_bit(self._reg_p, self.REG_P_BIT_I)
 
     def get_reg_p_d_bit(self):
-        return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_D)
+        return nesutils.get_bit(self._reg_p, self.REG_P_BIT_D)
 
     def get_reg_p_b_bit(self):
-        return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_B)
+        return nesutils.get_bit(self._reg_p, self.REG_P_BIT_B)
 
     def get_reg_p_v_bit(self):
-        return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_V)
+        return nesutils.get_bit(self._reg_p, self.REG_P_BIT_V)
 
     def get_reg_p_s_bit(self):
-        return nesutils.get_bit(self.__reg_p, self.REG_P_BIT_S)
+        return nesutils.get_bit(self._reg_p, self.REG_P_BIT_S)
 
     # Establece el valor de los bits del registro de estado
     def set_reg_p_c_bit(self, v):
-        nesutils.set_bit(self.__reg_p, self.REG_P_BIT_C, v)
+        nesutils.set_bit(self._reg_p, self.REG_P_BIT_C, v)
 
     def set_reg_p_z_bit(self, v):
-        nesutils.set_bit(self.__reg_p, self.REG_P_BIT_Z, v)
+        nesutils.set_bit(self._reg_p, self.REG_P_BIT_Z, v)
 
     def set_reg_p_i_bit(self, v):
-        nesutils.set_bit(self.__reg_p, self.REG_P_BIT_I, v)
+        nesutils.set_bit(self._reg_p, self.REG_P_BIT_I, v)
 
     def set_reg_p_d_bit(self, v):
-        nesutils.set_bit(self.__reg_p, self.REG_P_BIT_D, v)
+        nesutils.set_bit(self._reg_p, self.REG_P_BIT_D, v)
 
     def set_reg_p_b_bit(self, v):
-        nesutils.set_bit(self.__reg_p, self.REG_P_BIT_B, v)
+        nesutils.set_bit(self._reg_p, self.REG_P_BIT_B, v)
 
     def set_reg_p_v_bit(self, v):
-        nesutils.set_bit(self.__reg_p, self.REG_P_BIT_V, v)
+        nesutils.set_bit(self._reg_p, self.REG_P_BIT_V, v)
 
     def set_reg_p_s_bit(self, v):
-        nesutils.set_bit(self.__reg_p, self.REG_P_BIT_S, v)
+        nesutils.set_bit(self._reg_p, self.REG_P_BIT_S, v)
 
     # Establece el valor de los bits del registro de estado en función
     # del resultado de una instrucción
     def set_carry_bit(self, inst_result):
-        if inst_result > 0x99:
+        if inst_result > 0xFF:
             self.set_reg_p_c_bit(1)
             return 1
         else:
