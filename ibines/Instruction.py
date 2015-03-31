@@ -2089,3 +2089,203 @@ class PLP(Instruction):
     _OPCODE = 0x28
     _BYTES = 1
     _CYCLES = 4
+
+
+###############################################################################
+# ROL Rotate one bit left (memory or accumulator)
+###############################################################################
+
+class ROL(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(ROL, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        result = op << 1
+        if self._cpu.get_reg_p_c_bit():
+            result = result | 0x01
+
+        self._cpu.set_carry_bit(result)
+        self._cpu.set_sign_bit(result)
+        self._cpu.set_zero_bit(result)
+
+        return result
+
+
+class ROL_accumulator(ROL):
+
+    def __init__(self, operand, cpu):
+        super(ROL_accumulator, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        op = self.fetch_accumulator_addrmode()
+        result = super(ROL_accumulator, self).execute(op)
+        self._cpu.set_reg_a(result)
+
+    # Variables privadas
+    _OPCODE = 0x2A
+    _BYTES = 1
+    _CYCLES = 2
+
+class ROL_zero(ROL):
+
+    def __init__(self, operand, cpu):
+        super(ROL_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_absolute_addrmode()[1]
+        result = super(ROL_zero, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x26
+    _BYTES = 2
+    _CYCLES = 5
+
+
+class ROL_zerox(ROL):
+
+    def __init__(self, operand, cpu):
+        super(ROL_zerox, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_indexed_x_addrmode()
+        result = super(ROL_zerox, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x36
+    _BYTES = 2
+    _CYCLES = 6
+
+
+class ROL_abs(ROL):
+
+    def __init__(self, operand, cpu):
+        super(ROL_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_absolute_addrmode()
+        result = super(ROL_abs, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x2E
+    _BYTES = 3
+    _CYCLES = 6
+
+
+class ROL_absx(ROL):
+
+    def __init__(self, operand, cpu):
+        super(ROL_absx, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_indexed_x_addrmode()
+        result = super(ROL_absx, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x3E
+    _BYTES = 3
+    _CYCLES = 7
+
+
+###############################################################################
+# ROR Rotate one bit right (memory or accumulator)
+###############################################################################
+
+class ROR(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(ROR, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        result = op >> 1
+        if self._cpu.get_reg_p_c_bit():
+            result = result | 0x80
+
+        self._cpu.set_reg_p_c_bit(op & 0x01)
+        self._cpu.set_reg_p_s_bit(result)
+        self._cpu.set_zero_bit(result)
+
+        return result
+
+
+class ROR_accumulator(ROR):
+
+    def __init__(self, operand, cpu):
+        super(ROR_accumulator, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_accumulator_addrmode()
+        result = super(ROR_accumulator, self).execute(op)
+        self._cpu.set_reg_a(result)
+
+    # Variables privadas
+    _OPCODE = 0x6A
+    _BYTES = 1
+    _CYCLES = 2
+
+class ROR_zero(ROR):
+
+    def __init__(self, operand, cpu):
+        super(ROR_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_absolute_addrmode()[1]
+        result = super(ROR_zero, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x66
+    _BYTES = 2
+    _CYCLES = 5
+
+
+class ROR_zerox(ROR):
+
+    def __init__(self, operand, cpu):
+        super(ROR_zerox, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_indexed_x_addrmode()
+        result = super(ROR_zerox, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x76
+    _BYTES = 2
+    _CYCLES = 6
+
+
+class ROR_abs(ROR):
+
+    def __init__(self, operand, cpu):
+        super(ROR_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_absolute_addrmode()
+        result = super(ROR_abs, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x6E
+    _BYTES = 3
+    _CYCLES = 6
+
+
+class ROR_absx(ROR):
+
+    def __init__(self, operand, cpu):
+        super(ROR_absx, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_indexed_x_addrmode()
+        result = super(ROR_absx, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x7E
+    _BYTES = 3
+    _CYCLES = 7
