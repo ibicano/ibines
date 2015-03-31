@@ -122,7 +122,7 @@ class ADC_inmediate(ADC):
     _CYCLES = 2
 
 
-class ADC_zero(Instruction):
+class ADC_zero(ADC):
 
     def __init__(self, operand, cpu):
         super(ADC_zero, self).__init__(operand, cpu)
@@ -137,7 +137,7 @@ class ADC_zero(Instruction):
     _CYCLES = 3
 
 
-class ADC_zerox(Instruction):
+class ADC_zerox(ADC):
 
     def __init__(self, operand, cpu):
         super(ADC_zerox, self).__init__(operand, cpu)
@@ -152,7 +152,7 @@ class ADC_zerox(Instruction):
     _CYCLES = 4
 
 
-class ADC_abs(Instruction):
+class ADC_abs(ADC):
 
     def __init__(self, operand, cpu):
         super(ADC_abs, self).__init__(operand, cpu)
@@ -167,7 +167,7 @@ class ADC_abs(Instruction):
     _CYCLES = 4
 
 
-class ADC_absx(Instruction):
+class ADC_absx(ADC):
 
     def __init__(self, operand, cpu):
         super(ADC_absx, self).__init__(operand, cpu)
@@ -182,7 +182,7 @@ class ADC_absx(Instruction):
     _CYCLES = 4
 
 
-class ADC_absy(Instruction):
+class ADC_absy(ADC):
 
     def __init__(self, operand, cpu):
         super(ADC_absy, self).__init__(operand, cpu)
@@ -196,7 +196,7 @@ class ADC_absy(Instruction):
     _BYTES = 3
     _CYCLES = 4
 
-class ADC_preindexi(Instruction):
+class ADC_preindexi(ADC):
 
     def __init__(self, operand, cpu):
         super(ADC_preindexi, self).__init__(operand, cpu)
@@ -211,7 +211,7 @@ class ADC_preindexi(Instruction):
     _CYCLES = 6
 
 
-class ADC_postindexi(Instruction):
+class ADC_postindexi(ADC):
 
     def __init__(self, operand, cpu):
         super(ADC_postindexi, self).__init__(operand, cpu)
@@ -259,7 +259,7 @@ class AND_inmediate(AND):
     _BYTES = 2
     _CYCLES = 2
 
-class AND_zero(Instruction):
+class AND_zero(AND):
 
     def __init__(self, operand, cpu):
         super(AND_zero, self).__init__(operand, cpu)
@@ -274,7 +274,7 @@ class AND_zero(Instruction):
     _CYCLES = 3
 
 
-class AND_zerox(Instruction):
+class AND_zerox(AND):
 
     def __init__(self, operand, cpu):
         super(AND_zerox, self).__init__(operand, cpu)
@@ -289,7 +289,7 @@ class AND_zerox(Instruction):
     _CYCLES = 4
 
 
-class AND_abs(Instruction):
+class AND_abs(AND):
 
     def __init__(self, operand, cpu):
         super(AND_abs, self).__init__(operand, cpu)
@@ -304,7 +304,7 @@ class AND_abs(Instruction):
     _CYCLES = 4
 
 
-class AND_absx(Instruction):
+class AND_absx(AND):
 
     def __init__(self, operand, cpu):
         super(AND_absx, self).__init__(operand, cpu)
@@ -319,7 +319,7 @@ class AND_absx(Instruction):
     _CYCLES = 4
 
 
-class AND_absy(Instruction):
+class AND_absy(AND):
 
     def __init__(self, operand, cpu):
         super(AND_absy, self).__init__(operand, cpu)
@@ -333,7 +333,7 @@ class AND_absy(Instruction):
     _BYTES = 3
     _CYCLES = 4
 
-class AND_preindexi(Instruction):
+class AND_preindexi(AND):
 
     def __init__(self, operand, cpu):
         super(AND_preindexi, self).__init__(operand, cpu)
@@ -348,7 +348,7 @@ class AND_preindexi(Instruction):
     _CYCLES = 6
 
 
-class AND_postindexi(Instruction):
+class AND_postindexi(AND):
 
     def __init__(self, operand, cpu):
         super(AND_postindexi, self).__init__(operand, cpu)
@@ -397,7 +397,7 @@ class ASL_accumulator(ASL):
     _BYTES = 1
     _CYCLES = 2
 
-class ASL_zero(Instruction):
+class ASL_zero(ASL):
 
     def __init__(self, operand, cpu):
         super(ASL_zero, self).__init__(operand, cpu)
@@ -413,7 +413,7 @@ class ASL_zero(Instruction):
     _CYCLES = 5
 
 
-class ASL_zerox(Instruction):
+class ASL_zerox(ASL):
 
     def __init__(self, operand, cpu):
         super(ASL_zerox, self).__init__(operand, cpu)
@@ -429,7 +429,7 @@ class ASL_zerox(Instruction):
     _CYCLES = 6
 
 
-class ASL_abs(Instruction):
+class ASL_abs(ASL):
 
     def __init__(self, operand, cpu):
         super(ASL_abs, self).__init__(operand, cpu)
@@ -445,7 +445,7 @@ class ASL_abs(Instruction):
     _CYCLES = 6
 
 
-class ASL_absx(Instruction):
+class ASL_absx(ASL):
 
     def __init__(self, operand, cpu):
         super(ASL_absx, self).__init__(operand, cpu)
@@ -721,4 +721,140 @@ class CLV(Instruction):
     _OPCODE = 0xB8
     _BYTES = 1
     _CYCLES = 2
+
+
+###############################################################################
+# CMP Compare memory and accumulator
+###############################################################################
+
+class CMP(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(CMP, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        ac = self._cpu.get_reg_a()
+        result = ac - op
+
+        self._cpu.set_carry_bit(result)
+        self._cpu.set_sign_bit(result)
+        self._cpu.set_zero_bit(result)
+
+
+class CMP_inmediate(CMP):
+
+    def __init__(self, operand, cpu):
+        super(CMP_inmediate, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_inmediate_addrmode()
+        super(CMP_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xC9
+    _BYTES = 2
+    _CYCLES = 2
+
+class CMP_zero(CMP):
+
+    def __init__(self, operand, cpu):
+        super(CMP_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()
+        super(CMP_zero, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xC5
+    _BYTES = 2
+    _CYCLES = 3
+
+
+class CMP_zerox(CMP):
+
+    def __init__(self, operand, cpu):
+        super(CMP_zerox, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_x_addrmode()[1]
+        super(CMP_zerox, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xD5
+    _BYTES = 2
+    _CYCLES = 4
+
+
+class CMP_abs(CMP):
+
+    def __init__(self, operand, cpu):
+        super(CMP_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(CMP_abs, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xCD
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class CMP_absx(CMP):
+
+    def __init__(self, operand, cpu):
+        super(CMP_absx, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_x_addrmode()[1]
+        super(CMP_absx, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xDD
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class CMP_absy(CMP):
+
+    def __init__(self, operand, cpu):
+        super(CMP_absy, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_y_addrmode()[1]
+        super(CMP_absy, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xD9
+    _BYTES = 3
+    _CYCLES = 4
+
+class CMP_preindexi(CMP):
+
+    def __init__(self, operand, cpu):
+        super(CMP_preindexi, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_preindexed_addrmode()[1]
+        super(CMP_preindexi, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xC1
+    _BYTES = 2
+    _CYCLES = 6
+
+
+class CMP_postindexi(CMP):
+
+    def __init__(self, operand, cpu):
+        super(CMP_postindexi, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_postindexed_addrmode()[1]
+        super(CMP_postindexi, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xD1
+    _BYTES = 2
+    _CYCLES = 5
 
