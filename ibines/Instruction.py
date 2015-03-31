@@ -465,8 +465,8 @@ class ASL_absx(Instruction):
 
 class BCC(Instruction):
 
-    def __init__(self, operands, cpu):
-        super(BCC, self).__init__(operands, cpu)
+    def __init__(self, operand, cpu):
+        super(BCC, self).__init__(operand, cpu)
 
     def execute(self):
         if not self._cpu.get_reg_p_c_bit():
@@ -482,8 +482,8 @@ class BCC(Instruction):
 
 class BCS(Instruction):
 
-    def __init__(self, operands, cpu):
-        super(BCS, self).__init__(operands, cpu)
+    def __init__(self, operand, cpu):
+        super(BCS, self).__init__(operand, cpu)
 
     def execute(self):
         if self._cpu.get_reg_p_c_bit():
@@ -500,8 +500,8 @@ class BCS(Instruction):
 
 class BEQ(Instruction):
 
-    def __init__(self, operands, cpu):
-        super(BEQ, self).__init__(operands, cpu)
+    def __init__(self, operand, cpu):
+        super(BEQ, self).__init__(operand, cpu)
 
     def execute(self):
         if self._cpu.get_reg_p_z_bit():
@@ -512,6 +512,58 @@ class BEQ(Instruction):
     _OPCODE = 0xF0
     _BYTES = 2
     _CYCLES = 2
+
+
+###############################################################################
+# BIT Test bits in memory with accumulator
+###############################################################################
+class BIT(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(BIT, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+
+        # Transfiere el bit de Signo
+        if op & 0x80:
+            self._cpu.set_reg_p_s_bit(1)
+        else:
+            self._cpu.set_reg_p_s_bit(1)
+
+        # Transfiere el bit de Overflow
+        if op & 0x40:
+            self._cpu.set_reg_p_v_bit(1)
+        else:
+            self._cpu.set_reg_p_v_bit(1)
+
+        # Calcula el bit Zero
+        if not(op & self._cpu.get_reg_a()):
+            self._cpu.set_reg_p_z_bit(1)
+        else:
+            self._cpu.set_reg_p_z_bit(0)
+
+
+class BIT_zero(BIT):
+
+    def __init__(self):
+        super(BIT_zero, self).__init__()
+
+    # Variables privadas
+    _OPCODE = 0x24
+    _BYTES = 2
+    _CYCLES = 3
+
+
+class BIT_abs(BIT):
+
+    def __init__(self):
+        super(BIT_abs, self).__init__()
+
+    # Variables privadas
+    _OPCODE = 0x2C
+    _BYTES = 3
+    _CYCLES = 4
 
 ###############################################################################
 
@@ -534,8 +586,8 @@ class BMI(Instruction):
 
 class BNE(Instruction):
 
-    def __init__(self, operands, cpu):
-        super(BNE, self).__init__(operands, cpu)
+    def __init__(self, operand, cpu):
+        super(BNE, self).__init__(operand, cpu)
 
     def execute(self):
         if not self._cpu.get_reg_p_z_bit():
@@ -551,8 +603,8 @@ class BNE(Instruction):
 
 class BPL(Instruction):
 
-    def __init__(self, operands, cpu):
-        super(BPL, self).__init__(operands, cpu)
+    def __init__(self, operand, cpu):
+        super(BPL, self).__init__(operand, cpu)
 
     def execute(self):
         if not self._cpu.get_reg_p_n_bit():
@@ -563,3 +615,42 @@ class BPL(Instruction):
     _OPCODE = 0x10
     _BYTES = 2
     _CYCLES = 2
+
+
+###############################################################################
+# BVC Branch on overflow clear
+###############################################################################
+class BVC(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(BVC, self).__init__(operand, cpu)
+
+    def execute(self):
+        if not self._cpu.get_reg_p_v_bit():
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc + self.operand)
+
+
+    # Variables privadas
+    _OPCODE = 0x50
+    _BYTES = 2
+    _CYCLES = 2
+
+
+###############################################################################
+# BVS Branch on overflow set
+###############################################################################
+class BVS(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(BVS, self).__init__(operand, cpu)
+
+    def execute(self):
+        if self._cpu.get_reg_p_v_bit():
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc + self.operand)
+
+
+    # Variables privadas
+    _OPCODE = 0x70
+    _BYTES = 2
+    _CYCLES = 2
+
