@@ -265,7 +265,7 @@ class AND_zero(AND):
         super(AND_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()
+        op = self.fetch_absolute_addrmode()[1]
         super(AND_zero, self).execute(op)
 
     # Variables privadas
@@ -388,7 +388,7 @@ class ASL_accumulator(ASL):
         super(ASL_accumulator, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_inmediate_addrmode()
+        op = self.fetch_accumulator_addrmode()
         result = super(ASL_accumulator, self).execute(op)
         self._cpu.set_reg_a(result)
 
@@ -761,7 +761,7 @@ class CMP_zero(CMP):
         super(CMP_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()
+        op = self.fetch_absolute_addrmode()[1]
         super(CMP_zero, self).execute(op)
 
     # Variables privadas
@@ -858,3 +858,254 @@ class CMP_postindexi(CMP):
     _BYTES = 2
     _CYCLES = 5
 
+
+###############################################################################
+# CPX Compare Memory and Index X
+###############################################################################
+
+class CPX(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(CPX, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        reg_x = self._cpu.get_reg_x()
+        result = reg_x - op
+
+        self._cpu.set_carry_bit(result)
+        self._cpu.set_sign_bit(result)
+        self._cpu.set_zero_bit(result)
+
+
+class CPX_inmediate(CPX):
+
+    def __init__(self, operand, cpu):
+        super(CPX_inmediate, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_inmediate_addrmode()
+        super(CPX_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xE0
+    _BYTES = 2
+    _CYCLES = 2
+
+class CPX_zero(CPX):
+
+    def __init__(self, operand, cpu):
+        super(CPX_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(CPX_zero, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xE4
+    _BYTES = 2
+    _CYCLES = 3
+
+
+class CPX_abs(CPX):
+
+    def __init__(self, operand, cpu):
+        super(CPX_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(CPX_abs, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xEC
+    _BYTES = 3
+    _CYCLES = 4
+
+
+###############################################################################
+# CPY Compare Memory and Index Y
+###############################################################################
+
+class CPY(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(CPY, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        reg_y = self._cpu.get_reg_y()
+        result = reg_y - op
+
+        self._cpu.set_carry_bit(result)
+        self._cpu.set_sign_bit(result)
+        self._cpu.set_zero_bit(result)
+
+
+class CPY_inmediate(CPY):
+
+    def __init__(self, operand, cpu):
+        super(CPY_inmediate, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_inmediate_addrmode()
+        super(CPY_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xC0
+    _BYTES = 2
+    _CYCLES = 2
+
+class CPY_zero(CPY):
+
+    def __init__(self, operand, cpu):
+        super(CPY_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(CPY_zero, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xC4
+    _BYTES = 2
+    _CYCLES = 3
+
+
+class CPY_abs(CPY):
+
+    def __init__(self, operand, cpu):
+        super(CPY_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(CPY_abs, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xCC
+    _BYTES = 3
+    _CYCLES = 4
+
+
+###############################################################################
+# DEC Decrement memory by one
+###############################################################################
+
+class DEC(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(DEC, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        result = op - 1
+
+        self._cpu.set_sign_bit(result)
+        self._cpu.set_zero_bit(result)
+
+        return result
+
+
+class DEC_zero(DEC):
+
+    def __init__(self, operand, cpu):
+        super(DEC_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_absolute_addrmode()
+        result = super(DEC_zero, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0xC6
+    _BYTES = 2
+    _CYCLES = 5
+
+
+class DEC_zerox(DEC):
+
+    def __init__(self, operand, cpu):
+        super(DEC_zerox, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_indexed_x_addrmode()
+        result = super(DEC_zerox, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0xD6
+    _BYTES = 2
+    _CYCLES = 6
+
+
+class DEC_abs(DEC):
+
+    def __init__(self, operand, cpu):
+        super(DEC_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_absolute_addrmode()
+        result = super(DEC_abs, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0xCE
+    _BYTES = 3
+    _CYCLES = 6
+
+
+class DEC_absx(DEC):
+
+    def __init__(self, operand, cpu):
+        super(DEC_absx, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_indexed_x_addrmode()
+        result = super(DEC_absx, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0xDE
+    _BYTES = 3
+    _CYCLES = 7
+
+
+###############################################################################
+# DEX Decrement index X by one
+###############################################################################
+
+class DEX(Instruction):
+
+    def __init__(self, cpu):
+        super(DEX, self).__init__(None, cpu)
+
+    def execute(self, op):
+        result = self._cpu.get_reg_x() - 1
+
+        self._cpu.set_sign_bit(result)
+        self._cpu.set_zero_bit(result)
+
+        self._cpu.set_reg_x(result)
+
+    # Variables privadas
+    _OPCODE = 0xCA
+    _BYTES = 1
+    _CYCLES = 2
+
+
+###############################################################################
+# DEY Decrement index Y by one
+###############################################################################
+
+class DEY(Instruction):
+
+    def __init__(self, cpu):
+        super(DEY, self).__init__(None, cpu)
+
+    def execute(self, op):
+        result = self._cpu.get_reg_y() - 1
+
+        self._cpu.set_sign_bit(result)
+        self._cpu.set_zero_bit(result)
+
+        self._cpu.set_reg_y(result)
+
+    # Variables privadas
+    _OPCODE = 0x88
+    _BYTES = 1
+    _CYCLES = 2
