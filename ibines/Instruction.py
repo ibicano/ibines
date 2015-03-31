@@ -1862,3 +1862,230 @@ class LSR_absx(LSR):
     _OPCODE = 0x5E
     _BYTES = 3
     _CYCLES = 7
+
+
+###############################################################################
+# NOP No operation
+###############################################################################
+
+class NOP(Instruction):
+
+    def __init__(self, cpu):
+        super(NOP, self).__init__(None, cpu)
+
+    def execute(self):
+        pass
+
+    # Variables privadas
+    _OPCODE = 0xEA
+    _BYTES = 1
+    _CYCLES = 2
+
+
+###############################################################################
+# ORA "OR" memory with accumulator
+###############################################################################
+
+class ORA(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(ORA, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        ac = self._cpu.get_reg_a()
+        result = ac | op
+
+        self._cpu.set_sign_bit(result)
+        self._cpu.set_zero_bit(result)
+
+        self._cpu.set_reg_a(result)
+
+
+class ORA_inmediate(ORA):
+
+    def __init__(self, operand, cpu):
+        super(ORA_inmediate, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_inmediate_addrmode()
+        super(ORA_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x09
+    _BYTES = 2
+    _CYCLES = 2
+
+class ORA_zero(ORA):
+
+    def __init__(self, operand, cpu):
+        super(ORA_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(ORA_zero, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x05
+    _BYTES = 2
+    _CYCLES = 3
+
+
+class ORA_zerox(ORA):
+
+    def __init__(self, operand, cpu):
+        super(ORA_zerox, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_x_addrmode()[1]
+        super(ORA_zerox, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x15
+    _BYTES = 2
+    _CYCLES = 4
+
+
+class ORA_abs(ORA):
+
+    def __init__(self, operand, cpu):
+        super(ORA_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(ORA_abs, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x0D
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class ORA_absx(ORA):
+
+    def __init__(self, operand, cpu):
+        super(ORA_absx, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_x_addrmode()[1]
+        super(ORA_absx, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x1D
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class ORA_absy(ORA):
+
+    def __init__(self, operand, cpu):
+        super(ORA_absy, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_y_addrmode()[1]
+        super(ORA_absy, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x19
+    _BYTES = 3
+    _CYCLES = 4
+
+class ORA_preindexi(ORA):
+
+    def __init__(self, operand, cpu):
+        super(ORA_preindexi, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_preindexed_addrmode()[1]
+        super(ORA_preindexi, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x01
+    _BYTES = 2
+    _CYCLES = 6
+
+
+class ORA_postindexi(ORA):
+
+    def __init__(self, operand, cpu):
+        super(ORA_postindexi, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_postindexed_addrmode()[1]
+        super(ORA_postindexi, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x11
+    _BYTES = 2
+    _CYCLES = 5
+
+
+###############################################################################
+# PHA Push accumulator on stack
+###############################################################################
+
+class PHA(Instruction):
+
+    def __init__(self, cpu):
+        super(PHA, self).__init__(None, cpu)
+
+    def execute(self):
+        self._cpu.push_stack(self._cpu.get_reg_a())
+
+    # Variables privadas
+    _OPCODE = 0x48
+    _BYTES = 1
+    _CYCLES = 3
+
+
+###############################################################################
+# PHP Push processor status on stack
+###############################################################################
+
+class PHP(Instruction):
+
+    def __init__(self, cpu):
+        super(PHP, self).__init__(None, cpu)
+
+    def execute(self):
+        self._cpu.push_stack(self._cpu.get_reg_p())
+
+    # Variables privadas
+    _OPCODE = 0x08
+    _BYTES = 1
+    _CYCLES = 3
+
+
+###############################################################################
+# PLA Pull accumulator from stack
+###############################################################################
+
+class PLA(Instruction):
+
+    def __init__(self, cpu):
+        super(PLA, self).__init__(None, cpu)
+
+    def execute(self):
+        self._cpu.set_reg_a(self._cpu.pull_stack())
+
+    # Variables privadas
+    _OPCODE = 0x68
+    _BYTES = 1
+    _CYCLES = 4
+
+
+###############################################################################
+# PLP Pull processor status from stack
+###############################################################################
+
+class PLP(Instruction):
+
+    def __init__(self, cpu):
+        super(PLP, self).__init__(None, cpu)
+
+    def execute(self):
+        self._cpu.set_reg_p(self._cpu.pull_stack())
+
+    # Variables privadas
+    _OPCODE = 0x28
+    _BYTES = 1
+    _CYCLES = 4

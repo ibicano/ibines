@@ -161,6 +161,13 @@ class CPU(object):
             self.set_reg_p_v(0)
             return 0
 
+    # Funciones para meter y sacar datos de la Pila
+    def push_stack(byte):
+        pass
+
+    def pull_stack():
+        pass
+
 
     ###########################################################################
     # Variables protegidas
