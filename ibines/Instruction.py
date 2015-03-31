@@ -1109,3 +1109,268 @@ class DEY(Instruction):
     _OPCODE = 0x88
     _BYTES = 1
     _CYCLES = 2
+
+
+###############################################################################
+# EOR "Exclusive-Or" memory with accumulator
+###############################################################################
+
+class EOR(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(EOR, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        ac = self._cpu.get_reg_a()
+        result = ac ^ op
+
+        self._cpu.set_sign_bit(result)
+        self._cpu.set_zero_bit(result)
+
+        self._cpu.set_reg_a(result)
+
+
+class EOR_inmediate(EOR):
+
+    def __init__(self, operand, cpu):
+        super(EOR_inmediate, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_inmediate_addrmode()
+        super(EOR_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x49
+    _BYTES = 2
+    _CYCLES = 2
+
+class EOR_zero(EOR):
+
+    def __init__(self, operand, cpu):
+        super(EOR_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(EOR_zero, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x45
+    _BYTES = 2
+    _CYCLES = 3
+
+
+class EOR_zerox(EOR):
+
+    def __init__(self, operand, cpu):
+        super(EOR_zerox, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_x_addrmode()[1]
+        super(EOR_zerox, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x55
+    _BYTES = 2
+    _CYCLES = 4
+
+
+class EOR_abs(EOR):
+
+    def __init__(self, operand, cpu):
+        super(EOR_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(EOR_abs, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x40
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class EOR_absx(EOR):
+
+    def __init__(self, operand, cpu):
+        super(EOR_absx, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_x_addrmode()[1]
+        super(EOR_absx, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x50
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class EOR_absy(EOR):
+
+    def __init__(self, operand, cpu):
+        super(EOR_absy, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_y_addrmode()[1]
+        super(EOR_absy, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x59
+    _BYTES = 3
+    _CYCLES = 4
+
+class EOR_preindexi(EOR):
+
+    def __init__(self, operand, cpu):
+        super(EOR_preindexi, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_preindexed_addrmode()[1]
+        super(EOR_preindexi, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x41
+    _BYTES = 2
+    _CYCLES = 6
+
+
+class EOR_postindexi(EOR):
+
+    def __init__(self, operand, cpu):
+        super(EOR_postindexi, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_postindexed_addrmode()[1]
+        super(EOR_postindexi, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x51
+    _BYTES = 2
+    _CYCLES = 5
+
+
+###############################################################################
+# INC Increment memory by one
+###############################################################################
+
+class INC(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(INC, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        result = op + 1
+
+        self._cpu.set_sign_bit(result)
+        self._cpu.set_zero_bit(result)
+
+        return result
+
+
+class INC_zero(INC):
+
+    def __init__(self, operand, cpu):
+        super(INC_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_absolute_addrmode()
+        result = super(INC_zero, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0xE6
+    _BYTES = 2
+    _CYCLES = 5
+
+
+class INC_zerox(INC):
+
+    def __init__(self, operand, cpu):
+        super(INC_zerox, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_indexed_x_addrmode()
+        result = super(INC_zerox, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0xF6
+    _BYTES = 2
+    _CYCLES = 6
+
+
+class INC_abs(INC):
+
+    def __init__(self, operand, cpu):
+        super(INC_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_absolute_addrmode()
+        result = super(INC_abs, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0xEE
+    _BYTES = 3
+    _CYCLES = 6
+
+
+class INC_absx(INC):
+
+    def __init__(self, operand, cpu):
+        super(INC_absx, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_indexed_x_addrmode()
+        result = super(INC_absx, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0xFE
+    _BYTES = 3
+    _CYCLES = 7
+
+
+###############################################################################
+# INX Increment Index X by one
+###############################################################################
+
+class INX(Instruction):
+
+    def __init__(self, cpu):
+        super(INX, self).__init__(None, cpu)
+
+    def execute(self, op):
+        result = self._cpu.get_reg_x() + 1
+
+        self._cpu.set_sign_bit(result)
+        self._cpu.set_zero_bit(result)
+
+        self._cpu.set_reg_x(result)
+
+    # Variables privadas
+    _OPCODE = 0xE8
+    _BYTES = 1
+    _CYCLES = 2
+
+
+###############################################################################
+# INY Increment Index Y by one
+###############################################################################
+
+class INY(Instruction):
+
+    def __init__(self, cpu):
+        super(INY, self).__init__(None, cpu)
+
+    def execute(self, op):
+        result = self._cpu.get_reg_y() + 1
+
+        self._cpu.set_sign_bit(result)
+        self._cpu.set_zero_bit(result)
+
+        self._cpu.set_reg_y(result)
+
+    # Variables privadas
+    _OPCODE = 0xC8
+    _BYTES = 1
+    _CYCLES = 2
