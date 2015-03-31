@@ -1374,3 +1374,73 @@ class INY(Instruction):
     _OPCODE = 0xC8
     _BYTES = 1
     _CYCLES = 2
+
+
+###############################################################################
+# JMP Jump to new location
+###############################################################################
+
+class JMP(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(JMP, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        self._cpu.set_reg_pc(op)
+
+
+class JMP_abs(JMP):
+
+    def __init__(self, operand, cpu):
+        super(JMP_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self._cpu.fetch_absolute_addrmode()[1]
+        super(JMP_abs, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x4C
+    _BYTES = 3
+    _CYCLES = 3
+
+
+class JMP_indirect(JMP):
+
+    def __init__(self, operand, cpu):
+        super(JMP_indirect, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr = self._cpu.get_mem(self._operand)
+        addr = addr + (self._cpu.get_mem(self._operand + 1) << 8)
+
+        op = self._cpu.get_mem().read_data(addr)
+
+        super(JMP_indirect, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x6C
+    _BYTES = 3
+    _CYCLES = 5
+
+
+###############################################################################
+# JSR Jump to new location saving return address
+###############################################################################
+
+class JSR(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(JSR, self).__init__(operand, cpu)
+
+    def execute(self):
+        pc = self._cpu.get_reg_pc()
+        self._cpu.push_stack((pc >> 8) & 0xFF)
+        self._cpu.push_stack(pc & 0xFF)
+
+        op = self._cpu.fetch_absolute_addrmode()
+        self._cpu.set_reg_pc(op)
+
+    # Variables privadas
+    _OPCODE = 0x20
+    _BYTES = 3
+    _CYCLES = 6
