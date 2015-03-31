@@ -1444,3 +1444,421 @@ class JSR(Instruction):
     _OPCODE = 0x20
     _BYTES = 3
     _CYCLES = 6
+
+
+###############################################################################
+# LDA Load accumulator with memory
+###############################################################################
+class LDA(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(LDA, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        # Establece el bit ZERO del registro P
+        self._cpu.set_zero_bit(op)
+        # Establece el bit SIGN del registro P
+        self._cpu.set_sign_bit(op)
+
+        self._cpu.set_reg_a(op)
+
+
+class LDA_inmediate(LDA):
+
+    def __init__(self, operand, cpu):
+        super(LDA_inmediate, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_inmediate_addrmode()
+        super(LDA_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xA9
+    _BYTES = 2
+    _CYCLES = 2
+
+
+class LDA_zero(LDA):
+
+    def __init__(self, operand, cpu):
+        super(LDA_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(LDA_zero, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xA5
+    _BYTES = 2
+    _CYCLES = 3
+
+
+class LDA_zerox(LDA):
+
+    def __init__(self, operand, cpu):
+        super(LDA_zerox, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_x_addrmode()[1]
+        super(LDA_zerox, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xB5
+    _BYTES = 2
+    _CYCLES = 4
+
+
+class LDA_abs(LDA):
+
+    def __init__(self, operand, cpu):
+        super(LDA_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(LDA_abs, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xAD
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class LDA_absx(LDA):
+
+    def __init__(self, operand, cpu):
+        super(LDA_absx, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_x_addrmode()[1]
+        super(LDA_absx, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xBD
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class LDA_absy(LDA):
+
+    def __init__(self, operand, cpu):
+        super(LDA_absy, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_y_addrmode()[1]
+        super(LDA_absy, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xB9
+    _BYTES = 3
+    _CYCLES = 4
+
+class LDA_preindexi(LDA):
+
+    def __init__(self, operand, cpu):
+        super(LDA_preindexi, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_preindexed_addrmode()[1]
+        super(LDA_preindexi, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xA1
+    _BYTES = 2
+    _CYCLES = 6
+
+
+class LDA_postindexi(LDA):
+
+    def __init__(self, operand, cpu):
+        super(LDA_postindexi, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_postindexed_addrmode()[1]
+        super(LDA_postindexi, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xB1
+    _BYTES = 2
+    _CYCLES = 5
+
+
+###############################################################################
+# LDX Load index X with memory
+###############################################################################
+class LDX(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(LDX, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        # Establece el bit ZERO del registro P
+        self._cpu.set_zero_bit(op)
+        # Establece el bit SIGN del registro P
+        self._cpu.set_sign_bit(op)
+
+        self._cpu.set_reg_x(op)
+
+
+class LDX_inmediate(LDX):
+
+    def __init__(self, operand, cpu):
+        super(LDX_inmediate, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_inmediate_addrmode()
+        super(LDX_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xA2
+    _BYTES = 2
+    _CYCLES = 2
+
+
+class LDX_zero(LDX):
+
+    def __init__(self, operand, cpu):
+        super(LDX_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(LDX_zero, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xA6
+    _BYTES = 2
+    _CYCLES = 3
+
+
+class LDX_zeroy(LDX):
+
+    def __init__(self, operand, cpu):
+        super(LDX_zeroy, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_y_addrmode()[1]
+        super(LDX_zeroy, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xB6
+    _BYTES = 2
+    _CYCLES = 4
+
+
+class LDX_abs(LDX):
+
+    def __init__(self, operand, cpu):
+        super(LDX_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(LDX_abs, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xAE
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class LDX_absy(LDX):
+
+    def __init__(self, operand, cpu):
+        super(LDX_absy, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_y_addrmode()[1]
+        super(LDX_absy, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xBE
+    _BYTES = 3
+    _CYCLES = 4
+
+
+###############################################################################
+# LDY Load index Y with memory
+###############################################################################
+class LDY(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(LDY, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        # Establece el bit ZERO del registro P
+        self._cpu.set_zero_bit(op)
+        # Establece el bit SIGN del registro P
+        self._cpu.set_sign_bit(op)
+
+        self._cpu.set_reg_y(op)
+
+
+class LDY_inmediate(LDY):
+
+    def __init__(self, operand, cpu):
+        super(LDY_inmediate, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_inmediate_addrmode()
+        super(LDY_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xA0
+    _BYTES = 2
+    _CYCLES = 2
+
+
+class LDY_zero(LDY):
+
+    def __init__(self, operand, cpu):
+        super(LDY_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(LDY_zero, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xA4
+    _BYTES = 2
+    _CYCLES = 3
+
+
+class LDY_zerox(LDY):
+
+    def __init__(self, operand, cpu):
+        super(LDY_zerox, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_x_addrmode()[1]
+        super(LDY_zerox, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xB4
+    _BYTES = 2
+    _CYCLES = 4
+
+
+class LDY_abs(LDY):
+
+    def __init__(self, operand, cpu):
+        super(LDY_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(LDY_abs, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xAC
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class LDY_absx(LDY):
+
+    def __init__(self, operand, cpu):
+        super(LDY_absx, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_y_addrmode()[1]
+        super(LDY_absx, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xBC
+    _BYTES = 3
+    _CYCLES = 4
+
+
+###############################################################################
+# LSR Shift right one bit (memory or accumulator)
+###############################################################################
+
+class LSR(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(LSR, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        result = op >> 1
+
+        self._cpu.set_reg_p_c_bit(op & 0x01)
+        self._cpu.set_reg_p_s_bit(0)
+        self._cpu.set_zero_bit(result)
+
+        return result
+
+
+class LSR_accumulator(LSR):
+
+    def __init__(self, operand, cpu):
+        super(LSR_accumulator, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_accumulator_addrmode()
+        result = super(LSR_accumulator, self).execute(op)
+        self._cpu.set_reg_a(result)
+
+    # Variables privadas
+    _OPCODE = 0x4A
+    _BYTES = 1
+    _CYCLES = 2
+
+class LSR_zero(LSR):
+
+    def __init__(self, operand, cpu):
+        super(LSR_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_absolute_addrmode()[1]
+        result = super(LSR_zero, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x46
+    _BYTES = 2
+    _CYCLES = 5
+
+
+class LSR_zerox(LSR):
+
+    def __init__(self, operand, cpu):
+        super(LSR_zerox, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_indexed_x_addrmode()
+        result = super(LSR_zerox, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x56
+    _BYTES = 2
+    _CYCLES = 6
+
+
+class LSR_abs(LSR):
+
+    def __init__(self, operand, cpu):
+        super(LSR_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_absolute_addrmode()
+        result = super(LSR_abs, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x4E
+    _BYTES = 3
+    _CYCLES = 6
+
+
+class LSR_absx(LSR):
+
+    def __init__(self, operand, cpu):
+        super(LSR_absx, self).__init__(operand, cpu)
+
+    def execute(self):
+        addr, op = self.fetch_indexed_x_addrmode()
+        result = super(LSR_absx, self).execute(op)
+        self._cpu.get_mem().write_data(result, addr)
+
+    # Variables privadas
+    _OPCODE = 0x5E
+    _BYTES = 3
+    _CYCLES = 7
