@@ -654,3 +654,71 @@ class BVS(Instruction):
     _BYTES = 2
     _CYCLES = 2
 
+
+###############################################################################
+# CLC Clear carry flag
+###############################################################################
+class CLC(Instruction):
+
+    def __init__(self, cpu):
+        super(CLC, self).__init__(None, cpu)
+
+    def execute(self):
+        self._cpu.set_reg_p_c_bit(0)
+
+    # Variables privadas
+    _OPCODE = 0x18
+    _BYTES = 1
+    _CYCLES = 2
+
+
+###############################################################################
+# CLD Clear decimal mode
+###############################################################################
+class CLD(Instruction):
+
+    def __init__(self, cpu):
+        super(CLD, self).__init__(None, cpu)
+
+    def execute(self):
+        self._cpu.set_reg_p_d_bit(0)
+
+    # Variables privadas
+    _OPCODE = 0xD8
+    _BYTES = 1
+    _CYCLES = 2
+
+
+###############################################################################
+# CLI Clear interrupt disable bit
+###############################################################################
+class CLI(Instruction):
+
+    def __init__(self, cpu):
+        super(CLI, self).__init__(None, cpu)
+
+    def execute(self):
+        self._cpu.set_reg_p_i_bit(0)
+
+    # Variables privadas
+    _OPCODE = 0x58
+    _BYTES = 1
+    _CYCLES = 2
+
+
+###############################################################################
+# CLV Clear overflow flag
+###############################################################################
+class CLV(Instruction):
+
+    def __init__(self, cpu):
+        super(CLV, self).__init__(None, cpu)
+
+    def execute(self):
+        self._cpu.set_reg_p_v_bit(0)
+
+    # Variables privadas
+    _OPCODE = 0xB8
+    _BYTES = 1
+    _CYCLES = 2
+
