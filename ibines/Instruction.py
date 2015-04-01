@@ -2645,3 +2645,246 @@ class STA_postindexi(STA):
     _OPCODE = 0x91
     _BYTES = 2
     _CYCLES = 6
+
+
+###############################################################################
+# STX Store index X in memory
+###############################################################################
+class STX(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(STX, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        ac = self._cpu.get_reg_x()
+        self._cpu.get_mem().write_data(ac, op)
+
+
+class STX_zero(STX):
+
+    def __init__(self, operand, cpu):
+        super(STX_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(STX_zero, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x86
+    _BYTES = 2
+    _CYCLES = 3
+
+class STX_zeroy(STX):
+
+    def __init__(self, operand, cpu):
+        super(STX_zeroy, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_y_addrmode()[1]
+        super(STX_zeroy, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x96
+    _BYTES = 2
+    _CYCLES = 4
+
+
+class STX_abs(STX):
+
+    def __init__(self, operand, cpu):
+        super(STX_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(STX_abs, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x8E
+    _BYTES = 3
+    _CYCLES = 4
+
+
+###############################################################################
+# STY Store index Y in memory
+###############################################################################
+class STY(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(STY, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        ac = self._cpu.get_reg_y()
+        self._cpu.get_mem().write_data(ac, op)
+
+
+class STY_zero(STY):
+
+    def __init__(self, operand, cpu):
+        super(STY_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(STY_zero, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x84
+    _BYTES = 2
+    _CYCLES = 3
+
+class STY_zerox(STY):
+
+    def __init__(self, operand, cpu):
+        super(STY_zerox, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_x_addrmode()[1]
+        super(STY_zerox, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x94
+    _BYTES = 2
+    _CYCLES = 4
+
+
+class STY_abs(STY):
+
+    def __init__(self, operand, cpu):
+        super(STY_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(STY_abs, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x8C
+    _BYTES = 3
+    _CYCLES = 4
+
+
+###############################################################################
+# TAX Transfer accumulator to index X
+###############################################################################
+class TAX(Instruction):
+
+    def __init__(self, cpu):
+        super(TAX, self).__init__(None, cpu)
+
+    def execute(self):
+        ac = self._cpu.get_reg_a()
+
+        self._cpu.set_carry_bit(ac)
+        self._cpu.set_sign_bit(ac)
+
+        self._set_reg_x(ac)
+
+    # Variables privadas
+    _OPCODE = 0xAA
+    _BYTES = 1
+    _CYCLES = 2
+
+
+###############################################################################
+# TAY Transfer accumulator to index Y
+###############################################################################
+class TAY(Instruction):
+
+    def __init__(self, cpu):
+        super(TAY, self).__init__(None, cpu)
+
+    def execute(self):
+        ac = self._cpu.get_reg_a()
+
+        self._cpu.set_carry_bit(ac)
+        self._cpu.set_sign_bit(ac)
+
+        self._set_reg_y(ac)
+
+    # Variables privadas
+    _OPCODE = 0xA8
+    _BYTES = 1
+    _CYCLES = 2
+
+
+###############################################################################
+# TSX Transfer stack pointer to index X
+###############################################################################
+class TSX(Instruction):
+
+    def __init__(self, cpu):
+        super(TSX, self).__init__(None, cpu)
+
+    def execute(self):
+        sp = self._cpu.get_reg_sp()
+
+        self._cpu.set_carry_bit(sp)
+        self._cpu.set_sign_bit(sp)
+
+        self._set_reg_x(sp)
+
+    # Variables privadas
+    _OPCODE = 0xBA
+    _BYTES = 1
+    _CYCLES = 2
+
+
+###############################################################################
+# TXA Transfer index X to accumulator
+###############################################################################
+class TXA(Instruction):
+
+    def __init__(self, cpu):
+        super(TXA, self).__init__(None, cpu)
+
+    def execute(self):
+        reg_x = self._cpu.get_reg_x()
+
+        self._cpu.set_carry_bit(reg_x)
+        self._cpu.set_sign_bit(reg_x)
+
+        self._set_reg_a(reg_x)
+
+    # Variables privadas
+    _OPCODE = 0x8A
+    _BYTES = 1
+    _CYCLES = 2
+
+
+###############################################################################
+# TXS Transfer index X to stack pointer
+###############################################################################
+class TXS(Instruction):
+
+    def __init__(self, cpu):
+        super(TXS, self).__init__(None, cpu)
+
+    def execute(self):
+        reg_x = self._cpu.get_reg_x()
+
+        self._set_reg_sp(reg_x)
+
+    # Variables privadas
+    _OPCODE = 0x9A
+    _BYTES = 1
+    _CYCLES = 2
+
+
+###############################################################################
+# TYA Transfer index Y to accumulator
+###############################################################################
+class TYA(Instruction):
+
+    def __init__(self, cpu):
+        super(TYA, self).__init__(None, cpu)
+
+    def execute(self):
+        reg_y = self._cpu.get_reg_y()
+
+        self._cpu.set_carry_bit(reg_y)
+        self._cpu.set_sign_bit(reg_y)
+
+        self._set_reg_a(reg_y)
+
+    # Variables privadas
+    _OPCODE = 0x98
+    _BYTES = 1
+    _CYCLES = 2
