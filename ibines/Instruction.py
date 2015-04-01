@@ -2289,3 +2289,192 @@ class ROR_absx(ROR):
     _OPCODE = 0x7E
     _BYTES = 3
     _CYCLES = 7
+
+
+###############################################################################
+# RTI Return from interrupt
+###############################################################################
+
+class RTI(Instruction):
+
+    def __init__(self, cpu):
+        super(RTI, self).__init__(None, cpu)
+
+    def execute(self):
+        self._cpu.set_reg_p(self._cpu.pull_stack())
+
+        pc = self._cpu.pull_stack()
+        pc = pc | (self._cpu.pull_stack() << 8)
+        self._cpu.set_reg_pc(pc)
+
+    # Variables privadas
+    _OPCODE = 0x4D
+    _BYTES = 1
+    _CYCLES = 6
+
+
+###############################################################################
+# RTS Return from subroutine
+###############################################################################
+
+class RTS(Instruction):
+
+    def __init__(self, cpu):
+        super(RTS, self).__init__(None, cpu)
+
+    def execute(self):
+        pc = self._cpu.pull_stack()
+        pc = pc | (self._cpu.pull_stack() << 8)
+        pc = pc + 1
+        self._cpu.set_reg_pc(pc)
+
+    # Variables privadas
+    _OPCODE = 0x60
+    _BYTES = 1
+    _CYCLES = 6
+
+
+# TODO: implementar resta en BCD (en ADC también)
+###############################################################################
+# SBC Subtract memory from accumulator with borrow
+###############################################################################
+class SBC(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(SBC, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        ac = self._cpu.get_reg_a()
+        carry = self._cpu.get_reg_p_c_bit()
+
+        rst = ac - op - carry
+
+        # Establece el bit CARRY del registro P
+        self._cpu.set_carry_bit(rst)
+        # Establece el bit ZERO del registro P
+        self._cpu.set_zero_bit(rst)
+        # Establece el bit OVERFLOW del registro P
+        self._cpu.set_overflow_bit(op, rst)
+        # Establece el bit SIGN del registro P
+        self._cpu.set_sign_bit(rst)
+
+        self._cpu.set_reg_a(rst)
+
+
+class SBC_inmediate(SBC):
+
+    def __init__(self, operand, cpu):
+        super(SBC_inmediate, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_inmediate_addrmode()
+        super(SBC_inmediate, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xE9
+    _BYTES = 2
+    _CYCLES = 2
+
+
+class SBC_zero(SBC):
+
+    def __init__(self, operand, cpu):
+        super(SBC_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(SBC_zero, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xE5
+    _BYTES = 2
+    _CYCLES = 3
+
+
+class SBC_zerox(SBC):
+
+    def __init__(self, operand, cpu):
+        super(SBC_zerox, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_x_addrmode()[1]
+        super(SBC_zerox, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xF5
+    _BYTES = 2
+    _CYCLES = 4
+
+
+class SBC_abs(SBC):
+
+    def __init__(self, operand, cpu):
+        super(SBC_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(SBC_abs, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xED
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class SBC_absx(SBC):
+
+    def __init__(self, operand, cpu):
+        super(SBC_absx, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_x_addrmode()[1]
+        super(SBC_absx, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xFD
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class SBC_absy(SBC):
+
+    def __init__(self, operand, cpu):
+        super(SBC_absy, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_y_addrmode()[1]
+        super(SBC_absy, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xF9
+    _BYTES = 3
+    _CYCLES = 4
+
+class SBC_preindexi(SBC):
+
+    def __init__(self, operand, cpu):
+        super(SBC_preindexi, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_preindexed_addrmode()[1]
+        super(SBC_preindexi, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xE1
+    _BYTES = 2
+    _CYCLES = 6
+
+
+class SBC_postindexi(SBC):
+
+    def __init__(self, operand, cpu):
+        super(SBC_postindexi, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_postindexed_addrmode()[1]
+        super(SBC_postindexi, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0xF1
+    _BYTES = 2
+    _CYCLES = 5
