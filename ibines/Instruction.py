@@ -2334,7 +2334,6 @@ class RTS(Instruction):
     _CYCLES = 6
 
 
-# TODO: implementar resta en BCD (en ADC también)
 ###############################################################################
 # SBC Subtract memory from accumulator with borrow
 ###############################################################################
@@ -2478,3 +2477,171 @@ class SBC_postindexi(SBC):
     _OPCODE = 0xF1
     _BYTES = 2
     _CYCLES = 5
+
+
+###############################################################################
+# SEC Set carry flag
+###############################################################################
+class SEC(Instruction):
+
+    def __init__(self, cpu):
+        super(SEC, self).__init__(None, cpu)
+
+    def execute(self):
+        self._cpu.set_reg_p_c_bit(1)
+
+    # Variables privadas
+    _OPCODE = 0x38
+    _BYTES = 1
+    _CYCLES = 2
+
+
+###############################################################################
+# SED Set decimal mode
+###############################################################################
+class SED(Instruction):
+
+    def __init__(self, cpu):
+        super(SED, self).__init__(None, cpu)
+
+    def execute(self):
+        self._cpu.set_reg_p_d_bit(1)
+
+    # Variables privadas
+    _OPCODE = 0xF8
+    _BYTES = 1
+    _CYCLES = 2
+
+
+###############################################################################
+# SEI Set interrupt disable status
+###############################################################################
+class SEI(Instruction):
+
+    def __init__(self, cpu):
+        super(SEI, self).__init__(None, cpu)
+
+    def execute(self):
+        self._cpu.set_reg_p_i_bit(1)
+
+    # Variables privadas
+    _OPCODE = 0x78
+    _BYTES = 1
+    _CYCLES = 2
+
+
+###############################################################################
+# STA Store accumulator in memory
+###############################################################################
+class STA(Instruction):
+
+    def __init__(self, operand, cpu):
+        super(STA, self).__init__(operand, cpu)
+
+    def execute(self, op):
+        ac = self._cpu.get_reg_a()
+        self._cpu.get_mem().write_data(ac, op)
+
+
+class STA_zero(STA):
+
+    def __init__(self, operand, cpu):
+        super(STA_zero, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(STA_zero, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x85
+    _BYTES = 2
+    _CYCLES = 3
+
+
+class STA_zerox(STA):
+
+    def __init__(self, operand, cpu):
+        super(STA_zerox, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_x_addrmode()[1]
+        super(STA_zerox, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x95
+    _BYTES = 2
+    _CYCLES = 4
+
+
+class STA_abs(STA):
+
+    def __init__(self, operand, cpu):
+        super(STA_abs, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_absolute_addrmode()[1]
+        super(STA_abs, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x80
+    _BYTES = 3
+    _CYCLES = 4
+
+
+class STA_absx(STA):
+
+    def __init__(self, operand, cpu):
+        super(STA_absx, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_x_addrmode()[1]
+        super(STA_absx, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x90
+    _BYTES = 3
+    _CYCLES = 5
+
+
+class STA_absy(STA):
+
+    def __init__(self, operand, cpu):
+        super(STA_absy, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_indexed_y_addrmode()[1]
+        super(STA_absy, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x99
+    _BYTES = 3
+    _CYCLES = 5
+
+class STA_preindexi(STA):
+
+    def __init__(self, operand, cpu):
+        super(STA_preindexi, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_preindexed_addrmode()[1]
+        super(STA_preindexi, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x81
+    _BYTES = 2
+    _CYCLES = 6
+
+
+class STA_postindexi(STA):
+
+    def __init__(self, operand, cpu):
+        super(STA_postindexi, self).__init__(operand, cpu)
+
+    def execute(self):
+        op = self.fetch_postindexed_addrmode()[1]
+        super(STA_postindexi, self).execute(op)
+
+    # Variables privadas
+    _OPCODE = 0x91
+    _BYTES = 2
+    _CYCLES = 6
