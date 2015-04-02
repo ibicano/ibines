@@ -229,7 +229,6 @@ class ADC_postindexi(ADC):
 ###############################################################################
 # AND: And memory with accumulator
 ###############################################################################
-
 class AND(Instruction):
 
     def __init__(self, operand, cpu):
@@ -366,7 +365,6 @@ class AND_postindexi(AND):
 ###############################################################################
 # ASL: Shift Left One Bit (Memory or Accumulator)
 ###############################################################################
-
 class ASL(Instruction):
 
     def __init__(self, operand, cpu):
@@ -462,7 +460,8 @@ class ASL_absx(ASL):
 
 
 ###############################################################################
-
+# BCC Branch on Carry Clear
+###############################################################################
 class BCC(Instruction):
 
     def __init__(self, operand, cpu):
@@ -479,7 +478,8 @@ class BCC(Instruction):
     _CYCLES = 2
 
 ###############################################################################
-
+# BCS Branch on carry set
+###############################################################################
 class BCS(Instruction):
 
     def __init__(self, operand, cpu):
@@ -497,7 +497,8 @@ class BCS(Instruction):
     _CYCLES = 2
 
 ###############################################################################
-
+# BEQ Branch on result zero
+###############################################################################
 class BEQ(Instruction):
 
     def __init__(self, operand, cpu):
@@ -565,8 +566,10 @@ class BIT_abs(BIT):
     _BYTES = 3
     _CYCLES = 4
 
-###############################################################################
 
+###############################################################################
+# BMI Branch on result minus
+###############################################################################
 class BMI(Instruction):
 
     def __init__(self, operands, cpu):
@@ -582,8 +585,10 @@ class BMI(Instruction):
     _BYTES = 2
     _CYCLES = 2
 
-###############################################################################
 
+###############################################################################
+# BNE Branch on result not zero
+###############################################################################
 class BNE(Instruction):
 
     def __init__(self, operand, cpu):
@@ -599,8 +604,10 @@ class BNE(Instruction):
     _BYTES = 2
     _CYCLES = 2
 
-###############################################################################
 
+###############################################################################
+# BPL Branch on result plus
+###############################################################################
 class BPL(Instruction):
 
     def __init__(self, operand, cpu):
@@ -614,6 +621,33 @@ class BPL(Instruction):
     # Variables privadas
     _OPCODE = 0x10
     _BYTES = 2
+    _CYCLES = 2
+
+
+###############################################################################
+# BRK Force Break
+###############################################################################
+class BRK(Instruction):
+
+    def __init__(self, cpu):
+        super(BRK, self).__init__(None, cpu)
+
+    def execute(self):
+        pc = self._cpu.get_reg_pc() + 1
+        self._cpu.push_stack((pc >> 8) & 0xFF)
+        self._cpu.push_stack(pc  & 0xFF)
+        self._cpu.set_reg_p_b_bit(1)
+        self._cpu.push_stack(self._cpu.get_reg_p())
+        self._cpu.set_reg_p_i_bit(1)
+
+        pc = self._cpu.get_mem().read_data(0xFFFE)
+        pc = pc | (self._cpu.get_mem().read_data(0xFFFF) << 8)
+        self._cpu.set_reg_pc(pc)
+
+
+    # Variables privadas
+    _OPCODE = 0x9A
+    _BYTES = 1
     _CYCLES = 2
 
 
@@ -726,7 +760,6 @@ class CLV(Instruction):
 ###############################################################################
 # CMP Compare memory and accumulator
 ###############################################################################
-
 class CMP(Instruction):
 
     def __init__(self, operand, cpu):
@@ -754,6 +787,7 @@ class CMP_inmediate(CMP):
     _OPCODE = 0xC9
     _BYTES = 2
     _CYCLES = 2
+
 
 class CMP_zero(CMP):
 
@@ -829,6 +863,7 @@ class CMP_absy(CMP):
     _BYTES = 3
     _CYCLES = 4
 
+
 class CMP_preindexi(CMP):
 
     def __init__(self, operand, cpu):
@@ -862,7 +897,6 @@ class CMP_postindexi(CMP):
 ###############################################################################
 # CPX Compare Memory and Index X
 ###############################################################################
-
 class CPX(Instruction):
 
     def __init__(self, operand, cpu):
@@ -890,6 +924,7 @@ class CPX_inmediate(CPX):
     _OPCODE = 0xE0
     _BYTES = 2
     _CYCLES = 2
+
 
 class CPX_zero(CPX):
 
@@ -924,7 +959,6 @@ class CPX_abs(CPX):
 ###############################################################################
 # CPY Compare Memory and Index Y
 ###############################################################################
-
 class CPY(Instruction):
 
     def __init__(self, operand, cpu):
@@ -952,6 +986,7 @@ class CPY_inmediate(CPY):
     _OPCODE = 0xC0
     _BYTES = 2
     _CYCLES = 2
+
 
 class CPY_zero(CPY):
 
@@ -986,7 +1021,6 @@ class CPY_abs(CPY):
 ###############################################################################
 # DEC Decrement memory by one
 ###############################################################################
-
 class DEC(Instruction):
 
     def __init__(self, operand, cpu):
@@ -1068,7 +1102,6 @@ class DEC_absx(DEC):
 ###############################################################################
 # DEX Decrement index X by one
 ###############################################################################
-
 class DEX(Instruction):
 
     def __init__(self, cpu):
@@ -1091,7 +1124,6 @@ class DEX(Instruction):
 ###############################################################################
 # DEY Decrement index Y by one
 ###############################################################################
-
 class DEY(Instruction):
 
     def __init__(self, cpu):
@@ -1114,7 +1146,6 @@ class DEY(Instruction):
 ###############################################################################
 # EOR "Exclusive-Or" memory with accumulator
 ###############################################################################
-
 class EOR(Instruction):
 
     def __init__(self, operand, cpu):
@@ -1143,6 +1174,7 @@ class EOR_inmediate(EOR):
     _OPCODE = 0x49
     _BYTES = 2
     _CYCLES = 2
+
 
 class EOR_zero(EOR):
 
@@ -1218,6 +1250,7 @@ class EOR_absy(EOR):
     _BYTES = 3
     _CYCLES = 4
 
+
 class EOR_preindexi(EOR):
 
     def __init__(self, operand, cpu):
@@ -1251,7 +1284,6 @@ class EOR_postindexi(EOR):
 ###############################################################################
 # INC Increment memory by one
 ###############################################################################
-
 class INC(Instruction):
 
     def __init__(self, operand, cpu):
@@ -1333,7 +1365,6 @@ class INC_absx(INC):
 ###############################################################################
 # INX Increment Index X by one
 ###############################################################################
-
 class INX(Instruction):
 
     def __init__(self, cpu):
@@ -1356,7 +1387,6 @@ class INX(Instruction):
 ###############################################################################
 # INY Increment Index Y by one
 ###############################################################################
-
 class INY(Instruction):
 
     def __init__(self, cpu):
@@ -1379,7 +1409,6 @@ class INY(Instruction):
 ###############################################################################
 # JMP Jump to new location
 ###############################################################################
-
 class JMP(Instruction):
 
     def __init__(self, operand, cpu):
@@ -1426,7 +1455,6 @@ class JMP_indirect(JMP):
 ###############################################################################
 # JSR Jump to new location saving return address
 ###############################################################################
-
 class JSR(Instruction):
 
     def __init__(self, operand, cpu):
@@ -1551,6 +1579,7 @@ class LDA_absy(LDA):
     _OPCODE = 0xB9
     _BYTES = 3
     _CYCLES = 4
+
 
 class LDA_preindexi(LDA):
 
@@ -1769,7 +1798,6 @@ class LDY_absx(LDY):
 ###############################################################################
 # LSR Shift right one bit (memory or accumulator)
 ###############################################################################
-
 class LSR(Instruction):
 
     def __init__(self, operand, cpu):
@@ -1799,6 +1827,7 @@ class LSR_accumulator(LSR):
     _OPCODE = 0x4A
     _BYTES = 1
     _CYCLES = 2
+
 
 class LSR_zero(LSR):
 
@@ -1867,7 +1896,6 @@ class LSR_absx(LSR):
 ###############################################################################
 # NOP No operation
 ###############################################################################
-
 class NOP(Instruction):
 
     def __init__(self, cpu):
@@ -1885,7 +1913,6 @@ class NOP(Instruction):
 ###############################################################################
 # ORA "OR" memory with accumulator
 ###############################################################################
-
 class ORA(Instruction):
 
     def __init__(self, operand, cpu):
@@ -1914,6 +1941,7 @@ class ORA_inmediate(ORA):
     _OPCODE = 0x09
     _BYTES = 2
     _CYCLES = 2
+
 
 class ORA_zero(ORA):
 
@@ -1989,6 +2017,7 @@ class ORA_absy(ORA):
     _BYTES = 3
     _CYCLES = 4
 
+
 class ORA_preindexi(ORA):
 
     def __init__(self, operand, cpu):
@@ -2022,7 +2051,6 @@ class ORA_postindexi(ORA):
 ###############################################################################
 # PHA Push accumulator on stack
 ###############################################################################
-
 class PHA(Instruction):
 
     def __init__(self, cpu):
@@ -2040,7 +2068,6 @@ class PHA(Instruction):
 ###############################################################################
 # PHP Push processor status on stack
 ###############################################################################
-
 class PHP(Instruction):
 
     def __init__(self, cpu):
@@ -2058,7 +2085,6 @@ class PHP(Instruction):
 ###############################################################################
 # PLA Pull accumulator from stack
 ###############################################################################
-
 class PLA(Instruction):
 
     def __init__(self, cpu):
@@ -2076,7 +2102,6 @@ class PLA(Instruction):
 ###############################################################################
 # PLP Pull processor status from stack
 ###############################################################################
-
 class PLP(Instruction):
 
     def __init__(self, cpu):
@@ -2094,7 +2119,6 @@ class PLP(Instruction):
 ###############################################################################
 # ROL Rotate one bit left (memory or accumulator)
 ###############################################################################
-
 class ROL(Instruction):
 
     def __init__(self, operand, cpu):
@@ -2126,6 +2150,7 @@ class ROL_accumulator(ROL):
     _OPCODE = 0x2A
     _BYTES = 1
     _CYCLES = 2
+
 
 class ROL_zero(ROL):
 
@@ -2194,7 +2219,6 @@ class ROL_absx(ROL):
 ###############################################################################
 # ROR Rotate one bit right (memory or accumulator)
 ###############################################################################
-
 class ROR(Instruction):
 
     def __init__(self, operand, cpu):
@@ -2226,6 +2250,7 @@ class ROR_accumulator(ROR):
     _OPCODE = 0x6A
     _BYTES = 1
     _CYCLES = 2
+
 
 class ROR_zero(ROR):
 
@@ -2294,7 +2319,6 @@ class ROR_absx(ROR):
 ###############################################################################
 # RTI Return from interrupt
 ###############################################################################
-
 class RTI(Instruction):
 
     def __init__(self, cpu):
@@ -2316,7 +2340,6 @@ class RTI(Instruction):
 ###############################################################################
 # RTS Return from subroutine
 ###############################################################################
-
 class RTS(Instruction):
 
     def __init__(self, cpu):
@@ -2448,6 +2471,7 @@ class SBC_absy(SBC):
     _OPCODE = 0xF9
     _BYTES = 3
     _CYCLES = 4
+
 
 class SBC_preindexi(SBC):
 
@@ -2674,6 +2698,7 @@ class STX_zero(STX):
     _BYTES = 2
     _CYCLES = 3
 
+
 class STX_zeroy(STX):
 
     def __init__(self, operand, cpu):
@@ -2730,6 +2755,7 @@ class STY_zero(STY):
     _OPCODE = 0x84
     _BYTES = 2
     _CYCLES = 3
+
 
 class STY_zerox(STY):
 
