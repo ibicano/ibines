@@ -162,11 +162,16 @@ class CPU(object):
             return 0
 
     # Funciones para meter y sacar datos de la Pila
-    def push_stack(byte):
-        pass
+    def push_stack(self, byte):
+        sp_addr = 0x0100 & self.get_reg_sp()
+        self.get_mem().write_data(self, byte, sp_addr)
+        self.set_reg_sp(self.get_reg_sp() - 1)
 
-    def pull_stack():
-        pass
+    def pull_stack(self):
+        sp_addr = 0x0100 & self.get_reg_sp()
+        byte = self.get_mem().read_data(sp_addr)
+        self.set_reg_sp(self.get_reg_sp() + 1)
+        return byte
 
 
     ###########################################################################
@@ -175,7 +180,7 @@ class CPU(object):
 
     # Registros
     _reg_pc = 0x0000        # Program Counter (16-bit)
-    _reg_sp = 0x00          # Stack Pointer (8-bit)
+    _reg_sp = 0xFF          # Stack Pointer (8-bit)
     _reg_a = 0x00           # Accumulator (8-bit)
     _reg_x = 0x00           # Index X (8-bit)
     _reg_y = 0x00           # Index Y (8-bit)
