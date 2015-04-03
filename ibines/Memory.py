@@ -7,11 +7,14 @@ class Memory(object):
     def __init__(self):
         pass
 
+    # TODO: acabar esta función
     # Devuelve el contenido de una posición de memoria
     def read_data(self, addr):
         a = addr & 0xFFFF
         return self._memory[a]
 
+
+    # TODO: acabar esta función
     # Establece el contenido de una posición de memoria
     # Se escribe en todas las posiciones de las que se hace mirror. Sería más
     # eficiente no escribir todas y mapear las posiciones en una soloa
@@ -26,16 +29,9 @@ class Memory(object):
             self._memory[0x0800 + n] = d
             self._memory[0x1000 + n] = d
             self._memory[0x1800 + n] = d
-        elif a >= 0x2000 and a <= 0x3FFF:
-            #escribe en todas las pociones "espejo"
-            x = 0
-            while x < 0x0400:
-                n = a % 0x08 + (x * 0x08)
-                self._memory[n] = d
-                x += 1
-        else:
-            self._memory[a] = d
-
+        elif a >= 0x2000 and a <= 0x3FFF: # Direcciones de los registros I/O
+            n = a % 0x08
+            self._ppu.write_reg(d, n)
 
     ###########################################################################
     # Variables privadas
@@ -43,3 +39,6 @@ class Memory(object):
 
     # Array para almacenar el contenido de la memoria
     _memory = []
+
+    # Referencia a la PPU
+    _ppu = None
