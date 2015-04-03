@@ -8,6 +8,17 @@ class PPU(object):
     def __init__(self):
         pass
 
+    # Lee el registro indicado por su dirección en memoria
+    def read_reg(self, data, addr):
+        d = 0x00
+
+        if addr == 0x2002:
+            d = self.get_reg_status()
+        elif addr == 0x2007:
+            d = self.get_vram_io()
+
+        return d
+
     # Escribe el registro indicado por su dirección en memoria
     def write_reg(self, data, addr):
         if addr == 0x2000:
@@ -24,6 +35,8 @@ class PPU(object):
             self.write_reg_vram_addr_2(data)
         elif addr == 0x2007:
             self.write_reg_vram_io(data)
+        elif addr == 0x4014:
+            self.write_reg_sprite_dma(data)
 
     def write_reg_control_1(self, data):
         self._reg_control_1 = data & 0xFF
@@ -46,6 +59,9 @@ class PPU(object):
     def write_reg_vram_io(self, data):
         self._reg_vram_io = data & 0xFF
 
+    def write_sprite_dam(self, data):
+        self._sprite_dma = data & 0xFF
+
     ############################################################################
     # Miembros privados
     ############################################################################
@@ -58,3 +74,4 @@ class PPU(object):
     _reg_vram_addr_1 = 0x00          # Dirección 0x2005 - write
     _reg_vram_addr_2 = 0x00          # Dirección 0x2006 - write
     _reg_vram_io = 0x00              # Dirección 0x2007 - read/write
+    _reg_sprite_dma = 0x00           # Dirección 0x4014 - write

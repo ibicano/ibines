@@ -4,14 +4,22 @@
 class Memory(object):
 
     # Constructor
-    def __init__(self):
-        pass
+    def __init__(self, ppu):
+        self._ppu = ppu
 
     # TODO: acabar esta función
     # Devuelve el contenido de una posición de memoria
     def read_data(self, addr):
         a = addr & 0xFFFF
-        return self._memory[a]
+
+        d = 0x00
+        if a >= 0x000 and a <= 0x1FFF:
+            d = self._memory[a]
+        elif a >= 0x2000 and a <= 0x3FFF:     # Direcciones de los registros PPU
+            n = 0x2000 + (a % 0x08)
+            d = self._ppu.read_reg(n)
+
+        return d
 
 
     # TODO: acabar esta función
@@ -24,14 +32,17 @@ class Memory(object):
         d = data & 0xFF
 
         if a >= 0x000 and a <= 0x1FFF:
-            n = a % 0x800
+            n = 0x2000 + (a % 0x800)
             self._memory[n] = d
             self._memory[0x0800 + n] = d
             self._memory[0x1000 + n] = d
             self._memory[0x1800 + n] = d
-        elif a >= 0x2000 and a <= 0x3FFF: # Direcciones de los registros I/O
+        elif a >= 0x2000 and a <= 0x3FFF: # Direcciones de los registros PPU
             n = a % 0x08
             self._ppu.write_reg(d, n)
+        elif a >= 0x4000 and a <= 0x401F: # Más registros I/O
+            if a == 0x4014:
+                self._ppu.write_reg(d, n)
 
     ###########################################################################
     # Variables privadas
