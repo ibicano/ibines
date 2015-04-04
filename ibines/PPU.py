@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
+from PPUMemory import PPUMemory
+
 ################################################################################
 # Clase que implementa la PPU 2C02
 ################################################################################
 class PPU(object):
 
     def __init__(self):
-        pass
+        self._memoria = PPUMemory(self)
 
     # Lee el registro indicado por su dirección en memoria
     def read_reg(self, data, addr):
@@ -75,3 +77,6 @@ class PPU(object):
     _reg_vram_addr_2 = 0x00          # Dirección 0x2006 - write
     _reg_vram_io = 0x00              # Dirección 0x2007 - read/write
     _reg_sprite_dma = 0x00           # Dirección 0x4014 - write
+
+    # Memoria
+    _memoria = None
