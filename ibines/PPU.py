@@ -50,7 +50,9 @@ class PPU(object):
         self._reg_spr_addr = data & 0xFF
 
     def write_reg_spr_io(self, data):
-        self._reg_spr_io = data & 0xFF
+        d = data & 0xFF
+        self._reg_spr_io = d
+        self._memoria.write_sprite_data(d, self._reg_spr_addr)
 
     def write_reg_vram_addr_1(self, data):
         self._reg_vram_addr_1 = data & 0xFF
@@ -59,9 +61,13 @@ class PPU(object):
         self._reg_vram_addr_2 = data & 0xFF
 
     def write_reg_vram_io(self, data):
-        self._reg_vram_io = data & 0xFF
+        d = data & 0xFF
+        a = (self._reg_vram_addr_2 << 8) | self._reg_vram_addr_1
+        self._reg_vram_io = d
+        self._memoria.write_data(d, a)
 
-    def write_sprite_dam(self, data):
+
+    def write_sprite_dma(self, data):
         self._sprite_dma = data & 0xFF
 
     ############################################################################

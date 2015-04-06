@@ -68,8 +68,76 @@ class PPUMemory(object):
         return data
 
     # Escribe un dato en la memoria de la PPU
-    def write_data(data, addr):
-        pass
+    def write_data(self, data, addr):
+        a = addr & 0xFFFF
+        d = data & 0xFF
+        # Pattern tables:
+        if a >= 0x0000 and a <= 0x0FFF:
+             self._pattern_table_0[a % 0x1000] = d
+        elif a >= 0x1000 and a <= 0x1FFF:
+             self._pattern_table_1[a % 0x1000] = d
+        # Name tables y attribute tables:
+        elif a >= 0x2000 and a <= 0x23BF:
+            self._name_table_0[a % 0x03C0] = d
+        elif a >= 0x23C0 and a <= 0x23FF:
+            self._attr_table_0[a % 0x0040] = d
+        elif a >= 0x2400 and a <= 0x27BF:
+            if self._mirror_mode == 0:
+                self._name_table_0[a % 0x03C0] = d
+            elif self._mirror_mode == 1:
+                self._name_table_1[a % 0x03C0] = d
+        elif a >= 0x27C0 and a <= 0x27FF:
+            if self._mirror_mode == 0:
+                self._attr_table_0[a % 0x0040] = d
+            elif self._mirror_mode == 1:
+                self._attr_table_1[a % 0x0040] = d
+        elif a >= 0x2800 and a <= 0x2BBF:
+            if self._mirror_mode == 0:
+                self._name_table_1[a % 0x03C0] = d
+            elif self._mirror_mode == 1:
+                self._name_table_0[a % 0x03C0] = d
+        elif a >= 0x2BC0 and a <= 0x2BFF:
+            if self._mirror_mode == 0:
+                self._attr_table_1[a % 0x0040] = d
+            elif self._mirror_mode == 1:
+                self._attr_table_0[a % 0x0040] = d
+        elif a >= 0x2C00 and a <= 0x2FBF:
+            if self._mirror_mode == 0:
+                self._name_table_1[a % 0x03C0] = d
+            elif self._mirror_mode == 1:
+                self._name_table_0[a % 0x03C0] = d
+        elif a >= 0x2FC0 and a <= 0x2FFF:
+            if self._mirror_mode == 0:
+                self._name_attr_1[a % 0x0040] = d
+            elif self._mirror_mode == 1:
+                self._name_attr_0[a % 0x0040] = d
+        # Mirrors name/attr tables:
+        elif a >= 0x3000 and a <= 0x3EFF:
+            self.write_data(d, 0x2000 + (a % 0x0F00))
+        # Image Palette:
+        elif a >= 0x3F00 and a <= 0x3F0F:
+            self._image_palette[a % 0x0010] = d
+        # Sprite Palette:
+        elif a >= 0x3F10 and a <= 0x3F1F:
+            self._sprite_palette[a % 0x0010] = d
+        # Mirrors Palettes:
+        elif a >= 0x3F20 and a <= 0x3FFF:
+            self.write_data(d, 0x3F00 + (a % 0x20))
+        # Mirrors generales:
+        elif a >= 0x4000 and a <= 0xFFFF:
+            self.write_data(d, a % 0x4000)
+
+    # Lee la memoria de sprites
+    def read_sprite_data(self, addr):
+        a = addr & 0xFF
+        return self._sprite_ram[a]
+
+    # Escribe la memoria de sprites
+    def write_sprite_data(self, data, addr):
+        d = data & 0xFF
+        a = addr & 0xFF
+
+        self._sprite_ram[a] = d
 
     ############################################################################
     # Miembros privados
@@ -85,6 +153,9 @@ class PPUMemory(object):
 
     _image_palette = []
     _sprite_palette = []
+
+    # Array que almacena el contenido de la memoria de sprites
+    _sprite_ram = []
 
     # Referencia a la PPU
     _ppu = None
