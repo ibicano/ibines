@@ -7,8 +7,9 @@ from PPUMemory import PPUMemory
 ################################################################################
 class PPU(object):
 
-    def __init__(self):
+    def __init__(self, cpu):
         self._memoria = PPUMemory(self)
+        self._cpu = cpu
 
     # Lee el registro indicado por su dirección en memoria
     def read_reg(self, data, addr):
@@ -66,8 +67,17 @@ class PPU(object):
         self._reg_vram_io = d
         self._memoria.write_data(d, a)
 
+    # Escribe el registro y hace una transferencia dma
     def write_sprite_dma(self, data):
-        self._sprite_dma = data & 0xFF
+        self._reg_sprite_dma = data
+
+        a = (data & 0xFF) * 0x0100
+        n = 0
+        while n < 256:
+            d = self._cpu.get_mem().read_data(a)
+            self._memoria.write_sprite_data(d, n)
+            a += 1
+            n += 1
 
 
     # Métodos para obtener información de los registros de control
@@ -143,3 +153,6 @@ class PPU(object):
 
     # Memoria
     _memoria = None
+
+    # Referencia a la CPU
+    _cpu = None
