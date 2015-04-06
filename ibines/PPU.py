@@ -66,9 +66,66 @@ class PPU(object):
         self._reg_vram_io = d
         self._memoria.write_data(d, a)
 
-
     def write_sprite_dma(self, data):
         self._sprite_dma = data & 0xFF
+
+
+    # Métodos para obtener información de los registros de control
+
+    # Devuelve la "name table" activa
+    def control_1_name_table_bits_0_1(self):
+        r = self._reg_control_1 & 0x03
+        return r
+
+    # Devuelve el valor del bit que indica el incrmento de dirección
+    # 1, si es 0 o 32 si es 1
+    def control_1_increment_bit_2(self):
+        r = (self._reg_control_1 & 0x04) >> 2
+        return r
+
+    def control_1_sprites_pattern_bit_3(self):
+        r = (self._reg_control_1 & 0x08) >> 3
+        return r
+
+    def control_1_background_pattern_bit_4(self):
+        r = (self._reg_control_1 & 0x10) >> 4
+        return r
+
+    def control_1_sprites_size_bit_5(self):
+        r = (self._reg_control_1 & 0x20) >> 5
+        return r
+
+    def control_1_master_mode_bit_6(self):
+        r = (self._reg_control_1 & 0x40) >> 6
+        return r
+
+    def control_1_NMI_bit_7(self):
+        r = (self._reg_control_1 & 0x80) >> 7
+        return r
+
+    def control_2_monochrome_bit_0(self):
+        r = (self._reg_control_2 & 0x01)
+        return r
+
+    def control_2_clip_background_bit_1(self):
+        r = (self._reg_control_2 & 0x02) >> 1
+        return r
+
+    def control_2_clip_sprites_bit_2(self):
+        r = (self._reg_control_2 & 0x04) >> 2
+        return r
+
+    def control_2_background_bit_3(self):
+        r = (self._reg_control_2 & 0x08) >> 3
+        return r
+
+    def control_2_sprites_bit_4(self):
+        r = (self._reg_control_2 & 0x10) >> 4
+        return r
+
+    def control_2_colour_config_bits_5_7(self):
+        r = (self._reg_control_2 & 0xE0) >> 5
+        return r
 
     ############################################################################
     # Miembros privados
