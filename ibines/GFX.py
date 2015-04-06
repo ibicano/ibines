@@ -7,9 +7,18 @@ class GFX(object):
 
     def __init__(self):
         pygame.display.init()
-        self._screen = pygame.display.set_mode((640, 480))
-        self._screen.fill((255,0,0))
+        self._screen = pygame.display.set_mode((256, 240))
+        self._screen.fill((0,0,0))
         self._pixels = pygame.PixelArray(self._screen)
+
+    def draw_pixel(self, x, y, color=(0, 0, 0)):
+        self._pixels[x][y] = self._screen.map_rgb(color)
+
+    def fill(self, color=(0, 0, 0)):
+        self._screen.fill(color)
+
+    def update(self):
+        self._screen.update()
 
     def run(self):
         while 1:
@@ -33,5 +42,5 @@ class GFX(object):
     _pixels = None
 
 
-gfx = GFX()
-gfx.run()
+#gfx = GFX()
+#gfx.run()

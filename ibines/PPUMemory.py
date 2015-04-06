@@ -54,10 +54,16 @@ class PPUMemory(object):
             data = self.read_data(0x2000 + (a % 0x0F00))
         # Image Palette:
         elif a >= 0x3F00 and a <= 0x3F0F:
-            data = self._image_palette[a % 0x0010]
+            if (a % 0x04) == 0:
+                data = self._image_palette[0x00]
+            else:
+                data = self._image_palette[a % 0x0010]
         # Sprite Palette:
         elif a >= 0x3F10 and a <= 0x3F1F:
-            data = self._sprite_palette[a % 0x0010]
+            if (a % 0x04) == 0:
+                data = self._image_palette[0x00]
+            else:
+                data = self._sprite_palette[a % 0x0010]
         # Mirrors Palettes:
         elif a >= 0x3F20 and a <= 0x3FFF:
             data = self.read_data(0x3F00 + (a % 0x20))
@@ -116,9 +122,13 @@ class PPUMemory(object):
             self.write_data(d, 0x2000 + (a % 0x0F00))
         # Image Palette:
         elif a >= 0x3F00 and a <= 0x3F0F:
+            if (a % 0x04) == 0:
+                self._image_palette[0x00] = d
             self._image_palette[a % 0x0010] = d
         # Sprite Palette:
         elif a >= 0x3F10 and a <= 0x3F1F:
+            if (a % 0x04) == 0:
+                self._image_palette[0x00] = d
             self._sprite_palette[a % 0x0010] = d
         # Mirrors Palettes:
         elif a >= 0x3F20 and a <= 0x3FFF:
@@ -138,6 +148,24 @@ class PPUMemory(object):
         a = addr & 0xFF
 
         self._sprite_ram[a] = d
+
+
+    # Funciones de ayuda
+    # Devuelve un patrón de la pattern table
+    def read_pattern(self, table, pattern_number):
+        addr = pattern_number * 0x0010
+        pattern = []
+        if table == 0:
+            for i in range(16):
+                pattern[i] = self._pattern_table_0[addr]
+                addr += 1
+        elif table == 1:
+            for i in range(16):
+                pattern[i] = self._pattern_table_1[addr]
+                addr += 1
+
+        return pattern
+
 
     ############################################################################
     # Miembros privados

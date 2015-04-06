@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PPUMemory import PPUMemory
+from GFX import GFX
 
 ################################################################################
 # Clase que implementa la PPU 2C02
@@ -10,6 +11,7 @@ class PPU(object):
     def __init__(self, cpu):
         self._memoria = PPUMemory(self)
         self._cpu = cpu
+        self._gfx = GFX()
 
     # Lee el registro indicado por su dirección en memoria
     def read_reg(self, data, addr):
@@ -63,7 +65,7 @@ class PPU(object):
 
     def write_reg_vram_io(self, data):
         d = data & 0xFF
-        a = (self._reg_vram_addr_2 << 8) | self._reg_vram_addr_1
+        a = self._reg_vram_addr_1
         self._reg_vram_io = d
         self._memoria.write_data(d, a)
 
@@ -137,6 +139,42 @@ class PPU(object):
         r = (self._reg_control_2 & 0xE0) >> 5
         return r
 
+
+    # FUNCIONES DE DIBUJADO
+
+    # Función que pinta la pantalla
+    def draw_background(self):
+        # Calcula el name table que se usará
+        nt = self.control_1_name_table_bits_0_1()
+        if nt == 0x0:
+            nt_addr = 0x2000
+        elif nt == 0x1:
+            nt_addr = 0x2400
+        if nt == 0x2:
+            nt_addr = 0x2800
+        if nt == 0x3:
+            nt_addr = 0x2C00
+
+        #Calcula el pattern table que se usará
+        pt = self.control_1_background_pattern_bit_4()
+
+        # Va pintando los patrones del fondo en la pantalla
+        for x in range(32):
+            for y in range(30):
+                pattern_number = self._memoria.read_data(nt_addr)
+                pattern = self._memoria.read_pattern(pt, pattern_number)
+                self._draw_pattern(pattern, x, y)
+                nt_addr += 1
+
+    # Dibuja el pattern almacenado en la lista en la posición
+    # (x, y) de la pantalla
+    def _draw_pattern(pattern, x, y):
+        p1 = pattern[0:8]
+        p2 = pattern[8:16]
+
+
+
+
     ############################################################################
     # Miembros privados
     ############################################################################
@@ -146,13 +184,18 @@ class PPU(object):
     _reg_status = 0x00               # Dirección 0x2002 - read
     _reg_spr_addr = 0x00             # Dirección 0x2003 - write
     _reg_spr_io = 0x00               # Dirección 0x2004 - write
-    _reg_vram_addr_1 = 0x00          # Dirección 0x2005 - write
-    _reg_vram_addr_2 = 0x00          # Dirección 0x2006 - write
+    _reg_vram_addr_1 = 0x00          # Dirección 0x2005 - write (16-bit)
+    _reg_vram_addr_2 = 0x00          # Dirección 0x2006 - write (16-bit)
     _reg_vram_io = 0x00              # Dirección 0x2007 - read/write
     _reg_sprite_dma = 0x00           # Dirección 0x4014 - write
+
+    _reg_x_offset = 0x0             # Scroll patrón (3-bit)
 
     # Memoria
     _memoria = None
 
     # Referencia a la CPU
     _cpu = None
+
+    # Referencia al motor gráfico
+    _gfx = None
