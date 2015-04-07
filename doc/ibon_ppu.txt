@@ -1,0 +1,17 @@
+MIS PENSAMIENTOS ACERCA DEL FUNCIONAMIENTO DE LA PPU
+
+- Cada posición de la "Name Table" no es más que un puntero a un patrón
+de la "Pattern table". Su primer elemento es el correspondiente a la esquina
+superior izquierda de la pantalla, y va avanzando de izquierda a derecha
+de esta y saltando a la siguiente fila de patrones cuando se alcanza el final
+de una fila.
+La "Name Table" contiene 960 posiciones que cubre toda la pantalla que
+son los 32x30 patrones.
+
+- La PPU no dibuja la Name Table de forma fija, sino que utiliza un
+desplazamiento especificado en el registro $2006, de forma que este 
+permite implementar el scroll (ya que puede modificarse por el programa).
+
+- Mirar los documentos de SKINNY y NINTECH para ver cómo afectan las
+escrituras al $2005 y $2006 a los registros de la PPU, incluído
+el de scroll
