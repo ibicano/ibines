@@ -5,7 +5,7 @@ import nesutils
 class CPU(object):
 
     ###########################################################################
-    # Constantes
+    # Constantes de clase
     ###########################################################################
     #Posiciones de los bits del registro de estado
     REG_P_BIT_C = 0
@@ -22,7 +22,21 @@ class CPU(object):
 
     # Constructor
     def __init__(self, mem):
+        #######################################################################
+        # Variables de instancia
+        #######################################################################
+        # Memoria del sistema
         self.__mem = mem
+
+        # Registros
+        self._reg_pc = 0x8000        # Program Counter (16-bit)
+        self._reg_sp = 0xFF          # Stack Pointer (8-bit)
+        self._reg_a = 0x00           # Accumulator (8-bit)
+        self._reg_x = 0x00           # Index X (8-bit)
+        self._reg_y = 0x00           # Index Y (8-bit)
+        self._reg_p = 0x00           # Processor Status (8-bit)
+        #######################################################################
+        #######################################################################
 
     # TODO: Terminar esta función
     # Bucle principal de ejecusión de la CPU
@@ -172,19 +186,3 @@ class CPU(object):
         byte = self.get_mem().read_data(sp_addr)
         self.set_reg_sp(self.get_reg_sp() + 1)
         return byte
-
-
-    ###########################################################################
-    # Variables protegidas
-    ###########################################################################
-
-    # Registros
-    _reg_pc = 0x8000        # Program Counter (16-bit)
-    _reg_sp = 0xFF          # Stack Pointer (8-bit)
-    _reg_a = 0x00           # Accumulator (8-bit)
-    _reg_x = 0x00           # Index X (8-bit)
-    _reg_y = 0x00           # Index Y (8-bit)
-    _reg_p = 0x00           # Processor Status (8-bit)
-
-    # Referencia al sistema de memoria
-    _mem = None

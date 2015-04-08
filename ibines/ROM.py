@@ -5,7 +5,31 @@
 class ROM(object):
 
     def __init__(self, file_name):
+        ###########################################################################
+        # Variables de instancia
+        ###########################################################################
+        self._rom = None            # Los bytes de la ROM en forma de lista
+
+        self._pgr_rom_banks = 0
+        self._chr_rom_banks = 0
+        self._rom_control_1 = 0x00
+        self._rom_control_2 = 0x00
+        self._ram_banks = 0
+        self._reserved = 0
+
+        self._pgr_1 = []
+        self._pgr_2 = []
+
+        self._chr_1 = []
+        self._chr_2 = []
+
+        # Guarda si la ROM ha cargado correctamente
+        self._load_ok = False
+        ###########################################################################
+        ###########################################################################
+
         self.load_file(file_name)
+
 
     def load_file(self, file_name):
         f = open(file_name, 'r')
@@ -50,15 +74,18 @@ class ROM(object):
             self._load_ok = False
             print "Formato de fichero incorrecto"
 
+
     # Devuelve si la ROM ha cargado correctamente
     def get_load_ok(self):
         return self._load_ok
+
 
     def get_control_1_trainer_bit_2(self):
         return (self._rom_control_1 & 0x04) >> 2
 
     def get_pgr(self):
         return self._pgr_1 + self._pgr_2
+
 
     def read_pgr_data(self, addr):
         a = addr & 0xFFFF
@@ -71,23 +98,4 @@ class ROM(object):
         return d
 
 
-    ###########################################################################
-    # Miembros privados
-    ###########################################################################
-    _rom = None            # Los bytes de la ROM en forma de lista
 
-    _pgr_rom_banks = 0
-    _chr_rom_banks = 0
-    _rom_control_1 = 0x00
-    _rom_control_2 = 0x00
-    _ram_banks = 0
-    _reserved = 0
-
-    _pgr_1 = []
-    _pgr_2 = []
-
-    _chr_1 = []
-    _chr_2 = []
-
-    # Guarda si la ROM ha cargado correctamente
-    _load_ok = False

@@ -6,19 +6,31 @@ import time
 class GFX(object):
 
     def __init__(self):
+        ###########################################################################
+        # Variables de instancia
+        ###########################################################################
+        self._screen = None
+        self._pixels = None
+        ###########################################################################
+        ###########################################################################
+
         pygame.display.init()
         self._screen = pygame.display.set_mode((256, 240))
         self._screen.fill((0,0,0))
         self._pixels = pygame.PixelArray(self._screen)
 
+
     def draw_pixel(self, x, y, color=(0, 0, 0)):
         self._pixels[x][y] = self._screen.map_rgb(color)
+
 
     def fill(self, color=(0, 0, 0)):
         self._screen.fill(color)
 
+
     def update(self):
         self._screen.update()
+
 
     def run(self):
         while 1:
@@ -37,9 +49,6 @@ class GFX(object):
             pygame.display.update()
             time.sleep(0.04)
 
-
-    _screen = None
-    _pixels = None
 
 
 #gfx = GFX()

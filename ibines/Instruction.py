@@ -3,6 +3,9 @@
 class Instruction(object):
 
     def __init__(self, operand, cpu):
+        #######################################################################
+        # Variables de instancia
+        #######################################################################
         self._operand = operand
         self._cpu = cpu
 
@@ -67,12 +70,9 @@ class Instruction(object):
 
         return (addr, data)
 
-
     ###########################################################################
-    # Variables privadas
+    # Variables de clase
     ###########################################################################
-    _operand = None
-    _cpu = None
     _OPCODE = None
     _BYTES = None
     _CYCLES = None

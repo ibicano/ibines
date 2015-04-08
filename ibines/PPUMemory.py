@@ -3,7 +3,32 @@
 class PPUMemory(object):
 
     def __init__(self, ppu):
+        #######################################################################
+        # Variables de instancia
+        #######################################################################
+        self._pattern_table_0 = []
+        self._pattern_table_1 = []
+
+        self._name_table_0 = []
+        self._attr_table_0 = []
+
+        self._name_table_1 = []
+        self._attr_table_1 = []
+
+        self._image_palette = []
+        self._sprite_palette = []
+
+        # Array que almacena el contenido de la memoria de sprites
+        self._sprite_ram = []
+
+        # Referencia a la PPU
         self._ppu = ppu
+
+        # TODO: completar inicialización del modo mirror
+        self._mirror_mode = 0x0        # Modo de mirror de los "name tables" (sacado de la ROM). 0: horizontal, 1: vertical
+        #######################################################################
+        #######################################################################
+
 
     #Lee un dato de la memoria de la PPU:
     def read_data(self, addr):
@@ -167,26 +192,3 @@ class PPUMemory(object):
         return pattern
 
 
-    ############################################################################
-    # Miembros privados
-    ############################################################################
-    _pattern_table_0 = []
-    _pattern_table_1 = []
-
-    _name_table_0 = []
-    _attr_table_0 = []
-
-    _name_table_1 = []
-    _attr_table_1 = []
-
-    _image_palette = []
-    _sprite_palette = []
-
-    # Array que almacena el contenido de la memoria de sprites
-    _sprite_ram = []
-
-    # Referencia a la PPU
-    _ppu = None
-
-    # TODO: completar inicialización del modo mirror
-    _mirror_mode = 0x0        # Modo de mirror de los "name tables" (sacado de la ROM). 0: horizontal, 1: vertical

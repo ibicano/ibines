@@ -9,8 +9,31 @@ from GFX import GFX
 class PPU(object):
 
     def __init__(self):
+        #######################################################################
+        # Variables de instancia
+        #######################################################################
+        # Memoria de la PPU
         self._memoria = PPUMemory(self)
+
+        # Motor gráfico del emulador
         self._gfx = GFX()
+
+        # Registros
+        self._reg_control_1 = 0x00            # Dirección 0x2000 - write
+        self._reg_control_2 = 0x00            # Dirección 0x2001 - write
+        self._reg_status = 0x00               # Dirección 0x2002 - read
+        self._reg_spr_addr = 0x00             # Dirección 0x2003 - write
+        self._reg_spr_io = 0x00               # Dirección 0x2004 - write
+        self._reg_vram_tmp = 0x00             # Dirección 0x2005 y 0x2006 - write (16-bit)
+        self._reg_vram_addr = 0x00            # Dirección 0x2006 - write (16-bit)
+        self._reg_vram_io = 0x00              # Dirección 0x2007 - read/write
+        self._reg_sprite_dma = 0x00           # Dirección 0x4014 - write
+
+        self._reg_x_offset = 0x0             # Scroll patrón (3-bit)
+
+        self._reg_vram_switch = 0            # Indica si estamos en la 1ª(0) o 2ª(1) escritura de los registros vram
+        #######################################################################
+        #######################################################################
 
     # Lee el registro indicado por su dirección en memoria
     def read_reg(self, data, addr):
@@ -34,9 +57,9 @@ class PPU(object):
         elif addr == 0x2004:
             self.write_reg_spr_io(data)
         elif addr == 0x2005:
-            self.write_reg_vram_addr_1(data)
+            self.write_reg_vram_tmp(data)
         elif addr == 0x2006:
-            self.write_reg_vram_addr_2(data)
+            self.write_reg_vram_addr(data)
         elif addr == 0x2007:
             self.write_reg_vram_io(data)
 
@@ -54,15 +77,15 @@ class PPU(object):
         self._reg_spr_io = d
         self._memoria.write_sprite_data(d, self._reg_spr_addr)
 
-    def write_reg_vram_addr_1(self, data):
-        self._reg_vram_addr_1 = data & 0xFF
+    def write_reg_vram_tmp(self, data):
+        self._reg_vram_tmp = data & 0xFF
 
-    def write_reg_vram_addr_2(self, data):
-        self._reg_vram_addr_2 = data & 0xFF
+    def write_reg_vram_addr(self, data):
+        self._reg_vram_addr = data & 0xFF
 
     def write_reg_vram_io(self, data):
         d = data & 0xFF
-        a = self._reg_vram_addr_1
+        a = self._reg_vram_tmp
         self._reg_vram_io = d
         self._memoria.write_data(d, a)
 
@@ -172,31 +195,9 @@ class PPU(object):
         p2 = pattern[8:16]
 
 
-
-
-    ############################################################################
-    # Miembros privados
-    ############################################################################
-    # Registros
-    _reg_control_1 = 0x00            # Dirección 0x2000 - write
-    _reg_control_2 = 0x00            # Dirección 0x2001 - write
-    _reg_status = 0x00               # Dirección 0x2002 - read
-    _reg_spr_addr = 0x00             # Dirección 0x2003 - write
-    _reg_spr_io = 0x00               # Dirección 0x2004 - write
-    _reg_vram_addr_1 = 0x00          # Dirección 0x2005 - write (16-bit)
-    _reg_vram_addr_2 = 0x00          # Dirección 0x2006 - write (16-bit)
-    _reg_vram_io = 0x00              # Dirección 0x2007 - read/write
-    _reg_sprite_dma = 0x00           # Dirección 0x4014 - write
-
-    _reg_x_offset = 0x0             # Scroll patrón (3-bit)
-
-    # Memoria
-    _memoria = None
-
-    # Referencia al motor gráfico
-    _gfx = None
-
-    # TODO: completar la tabla de la paleta
+    #######################################################################
+    # Variables de clase
+    #######################################################################
     # Paleta de colores:
     _COLOUR_PALETTE = [(0x75, 0x75, 0x75),    #0x00
                        (0x27, 0x1B, 0x8F),    #0x01

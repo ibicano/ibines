@@ -5,8 +5,17 @@ class Memory(object):
 
     # Constructor
     def __init__(self, ppu, rom):
+        #######################################################################
+        # Variables de instancia
+        #######################################################################
+
+        # Array para almacenar el contenido de la memoria
+        self._memory = []
         self._ppu = ppu
         self._rom = rom
+        #######################################################################
+        #######################################################################
+
 
     # TODO: acabar esta función
     # Devuelve el contenido de una posición de memoria
@@ -46,16 +55,3 @@ class Memory(object):
         elif a >= 0x4000 and a <= 0x401F: # Más registros I/O
             if a == 0x4014:
                 self._ppu.write_sprite_dma(self, d)
-
-    ###########################################################################
-    # Variables privadas
-    ###########################################################################
-
-    # Array para almacenar el contenido de la memoria
-    _memory = []
-
-    # Referencia a la PPU
-    _ppu = None
-
-    # Referencia a la ROM del juego
-    _rom = None

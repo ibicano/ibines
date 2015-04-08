@@ -12,19 +12,12 @@ from Instruction import *
 class NES(object):
 
     def __init__(self, file_name):
+        #######################################################################
+        # Variables de instancia
+        #######################################################################
         self._rom = ROM(file_name)
         self._ppu = PPU()
         self._memory = Memory(self._ppu, self._rom)
         self._cpu = CPU()
-
-
-    ###########################################################################
-    # Variables privadas
-    ###########################################################################
-
-    _rom = None
-    _ppu = None
-    # Referencia al sistema de memoria
-    _memory = None
-    # Referencia a la CPU
-    _cpu = None
+        #######################################################################
+        #######################################################################
