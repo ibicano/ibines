@@ -8,9 +8,8 @@ from GFX import GFX
 ################################################################################
 class PPU(object):
 
-    def __init__(self, cpu):
+    def __init__(self):
         self._memoria = PPUMemory(self)
-        self._cpu = cpu
         self._gfx = GFX()
 
     # Lee el registro indicado por su dirección en memoria
@@ -40,8 +39,6 @@ class PPU(object):
             self.write_reg_vram_addr_2(data)
         elif addr == 0x2007:
             self.write_reg_vram_io(data)
-        elif addr == 0x4014:
-            self.write_reg_sprite_dma(data)
 
     def write_reg_control_1(self, data):
         self._reg_control_1 = data & 0xFF
@@ -70,13 +67,13 @@ class PPU(object):
         self._memoria.write_data(d, a)
 
     # Escribe el registro y hace una transferencia dma
-    def write_sprite_dma(self, data):
-        self._reg_sprite_dma = data
+    def write_sprite_dma(self, cpu_mem, src_addr):
+        self._reg_sprite_dma = src_addr
 
-        a = (data & 0xFF) * 0x0100
+        a = (src_addr & 0xFF) * 0x0100
         n = 0
         while n < 256:
-            d = self._cpu.get_mem().read_data(a)
+            d = cpu_mem.read_data(a)
             self._memoria.write_sprite_data(d, n)
             a += 1
             n += 1
@@ -195,9 +192,6 @@ class PPU(object):
 
     # Memoria
     _memoria = None
-
-    # Referencia a la CPU
-    _cpu = None
 
     # Referencia al motor gráfico
     _gfx = None

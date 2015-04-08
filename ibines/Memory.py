@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
-
+# MEMORIA DE LA CPU
 class Memory(object):
 
     # Constructor
-    def __init__(self, ppu):
+    def __init__(self, ppu, rom):
         self._ppu = ppu
+        self._rom = rom
 
     # TODO: acabar esta función
     # Devuelve el contenido de una posición de memoria
@@ -13,11 +14,13 @@ class Memory(object):
         a = addr & 0xFFFF
 
         d = 0x00
-        if a >= 0x000 and a <= 0x1FFF:
+        if a >= 0x0000 and a <= 0x1FFF:
             d = self._memory[a]
         elif a >= 0x2000 and a <= 0x3FFF:     # Direcciones de los registros PPU
             n = 0x2000 + (a % 0x08)
             d = self._ppu.read_reg(n)
+        elif a >= 0x8000 and a <= 0xFFFF:    # Lee la ROM
+            d = self._rom.read_pgr_data(a % 0x8000)
 
         return d
 
@@ -31,7 +34,7 @@ class Memory(object):
         a = addr & 0xFFFF
         d = data & 0xFF
 
-        if a >= 0x000 and a <= 0x1FFF:
+        if a >= 0x0000 and a <= 0x1FFF:
             n = 0x2000 + (a % 0x800)
             self._memory[n] = d
             self._memory[0x0800 + n] = d
@@ -42,7 +45,7 @@ class Memory(object):
             self._ppu.write_reg(d, n)
         elif a >= 0x4000 and a <= 0x401F: # Más registros I/O
             if a == 0x4014:
-                self._ppu.write_reg(d, n)
+                self._ppu.write_sprite_dma(self, d)
 
     ###########################################################################
     # Variables privadas
@@ -53,3 +56,6 @@ class Memory(object):
 
     # Referencia a la PPU
     _ppu = None
+
+    # Referencia a la ROM del juego
+    _rom = None

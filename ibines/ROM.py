@@ -45,12 +45,30 @@ class ROM(object):
                 self._chr_2 = self._rom[i:i + 8192]
                 i += 8192
 
+            self._load_ok = True
         else:
+            self._load_ok = False
             print "Formato de fichero incorrecto"
 
+    # Devuelve si la ROM ha cargado correctamente
+    def get_load_ok(self):
+        return self._load_ok
 
     def get_control_1_trainer_bit_2(self):
         return (self._rom_control_1 & 0x04) >> 2
+
+    def get_pgr(self):
+        return self._pgr_1 + self._pgr_2
+
+    def read_pgr_data(self, addr):
+        a = addr & 0xFFFF
+        d = 0
+        if a >= 0x0000 and a <= 0x3FFF:
+            d = self._pgr_1[a]
+        elif a >= 0x4000:
+            d = self._pgr_2[a]
+
+        return d
 
 
     ###########################################################################
@@ -65,8 +83,11 @@ class ROM(object):
     _ram_banks = 0
     _reserved = 0
 
-    _pgr_1 = None
-    _pgr_2 = None
+    _pgr_1 = []
+    _pgr_2 = []
 
-    _chr_1 = None
-    _chr_2 = None
+    _chr_1 = []
+    _chr_2 = []
+
+    # Guarda si la ROM ha cargado correctamente
+    _load_ok = False

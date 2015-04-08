@@ -179,7 +179,7 @@ class CPU(object):
     ###########################################################################
 
     # Registros
-    _reg_pc = 0x0000        # Program Counter (16-bit)
+    _reg_pc = 0x8000        # Program Counter (16-bit)
     _reg_sp = 0xFF          # Stack Pointer (8-bit)
     _reg_a = 0x00           # Accumulator (8-bit)
     _reg_x = 0x00           # Index X (8-bit)
