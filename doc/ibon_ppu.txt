@@ -14,4 +14,19 @@ permite implementar el scroll (ya que puede modificarse por el programa).
 
 - Mirar los documentos de SKINNY y NINTECH para ver cómo afectan las
 escrituras al $2005 y $2006 a los registros de la PPU, incluído
-el de scroll
+el de scroll.
+
+- Respecto al punto anterior el scroll se controla escribiendo
+al $2005 dos veces. En el primer byte escrito los 3 bits menos
+significativos estalecen el desplazamiento X (horizontal) en pixels 
+del patrón (8 pixels max) y los 5 más significativos el desplazamiento 
+X en patrones. En la segunda escritura los 3 bits menos significativos
+especifican el desplazamiento Y (vertical) en pixels del patrón 
+(8 pixels max) y los 5 más significativos el desplazamiento Y en
+patrones.
+
+- Escribir al $2006 modifica el registro "address" (escribiendo
+primero en el temp).
+
+- Según se dibuja la pantalla se utiliza la info del registro "address"
+y se va incrementando éste.

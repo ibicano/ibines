@@ -2,6 +2,7 @@
 
 from PPUMemory import PPUMemory
 from GFX import GFX
+import nesutils
 
 ################################################################################
 # Clase que implementa la PPU 2C02
@@ -40,11 +41,16 @@ class PPU(object):
         d = 0x00
 
         if addr == 0x2002:
-            d = self.get_reg_status()
+            d = self.read_reg_2002()
         elif addr == 0x2007:
             d = self.get_vram_io()
 
         return d
+
+    # Según el documento SKINNY.TXT
+    def read_reg_2002(self):
+        self._reg_vram_switch = 0
+        return self.get_reg_status()
 
     # Escribe el registro indicado por su dirección en memoria
     def write_reg(self, data, addr):
@@ -63,8 +69,15 @@ class PPU(object):
         elif addr == 0x2007:
             self.write_reg_vram_io(data)
 
-    def write_reg_control_1(self, data):
-        self._reg_control_1 = data & 0xFF
+
+    # Según el documento SKINNY.TXT
+    def write_reg_2000(self, data):
+        d = data & 0xFF
+        self._reg_control_1 = d
+
+        # Transfiere el valor de los bits 0-1 a los bits 10-11 del registro vram_tmp
+        self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 10, d & 0x01)
+        self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 11, d & 0x02)
 
     def write_reg_control_2(self, data):
         self._reg_control_2 = data & 0xFF
@@ -77,11 +90,68 @@ class PPU(object):
         self._reg_spr_io = d
         self._memoria.write_sprite_data(d, self._reg_spr_addr)
 
-    def write_reg_vram_tmp(self, data):
-        self._reg_vram_tmp = data & 0xFF
 
-    def write_reg_vram_addr(self, data):
-        self._reg_vram_addr = data & 0xFF
+    # Según el documento SKINNY.TXT
+    def write_reg_2005(self, data):
+        d = data & 0xFF
+
+        # Primera escritura en $2005
+        if self.reg_vram_switch == 0:
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 0, d & 0x08)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 1, d & 0x10)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 2, d & 0x20)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 3, d & 0x40)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 4, d & 0x80)
+
+            self._reg_x_offset = d & 0x07
+            self._reg_vram_switch = 1
+        # Segunda escritura en $2005
+        else:
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 5, d & 0x08)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 6, d & 0x10)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 7, d & 0x20)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 8, d & 0x40)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 9, d & 0x80)
+
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 12, d & 0x01)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 13, d & 0x02)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 14, d & 0x04)
+
+            self._reg_vram_switch = 0
+
+
+    # Según el documento SKINNY.TXT
+    def write_reg_2006(self, data):
+        d = data & 0xFF
+
+        # Primera escritura en $2006
+        if self.reg_vram_switch == 0:
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 8, d & 0x01)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 9, d & 0x02)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 10, d & 0x04)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 11, d & 0x08)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 12, d & 0x10)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 13, d & 0x20)
+
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 14, 0)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 15, 0)
+
+            self._reg_vram_switch = 1
+        # Segunda escritura en $2006
+        else:
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 0, d & 0x01)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 1, d & 0x02)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 2, d & 0x04)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 3, d & 0x08)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 4, d & 0x10)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 5, d & 0x20)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 6, d & 0x40)
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 7, d & 0x80)
+
+            self._reg_vram_addr = self.reg_vram_tmp
+
+            self._reg_vram_switch = 0
+
 
     def write_reg_vram_io(self, data):
         d = data & 0xFF
