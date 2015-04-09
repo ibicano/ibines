@@ -2,6 +2,11 @@
 
 import nesutils
 
+"""
+CPU
+
+Descripción: Implementa la CPU del sistema
+"""
 class CPU(object):
 
     ###########################################################################

@@ -3,6 +3,12 @@
 import pygame
 import time
 
+"""
+GFX
+
+Implementa el motor gráfico para pintar la salida a pantalla. La
+implementación inicial utiliza SDL a través de PyGame.
+"""
 class GFX(object):
 
     def __init__(self):

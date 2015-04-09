@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+"""
+Instruction
+
+Implementa la clase base para todas las instrucciones.
+"""
 class Instruction(object):
 
     def __init__(self, operand, cpu):

@@ -4,9 +4,11 @@ from PPUMemory import PPUMemory
 from GFX import GFX
 import nesutils
 
-################################################################################
-# Clase que implementa la PPU 2C02
-################################################################################
+"""
+PPU
+
+Descripción: Implementa el procesador gráfico de la NES
+"""
 class PPU(object):
 
     def __init__(self):
@@ -230,39 +232,84 @@ class PPU(object):
         return r
 
 
+    # Lanza una interrupción VBLANK
+    # TODO: completar función
+    def set_vblank(self):
+        pass
+
+
     # TODO: paracticamente todo
     # FUNCIONES DE DIBUJADO
+    def draw_frame(self):
+        for y in range(240):
+            self._reg_vram_addr = self._reg_vram_tmp
+            self.draw_scanline(y)
+            self._gfx.update()
+            self.set_vblank()
 
-    # Función que pinta la pantalla
-    def draw_background(self):
-        # Calcula el name table que se usará
-        nt = self.control_1_name_table_bits_0_1()
-        if nt == 0x0:
-            nt_addr = 0x2000
-        elif nt == 0x1:
-            nt_addr = 0x2400
-        if nt == 0x2:
-            nt_addr = 0x2800
-        if nt == 0x3:
-            nt_addr = 0x2C00
 
-        #Calcula el pattern table que se usará
-        pt = self.control_1_background_pattern_bit_4()
+    def draw_scanline(self, y):
+        # Copia el desplzamiento X del registro tmp al addr al principio del scanline
+        tmp = self._reg_vram_tmp
 
-        # Va pintando los patrones del fondo en la pantalla
-        for x in range(32):
-            for y in range(30):
-                pattern_number = self._memoria.read_data(nt_addr)
-                pattern = self._memoria.read_pattern(pt, pattern_number)
-                self._draw_pattern(pattern, x, y)
-                nt_addr += 1
+        self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 0, tmp & 0x0001)
+        self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 1, tmp & 0x0002)
+        self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 2, tmp & 0x0004)
+        self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 3, tmp & 0x0008)
+        self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 4, tmp & 0x0010)
 
-    # TODO: MUCHO CURRO POR DELANTE
-    # Dibuja el pattern almacenado en la lista en la posición
-    # (x, y) de la pantalla
-    def _draw_pattern(pattern, x, y):
-        p1 = pattern[0:8]
-        p2 = pattern[8:16]
+        self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 10, tmp & 0x0400)
+
+        for x in range(256):
+            self.draw_pixel(x, y)
+
+
+    # TODO: implementar la función "get_pattern_rgb()" al que se le proporciona el
+    # número de patrón y devuelve un matrix 8x8 con los colores de cada pixel
+    # ya calculados como una tupla (R,G,B)
+    def draw_pixel(self, x, y):
+        pattern_pixel_x = x % 8
+        pattern_pixel_y = y % 8
+
+        pattern_index = self._memory.read_data(self._reg_vram_addr)
+        pattern_rgb = self.get_pattern_rgb(pattern_index)
+        self.gfx.draw_pixel(x, y, pattern_rgb(pattern_pixel_x, pattern_pixel_y))
+
+
+    # Lee de la memoria de patrones un patrón especificado por su índice y lo
+    # devuelve como una lista 8x8 en la que cada posición es una tupla
+    # (R,G,B) con el color calculado de cada pixel
+    # TODO: adaptar la paleta a si se está trabajando en fondo o sprites
+    def get_pattern_rgb(self, pattern_table=0, pattern_index, attr_color=0, palette_addr=0x3F00):
+        if pattern_table == 0:
+            addr = 0x0000
+        else:
+            addr = 0x1000
+
+        addr = addr + pattern_index * 16
+
+        # Lee los bytes del patrón de memoria y lo guarda en una lista
+        pattern = []
+        for a in range(addr, addr+16):
+            pattern.append(self._memory.read_data(a))
+
+        pattern_rgb=[]
+        # Procesa los bytes del patrón para formatearlos en el valor de retorno
+        for y in range(8):
+            byte_1 = pattern[i]
+            byte_2 = pattern[i+8]
+
+            for x in range(8):
+                # Calcula la dirección del color en la paleta de memoria y lo extrae de la tabla de colores
+                addr_color = palette_addr + (0x00 | ((byte_1 & (0x01 << x)) >> x) | (((byte_2 & (0x01 << x)) >> x) << 1) | ((attr_color & 0x03) << 2))
+                color_index = self._memory.read_data(addr_color)
+                rgb = self._COLOUR_PALETTE(color_index)
+
+                # FIX: puede que esté al revés el patrón. Veremos como aparece Mario.
+                # Asigna el valor RGB a la posición correspondiente:
+                pattern_rgb[x][y] = rgb
+
+        return pattern_rgb
 
 
     #######################################################################

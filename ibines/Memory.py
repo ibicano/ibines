@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
-# MEMORIA DE LA CPU
+"""
+Memory
+
+Descripción: Implementa la Memoria del sistema
+"""
 class Memory(object):
 
     # Constructor

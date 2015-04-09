@@ -28,5 +28,11 @@ patrones.
 - Escribir al $2006 modifica el registro "address" (escribiendo
 primero en el temp).
 
-- Según se dibuja la pantalla se utiliza la info del registro "address"
-y se va incrementando éste.
+- Según se dibuja la pantalla se utiliza la el registro "address"
+y se va incrementando éste. Cuando se llega al final de la línea
+(32 patrones) se copia en el registro address bits 0-4 (desplazamiento 
+de patrón horizontal establecido por el usuario) y el bit 10 para
+resetear los valores al comienzo de la nueva línea (los bits
+5-9 y 11 no se tocan porque representan el desplazamiento vertical
+y no se resetean hasta llegar al final del frame, que es cuando
+al registro address se le asigna el valor del temporal completo).

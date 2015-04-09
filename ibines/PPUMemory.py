@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+"""
+PPUMemory
+
+Descripción: Implementa la Memoria del procesador gráfico
+"""
 class PPUMemory(object):
 
     def __init__(self, ppu):
