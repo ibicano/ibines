@@ -23,9 +23,6 @@ class PPUMemory(object):
         self._image_palette = []
         self._sprite_palette = []
 
-        # Array que almacena el contenido de la memoria de sprites
-        self._sprite_ram = []
-
         # Referencia a la PPU
         self._ppu = ppu
 
@@ -166,18 +163,6 @@ class PPUMemory(object):
         # Mirrors generales:
         elif a >= 0x4000 and a <= 0xFFFF:
             self.write_data(d, a % 0x4000)
-
-    # Lee la memoria de sprites
-    def read_sprite_data(self, addr):
-        a = addr & 0xFF
-        return self._sprite_ram[a]
-
-    # Escribe la memoria de sprites
-    def write_sprite_data(self, data, addr):
-        d = data & 0xFF
-        a = addr & 0xFF
-
-        self._sprite_ram[a] = d
 
 
     # Funciones de ayuda

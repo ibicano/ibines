@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from PPUMemory import PPUMemory
-from GFX import GFX
 import nesutils
+from PPUMemory import PPUMemory
+from SpriteMemory import SpriteMemory
+from GFX import GFX
 
 """
 PPU
@@ -17,6 +18,7 @@ class PPU(object):
         #######################################################################
         # Memoria de la PPU
         self._memoria = PPUMemory(self)
+        self._sprite_memory = SpriteMemory()
 
         # Motor gráfico del emulador
         self._gfx = GFX()
@@ -169,7 +171,7 @@ class PPU(object):
         n = 0
         while n < 256:
             d = cpu_mem.read_data(a)
-            self._memoria.write_sprite_data(d, n)
+            self._sprite_memory.write_data(d, n)
             a += 1
             n += 1
 
@@ -231,6 +233,24 @@ class PPU(object):
         r = (self._reg_control_2 & 0xE0) >> 5
         return r
 
+    # Devuelve la dirección de la Name Table activa en los bits 0-1 del registro de control 1
+    def active_name_table_addr(self):
+        nt = self.control_1_name_table_bits_0_1()
+
+        addr = None
+
+        if nt == 0x0:
+            addr = 0x2000
+        elif nt == 0x1:
+            addr = 0x2400
+        elif nt == 0x2:
+            addr = 0x2800
+        elif nt == 0x3:
+            addr = 0x2C00
+
+        return addr
+
+
 
     # Lanza una interrupción VBLANK
     # TODO: completar función
@@ -249,7 +269,7 @@ class PPU(object):
 
 
     def draw_scanline(self, y):
-        # Copia el desplzamiento X del registro tmp al addr al principio del scanline
+        # Copia el desplazamiento X del registro tmp al addr al principio del scanline
         tmp = self._reg_vram_tmp
 
         self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 0, tmp & 0x0001)
@@ -268,36 +288,64 @@ class PPU(object):
     # número de patrón y devuelve un matrix 8x8 con los colores de cada pixel
     # ya calculados como una tupla (R,G,B)
     def draw_pixel(self, x, y):
+        #sprites_pt = self.control_1_sprites_pattern_bit_3()
+        #background_pt = self.control_1_background_pattern_bit_4()
+        #sprite_size = self.control_1_sprites_size_bit_5()
+
+        # Dibuja el fondo
         pattern_pixel_x = x % 8
         pattern_pixel_y = y % 8
 
         pattern_index = self._memory.read_data(self._reg_vram_addr)
         pattern_rgb = self.get_pattern_rgb(pattern_index)
-        self.gfx.draw_pixel(x, y, pattern_rgb(pattern_pixel_x, pattern_pixel_y))
+        self.gfx.draw_pixel(x, y, pattern_rgb[pattern_pixel_x][pattern_pixel_y])
+
+        # Dibuja los sprites
+        sprites_list = self.get_sprites_list()
+        for s in sprites_list:
+            if y >= s.get_offset_y()  and y <=(s.get_offset_y() + 8):
+                self.draw_sprite_pixel(s, x, y)
+
+
+    def draw_sprite_pixel(self, sprite, x, y):
+        off_x = sprite.get_offset_x()
+        off_y = sprite.get_offset_y()
+
+        if x >= off_x and x > off_x+8:
+            if y >= off_y and y < off_y+8:
+                sprite_x = x - off_x
+                sprite_y = y - off_y
+
+                pt = self.control_1_sprites_pattern_bit_3()
+                pattern_rgb = self.get_pattern_rgb(pt, sprite.get_index(), sprite.get_attr_color(), 0x3F10)
+
+                self._gfx.draw_pixel(x, y, pattern_rgb[sprite_x][sprite_y])
+
+    # Devuelve una lista de objetos de clase Sprite con los sprites de la memoria de sprites
+    # FIX: Esto habría que reorganizarlo para que quede más claro
+    def get_sprites_list(self):
+        sprites_list = []
+        for addr in range(0x00,0xFF,0x04):
+            sprite = Sprite()
+            sprite.load_by_addr(self.sprite_memory, addr)
+            sprites_list.appen(sprite)
+
+        return sprites_list
+
 
 
     # Lee de la memoria de patrones un patrón especificado por su índice y lo
     # devuelve como una lista 8x8 en la que cada posición es una tupla
     # (R,G,B) con el color calculado de cada pixel
     # TODO: adaptar la paleta a si se está trabajando en fondo o sprites
-    def get_pattern_rgb(self, pattern_table=0, pattern_index, attr_color=0, palette_addr=0x3F00):
-        if pattern_table == 0:
-            addr = 0x0000
-        else:
-            addr = 0x1000
-
-        addr = addr + pattern_index * 16
-
-        # Lee los bytes del patrón de memoria y lo guarda en una lista
-        pattern = []
-        for a in range(addr, addr+16):
-            pattern.append(self._memory.read_data(a))
+    def get_pattern_rgb(self, pattern_table, pattern_index, attr_color, palette_addr):
+        pattern = self._get_pattern_mem(pattern_table, pattern_index)
 
         pattern_rgb=[]
         # Procesa los bytes del patrón para formatearlos en el valor de retorno
         for y in range(8):
-            byte_1 = pattern[i]
-            byte_2 = pattern[i+8]
+            byte_1 = pattern[y]
+            byte_2 = pattern[y+8]
 
             for x in range(8):
                 # Calcula la dirección del color en la paleta de memoria y lo extrae de la tabla de colores
@@ -310,6 +358,22 @@ class PPU(object):
                 pattern_rgb[x][y] = rgb
 
         return pattern_rgb
+
+
+    def get_pattern_mem(self, pattern_table, pattern_index):
+        if pattern_table == 0:
+            addr = 0x0000
+        else:
+            addr = 0x1000
+
+        addr = addr + pattern_index * 16
+
+        # Lee los bytes del patrón de memoria y lo guarda en una lista
+        pattern = []
+        for a in range(addr, addr+16):
+            pattern.append(self._memory.read_data(a))
+
+        return pattern
 
 
     #######################################################################
@@ -380,3 +444,57 @@ class PPU(object):
                        (0x00, 0x00, 0x00),    #0x3D
                        (0x00, 0x00, 0x00),    #0x3E
                        (0x00, 0x00, 0x00)]    #0x3F
+
+
+
+# Clase que implmenta la info de un sprite de la ram de sprites
+class Sprite(object):
+
+    def __init__(self):
+        #######################################################################
+        # Variables de instancia
+        #######################################################################
+        self._offset_y = 0x00
+        self._index = 0x00
+        self._attributes = 0x00
+        self._offset_x = 0x00
+        #######################################################################
+
+
+    def load_by_addr(self, sprite_memory, sprite_addr):
+        self._offset_y = sprite_memory.read_data(sprite_addr)
+        self._index = sprite_memory.read_data(sprite_addr)
+        self._attributes = sprite_memory.read_data(sprite_addr)
+        self._offset_x = sprite_memory.read_data(sprite_addr)
+
+
+    def load_by_number(self, sprite_memory, sprite_number):
+        sprite_addr = sprite_number * 4
+        self.load_by_addr(sprite_memory, sprite_addr)
+
+
+    def get_offset_x(self):
+        return self._offset_x
+
+
+    def get_offset_y(self):
+        return self._offset_x
+
+
+    def get_index(self):
+        return self._index
+
+
+    # Devuelve atributos:
+    def get_attr_color(self):
+        return self._attributes & 0x03
+
+    def get_priority(self):
+        return (self._attributes & 0x20) >> 5
+
+    def get_horizontal_flip(self):
+        return (self._attributes & 0x40) >> 6
+
+    def get_vertical_flip(self):
+        return (self._attributes & 0x40) >> 7
+
