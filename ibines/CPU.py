@@ -21,17 +21,22 @@ class CPU(object):
     REG_P_BIT_V = 6
     REG_P_BIT_S = 7
 
+    # Frecuencia de la CPU en Hz
+    CPU_FREQ = 1660000
+
     ###########################################################################
     # Métodos públicos
     ###########################################################################
 
     # Constructor
-    def __init__(self, mem):
+    def __init__(self, mem, ppu):
         #######################################################################
         # Variables de instancia
         #######################################################################
         # Memoria del sistema
-        self.__mem = mem
+        self._mem = mem
+
+        self._ppu = ppu
 
         # Registros
         self._reg_pc = 0x8000        # Program Counter (16-bit)
@@ -40,16 +45,36 @@ class CPU(object):
         self._reg_x = 0x00           # Index X (8-bit)
         self._reg_y = 0x00           # Index Y (8-bit)
         self._reg_p = 0x00           # Processor Status (8-bit)
+
+        # Contadores de ciclos
+        self._cpu_cycles = 0
         #######################################################################
         #######################################################################
 
     # TODO: Terminar esta función
-    # Bucle principal de ejecusión de la CPU
+    # Bucle principal de ejecución de la CPU
     def run(self):
         while True:
-            self.incr_pc()
+            loop_cycles = 0
             inst = self.fetch_inst()
             inst.execute()
+            self.incr_pc()
+
+            # Incrementa el número de ciclos de la CPU
+            loop_cycles += inst.get_cycles()
+
+            # Añade los ciclos invertidos en el ciclo a los ciclos de CPU totales
+            self._cpu_cycles += loop_cycles
+
+            self._ppu.set_cpu_cycles(self._cpu_cycles) # Actualiza el nº de ciclos en la PPU
+
+            #Ejecuta las interrupciones y tareas cíclicas
+
+            if self._ppu.is_vblank():
+                pass
+
+            # Espera el tiempo necesario para simular la velocidad de la NES
+
 
     # Devuelve una referencia a la memoria
     def get_mem(self):

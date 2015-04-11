@@ -11,6 +11,15 @@ PPU
 Descripción: Implementa el procesador gráfico de la NES
 """
 class PPU(object):
+    ###########################################################################
+    # Constantes
+    ###########################################################################
+    FRAME_CYCLES = 33246
+    SCANLINE_CYCLES = 106
+    VBLANK_CYCLES = 7459
+    FRAME_SCANLINES = 312
+    VBLANK_SCANLINES = 70
+    FRAME_PERIOD = 0.020        # Periodo de frame en milisegundos
 
     def __init__(self):
         #######################################################################
@@ -22,6 +31,13 @@ class PPU(object):
 
         # Motor gráfico del emulador
         self._gfx = GFX()
+
+        # Ciclos de CPU ejecutados (para sincronización)
+        self._cpu_cycles = 0
+
+        # Ciclo en el que se entró en la última vblank
+        self._vblank_cycle = self.VBLANK_CYCLES         # Retrasamos la VBLANK en el primer ciclo
+
 
         # Registros
         self._reg_control_1 = 0x00            # Dirección 0x2000 - write
@@ -39,6 +55,13 @@ class PPU(object):
         self._reg_vram_switch = 0            # Indica si estamos en la 1ª(0) o 2ª(1) escritura de los registros vram
         #######################################################################
         #######################################################################
+
+    # TODO: terminar esto y la activación del bit VBLANK
+    def set_cpu_cycles(self, cpu_cycles):
+        self._cpu_cycles = cpu_cycles
+        if (self._cpu_cycles - self._vblank_cycle) > self.FRAME_CYCLES:
+            self.set_status_bit_7_vblank(1)
+            self._vblank_cycle = cpu_cycles
 
     # Lee el registro indicado por su dirección en memoria
     def read_reg(self, data, addr):
