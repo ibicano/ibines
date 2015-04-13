@@ -47,34 +47,13 @@ class CPU(object):
         self._reg_p = 0x00           # Processor Status (8-bit)
 
         # Contadores de ciclos
-        self._cpu_cycles = 0
+        self._cycles_inst = 0
         #######################################################################
         #######################################################################
 
-    # TODO: Terminar esta función
-    # Bucle principal de ejecución de la CPU
-    def run(self):
-        while True:
-            loop_cycles = 0
-            inst = self.fetch_inst()
-            inst.execute()
-            self.incr_pc()
-
-            # Incrementa el número de ciclos de la CPU
-            loop_cycles += inst.get_cycles()
-
-            # Añade los ciclos invertidos en el ciclo a los ciclos de CPU totales
-            self._cpu_cycles += loop_cycles
-
-            self._ppu.set_cpu_cycles(self._cpu_cycles) # Actualiza el nº de ciclos en la PPU
-
-            #Ejecuta las interrupciones y tareas cíclicas
-
-            if self._ppu.is_vblank():
-                pass
-
-            # Espera el tiempo necesario para simular la velocidad de la NES
-
+    # Ejecuta un ciclo de reloj
+    def exec_cycle(self):
+        self._cycles_inst -= 1
 
     # Devuelve una referencia a la memoria
     def get_mem(self):

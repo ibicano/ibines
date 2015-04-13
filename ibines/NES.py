@@ -23,10 +23,20 @@ class NES(object):
         #######################################################################
         #######################################################################
 
+    # Aquí se implementa el bucle principal. Cada iteración equivale a un
+    # ciclo de reloj, para más precisión y exactitud conceptual
     def run(self):
-        self._cpu.run()
+        while True:
+            # Si hay interrupciones y la CPU no está ocupada, las lanzamos
+
+            # Si la CPU no está ocupada hacemos FETCH y EXEC
+
+            # Restamos un ciclo de ejecución a la instrucción actual
+            pass
 
 
+###############################################################################
 # Inicio del programa
+###############################################################################
 nes = NES()
 nes.run()

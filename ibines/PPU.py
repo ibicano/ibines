@@ -14,9 +14,9 @@ class PPU(object):
     ###########################################################################
     # Constantes
     ###########################################################################
-    FRAME_CYCLES = 33246
+    FRAME_CYCLES = 330072
     SCANLINE_CYCLES = 106
-    VBLANK_CYCLES = 7459
+    VBLANK_CYCLES = 7420
     FRAME_SCANLINES = 312
     VBLANK_SCANLINES = 70
     FRAME_PERIOD = 0.020        # Periodo de frame en milisegundos
@@ -32,12 +32,8 @@ class PPU(object):
         # Motor gráfico del emulador
         self._gfx = GFX()
 
-        # Ciclos de CPU ejecutados (para sincronización)
-        self._cpu_cycles = 0
-
-        # Ciclo en el que se entró en la última vblank
-        self._vblank_cycle = self.VBLANK_CYCLES         # Retrasamos la VBLANK en el primer ciclo
-
+        # Ciclos restantes hasta próximo evento
+        self._cycles_frame = self.FRAME_CYCLES
 
         # Registros
         self._reg_control_1 = 0x00            # Dirección 0x2000 - write
@@ -56,12 +52,26 @@ class PPU(object):
         #######################################################################
         #######################################################################
 
-    # TODO: terminar esto y la activación del bit VBLANK
-    def set_cpu_cycles(self, cpu_cycles):
-        self._cpu_cycles = cpu_cycles
-        if (self._cpu_cycles - self._vblank_cycle) > self.FRAME_CYCLES:
-            self.set_status_bit_7_vblank(1)
-            self._vblank_cycle = cpu_cycles
+
+    # TODO: toda la chicha
+    # Ejecuta un ciclo de reloj. Aquí va toda la chicha del dibujado y de
+    # activación de cosas en función del ciclo del frame en el que nos
+    # encontremos
+    def exec_cycles(self):
+        if self._cycles_frame == 0:
+            self.clear_vblank() # Finalizamos el período VBLANK
+            self._cycles_frame = self.SCANLINE_FRAME
+        else:
+            # Este es el periodo de vblank
+            if self._cycles_frame <= self._VBLANK_CYCLES:
+                if self._cycles_frame == self._VBLANK_CYCLES: self.set_vblank()    # Activamos el período VBLANk al inicio del período
+            # Si no estamos en VBLANK dibujamos scanlines
+            else:
+                pass # TODO: Dibujar scanlines
+
+            # Decrementamos el contador de ciclos
+            self._cycles_frame -= 1
+
 
     # Lee el registro indicado por su dirección en memoria
     def read_reg(self, data, addr):
@@ -74,10 +84,12 @@ class PPU(object):
 
         return d
 
+
     # Según el documento SKINNY.TXT
     def read_reg_2002(self):
         self._reg_vram_switch = 0
         return self.get_reg_status()
+
 
     # Escribe el registro indicado por su dirección en memoria
     def write_reg(self, data, addr):
@@ -106,11 +118,14 @@ class PPU(object):
         self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 10, d & 0x01)
         self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 11, d & 0x02)
 
+
     def write_reg_control_2(self, data):
         self._reg_control_2 = data & 0xFF
 
+
     def write_reg_spr_addr(self, data):
         self._reg_spr_addr = data & 0xFF
+
 
     def write_reg_spr_io(self, data):
         d = data & 0xFF
@@ -186,6 +201,7 @@ class PPU(object):
         self._reg_vram_io = d
         self._memoria.write_data(d, a)
 
+
     # Escribe el registro y hace una transferencia dma
     def write_sprite_dma(self, cpu_mem, src_addr):
         self._reg_sprite_dma = src_addr
@@ -206,55 +222,68 @@ class PPU(object):
         r = self._reg_control_1 & 0x03
         return r
 
+
     # Devuelve el valor del bit que indica el incrmento de dirección
     # 1, si es 0 o 32 si es 1
     def control_1_increment_bit_2(self):
         r = (self._reg_control_1 & 0x04) >> 2
         return r
 
+
     def control_1_sprites_pattern_bit_3(self):
         r = (self._reg_control_1 & 0x08) >> 3
         return r
+
 
     def control_1_background_pattern_bit_4(self):
         r = (self._reg_control_1 & 0x10) >> 4
         return r
 
+
     def control_1_sprites_size_bit_5(self):
         r = (self._reg_control_1 & 0x20) >> 5
         return r
+
 
     def control_1_master_mode_bit_6(self):
         r = (self._reg_control_1 & 0x40) >> 6
         return r
 
+
     def control_1_NMI_bit_7(self):
         r = (self._reg_control_1 & 0x80) >> 7
         return r
+
 
     def control_2_monochrome_bit_0(self):
         r = (self._reg_control_2 & 0x01)
         return r
 
+
     def control_2_clip_background_bit_1(self):
         r = (self._reg_control_2 & 0x02) >> 1
         return r
+
 
     def control_2_clip_sprites_bit_2(self):
         r = (self._reg_control_2 & 0x04) >> 2
         return r
 
+
     def control_2_background_bit_3(self):
         r = (self._reg_control_2 & 0x08) >> 3
         return r
+
 
     def control_2_sprites_bit_4(self):
         r = (self._reg_control_2 & 0x10) >> 4
         return r
 
+
     def control_2_colour_config_bits_5_7(self):
         r = (self._reg_control_2 & 0xE0) >> 5
         return r
+
 
     # Devuelve la dirección de la Name Table activa en los bits 0-1 del registro de control 1
     def active_name_table_addr(self):
@@ -274,11 +303,19 @@ class PPU(object):
         return addr
 
 
-
-    # Lanza una interrupción VBLANK
-    # TODO: completar función
+    # Inicia un período VBLANK
     def set_vblank(self):
-        pass
+        self._reg_status = nesutils.set_bit(self._reg_status, 7, 1)
+
+
+    # Finaliza un período VBLANK
+    def clear_vblank(self):
+        self._reg_status = nesutils.set_bit(self._reg_status, 7, 0)
+
+
+    # Indica si nos encontramos en un periodo VBLANK
+    def is_vblank(self):
+        nesutils.get_bit(self._reg_status, 7)
 
 
     # TODO: paracticamente todo
