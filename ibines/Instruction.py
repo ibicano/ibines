@@ -22,6 +22,10 @@ class Instruction(object):
     def get_opcode(self):
         return self._OPCODE
 
+    # Devuelve el número de bytes que ocupa la instrucción en memoria
+    def get_bytes(self):
+        return self._BYTES
+
     # Devuelve el número de ciclos de reloj en los que se ejecuta la instrucción
     def get_cycles(self):
         return self._CYCLES

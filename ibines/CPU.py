@@ -24,6 +24,11 @@ class CPU(object):
     # Frecuencia de la CPU en Hz
     CPU_FREQ = 1660000
 
+    # Direcciones de memoria vector de interrupciones
+    INT_ADDR_VBLANK = 0xFFFA
+    INT_ADDR_RESET = 0xFFFC
+    INT_ADDR_IRQ = 0xFFFE
+
     ###########################################################################
     # Métodos públicos
     ###########################################################################
@@ -55,9 +60,30 @@ class CPU(object):
     def exec_cycle(self):
         self._cycles_inst -= 1
 
+
+    # Procesa una interrupción
+    def interrupt(self, vector_addr):
+        if not self.is_busy():
+            self.push_stack((self._reg_pc >> 8) & 0xFF)
+            self.push_stack(self._reg_pc & 0xFF)
+            self.push_stack(self._reg_eg_p)
+            addr = self._mem.read_data(vector_addr) & 0xFF
+            addr = addr | (self._mem.read_data(vector_addr) << 8)
+
+            return True
+        else:
+            return False
+
+
+    # Procesa la interrupción VBlank
+    def interrupt_vblank(self):
+        return self.interrupt(self.INT_ADDR_VBLANK)
+
+
     # Devuelve una referencia a la memoria
     def get_mem(self):
         return self.__mem
+
 
     # Devuelve el contenido los registros
     def get_reg_pc(self):
@@ -98,12 +124,30 @@ class CPU(object):
         self._reg_p = r & 0xFF
 
     # Incrementa el registro PC
-    def incr_pc(self):
-        self._reg_pc = (self._reg_pc + 1) & 0xFFFF
+    def incr_pc(self, n):
+        self._reg_pc = (self._reg_pc + n) & 0xFFFF
 
-    # Devuelve la instrucción actual
+    # TODO: Aquí hay que leer la siguiente instrucción del PC, incrementar el PC
+    # decodificarla a su objeto de clase "Instruction" correspondiente, poner los ciclos
+    # de reloj de instrucción restantes a los de la instrucción decodificada
+    # y delvolver el objeto
+    # Devuelve la instrucción a ejecutar
     def fetch_inst(self):
-        pass
+        opcode = self._mem().read_data(self._reg_pc)
+
+        #inst = Instruction(opcode)
+
+        #self.incr_pc(inst.get_bytes())
+
+        #return inst
+
+
+    # Devuelve "True" si está en mitad de ejecución de una instrucción
+    def is_busy(self):
+        if self._cycles_inst > 0:
+            return True
+        else:
+            return False
 
     # Devuelve el valor de los bits del registro de estado
     def get_reg_p_c_bit(self):
