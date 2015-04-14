@@ -71,7 +71,7 @@ class Instruction(object):
     # Variables de clase
     ###########################################################################
     OPCODE = None
-    _BYTES = None
+    BYTES = None
     CYCLES = None
 
     OPCODE_INDEX = {

@@ -36,6 +36,8 @@ class PPU(object):
         self._cycles_frame = self.FRAME_CYCLES
 
         # Registros
+
+        # Registros I/O
         self._reg_control_1 = 0x00            # Dirección 0x2000 - write
         self._reg_control_2 = 0x00            # Dirección 0x2001 - write
         self._reg_status = 0x00               # Dirección 0x2002 - read
@@ -46,9 +48,11 @@ class PPU(object):
         self._reg_vram_io = 0x00              # Dirección 0x2007 - read/write
         self._reg_sprite_dma = 0x00           # Dirección 0x4014 - write
 
+        # Registros estado
         self._reg_x_offset = 0x0             # Scroll patrón (3-bit)
-
         self._reg_vram_switch = 0            # Indica si estamos en la 1ª(0) o 2ª(1) escritura de los registros vram
+        self._reg_mirroring = 0x0            # 0x0: horizontal; 0x1: vertical: 0x2: single; 0x3: 4-screen
+
         #######################################################################
         #######################################################################
 
@@ -434,6 +438,15 @@ class PPU(object):
             pattern.append(self._memory.read_data(a))
 
         return pattern
+
+
+    # Devuelve y establece el valor del mirroring
+    def get_mirroring(self):
+        return self._reg_mirroring
+
+    def set_mirroring(self, m):
+        self._reg_mirroring = m
+
 
 
     #######################################################################

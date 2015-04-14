@@ -17,8 +17,12 @@ class NES(object):
         #######################################################################
         file_name = "roms/Super Mario Bros. (E).nes"
         self._rom = ROM(file_name)
+
         self._ppu = PPU()
+        self._ppu.set_mirroring(self._rom.get_mirroring())    # Establece el modo mirroring especificado en la ROM
+
         self._memory = Memory(self._ppu, self._rom)
+
         self._cpu = CPU(memory, ppu)
         #######################################################################
         #######################################################################

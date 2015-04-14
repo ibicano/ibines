@@ -80,8 +80,28 @@ class ROM(object):
         return self._load_ok
 
 
+    # Devuelve el modo mirroring especificado en la ROM:
+    # 0x00: horizontal
+    # 0x01: vertical
+    # 0x02: single
+    # 0x03: 4-screen
+    def get_mirroring(self):
+        if self.get_control_1_mirroring_bit_3() == 0:
+            m = self.get_control_1_mirroring_bit_0()
+        else:
+            m = 0x03
+
+        return m
+
+
+    def get_control_1_mirroring_bit_0(self):
+        return self._rom_control_1 & 0x01
+
     def get_control_1_trainer_bit_2(self):
         return (self._rom_control_1 & 0x04) >> 2
+
+    def get_control_1_mirroring_bit_3(self):
+        return (self._rom_control_1 & 0x08) >> 3
 
     def get_pgr(self):
         return self._pgr_1 + self._pgr_2

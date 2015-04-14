@@ -8,6 +8,7 @@ Descripción: Implementa la Memoria del sistema
 class Memory(object):
 
     # Constructor
+    # Se le pasa una instancia de la PPU y otra de la ROM para el mapeo en memoria de ambos
     def __init__(self, ppu, rom):
         #######################################################################
         # Variables de instancia
