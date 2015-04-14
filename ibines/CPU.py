@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import nesutils
+import Instruction
 
 """
 CPU
@@ -133,13 +134,33 @@ class CPU(object):
     # y delvolver el objeto
     # Devuelve la instrucción a ejecutar
     def fetch_inst(self):
-        opcode = self._mem().read_data(self._reg_pc)
+        # Devuelve el objeto de clase "Instruction"
+        inst = self.decode(self._reg_pc)
 
-        #inst = Instruction(opcode)
+        # Incrementa el registro contador de programa PC
+        self.incr_pc(inst.BYTES)
 
-        #self.incr_pc(inst.get_bytes())
+        return inst
 
-        #return inst
+
+    # Decodifica la instrucción encontrada en la posición addr y deveulve un objeto de su clase
+    def decode(self, addr):
+        opcode = self._mem.read_data(addr)
+        inst_class = Instruction.Instruction.OPCODE_INDEX[opcode]
+
+        inst = None
+
+        if inst_class.BYTES == 1:                    # Instrucciones sin operando
+            inst = inst_class(self)
+        elif inst_class.BYTES == 2:                  # Instrucciones con oprando de 1 byte
+            inst = inst_class(operand, self)
+            operand = self._mem.read_data(addr+1)
+        elif inst_class.BYTES == 3:                  # Instrucciones con oprando de 2 bytes
+            operand = self._mem.read_data(addr+1)
+            operand = operand | (self._mem.read_data(addr+2) << 8)
+            inst = inst_class(operand, self)
+
+        return inst
 
 
     # Devuelve "True" si está en mitad de ejecución de una instrucción

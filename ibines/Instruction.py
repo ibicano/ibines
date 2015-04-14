@@ -18,18 +18,6 @@ class Instruction(object):
     def execute(self):
         pass
 
-    # Devuelve el opcode de la instrucción
-    def get_opcode(self):
-        return self._OPCODE
-
-    # Devuelve el número de bytes que ocupa la instrucción en memoria
-    def get_bytes(self):
-        return self._BYTES
-
-    # Devuelve el número de ciclos de reloj en los que se ejecuta la instrucción
-    def get_cycles(self):
-        return self._CYCLES
-
     # Calculan y devuelven el valor del operando y su posición de memoria
     # (cuando proceda) en forma de tupla (addr, data). Cuando el operando
     # operando no se ubica en una posición de memoria se devuelve sólo su valor
@@ -82,9 +70,220 @@ class Instruction(object):
     ###########################################################################
     # Variables de clase
     ###########################################################################
-    _OPCODE = None
+    OPCODE = None
     _BYTES = None
-    _CYCLES = None
+    CYCLES = None
+
+    OPCODE_INDEX = {
+        # ADC
+        0x69: Instruction.ADC_inmediate,
+        0x65: Instruction.ADC_zero,
+        0x75: Instruction.ADC_zerox,
+        0x60: Instruction.ADC_abs,
+        0x70: Instruction.ADC_absx,
+        0x79: Instruction.ADC_absy,
+        0x61: Instruction.ADC_preindexi,
+        0x71: Instruction.ADC_postindexi,
+        # AND
+        0x29: Instruction.AND_inmediate,
+        0x25: Instruction.AND_zero,
+        0x35: Instruction.AND_zerox,
+        0x2D: Instruction.AND_abs,
+        0x3D: Instruction.AND_absx,
+        0x39: Instruction.AND_absy,
+        0x21: Instruction.AND_preindexi,
+        0x31: Instruction.AND_postindexi,
+        # ASL
+        0x0A: Instruction.ASL_accumulator,
+        0x06: Instruction.ASL_zero,
+        0x16: Instruction.ASL_zerox,
+        0x0E: Instruction.ASL_abs,
+        0x1E: Instruction.AND_absx,
+        # BCC
+        0x90: Instruction.BCC,
+        # BCS
+        0xB0: Instruction.BCS,
+        # BEQ
+        0xF0: Instruction.BEQ,
+        # BIT
+        0x24: Instruction.BIT_zero,
+        0x2C: Instruction.BIT_abs,
+        # BMI
+        0x30: Instruction.BMI,
+        # BNE
+        0xD0: Instruction.BNE,
+        # BPL
+        0x10: Instruction.BPL,
+        # BRK
+        0x9A: Instruction.BRK,
+        # BVC
+        0x50: Instruction.BVC,
+        # BVS
+        0x70: Instruction.BVS,
+        # CLC
+        0x18: Instruction.CLC,
+        # CLD
+        0xD8: Instruction.CLD,
+        # CLI
+        0x58: Instruction.CLI,
+        # CLV
+        0xB8: Instruction.CLV,
+        # CMP
+        0xC9: Instruction.CMP_inmediate,
+        0xC5: Instruction.CMP_zero,
+        0xD5: Instruction.CMP_zerox,
+        0xCD: Instruction.CMP_abs,
+        0xDD: Instruction.CMP_absx,
+        0xD9: Instruction.CMP_absy,
+        0xC1: Instruction.CMP_preindexi,
+        0xD1: Instruction.CMP_postindexi,
+        # CPX
+        0xE0: Instruction.CPX_inmediate,
+        0xE4: Instruction.CPX_zero,
+        0xEC: Instruction.CPX_abs,
+        # CPY
+        0xC0: Instruction.CPY_inmediate,
+        0xC4: Instruction.CPY_zero,
+        0xCC: Instruction.CPY_abs,
+        # DEC
+        0xC6: Instruction.DEC_zero,
+        0xD6: Instruction.DEC_zerox,
+        0xCE: Instruction.DEC_abs,
+        0xDE: Instruction.DEC_absx,
+        # DEX
+        0xCA: Instruction.DEX,
+        # DEY
+        0x88: Instruction.DEY,
+        # EOR
+        0x49: Instruction.EOR_inmediate,
+        0x45: Instruction.EOR_zero,
+        0x55: Instruction.EOR_zerox,
+        0x40: Instruction.EOR_abs,
+        0x50: Instruction.EOR_absx,
+        0x59: Instruction.EOR_absy,
+        0x41: Instruction.EOR_preindexi,
+        0x51: Instruction.EOR_postindexi,
+        # INC
+        0xE6: Instruction.INC_zero,
+        0xF6: Instruction.INC_zerox,
+        0xEE: Instruction.INC_abs,
+        0xFE: Instruction.INC_absx,
+        # INX
+        0xE8: Instruction.INX,
+        # INY
+        0xC8: Instruction.INY,
+        # JMP
+        0x4C: Instruction.JMP_abs,
+        0x6C: Instruction.JMP_indirect,
+        # JSR
+        0x20: Instruction.JSR,
+        # LDA
+        0xA9: Instruction.LDA_inmediate,
+        0xA5: Instruction.LDA_zero,
+        0xB5: Instruction.LDA_zerox,
+        0xAD: Instruction.LDA_abs,
+        0xBD: Instruction.LDA_absx,
+        0xB9: Instruction.LDA_absy,
+        0xA1: Instruction.LDA_preindexi,
+        0xB1: Instruction.LDA_postindexi,
+        # LDX
+        0xA2: Instruction.LDX_inmediate,
+        0xA6: Instruction.LDX_zero,
+        0xB6: Instruction.LDX_zeroy,
+        0xAE: Instruction.LDX_abs,
+        0xBE: Instruction.LDX_absy,
+        # LDY
+        0xA0: Instruction.LDY_inmediate,
+        0xA4: Instruction.LDY_zero,
+        0xB4: Instruction.LDY_zerox,
+        0xAC: Instruction.LDY_abs,
+        0xBC: Instruction.LDY_absx,
+        # LSR
+        0x4A: Instruction.LSR_accumulator,
+        0x46: Instruction.LSR_zero,
+        0x56: Instruction.LSR_zerox,
+        0x4E: Instruction.LSR_abs,
+        0x5E: Instruction.LSR_absx,
+        # NOP
+        0xEA: Instruction.NOP,
+        # ORA
+        0x09: Instruction.ORA_inmediate,
+        0x05: Instruction.ORA_zero,
+        0x15: Instruction.ORA_zerox,
+        0x0D: Instruction.ORA_abs,
+        0x1D: Instruction.ORA_absx,
+        0x19: Instruction.ORA_absy,
+        0x01: Instruction.ORA_preindexi,
+        0x11: Instruction.ORA_postindexi,
+        # PHA
+        0x48: Instruction.PHA,
+        # PHP
+        0x08: Instruction.PHP,
+        # PLA
+        0x68: Instruction.PLA,
+        # PLP
+        0x28: Instruction.PLP,
+        # ROL
+        0x2A: Instruction.ROL_accumulator,
+        0x26: Instruction.ROL_zero,
+        0x36: Instruction.ROL_zerox,
+        0x2E: Instruction.ROL_abs,
+        0x3E: Instruction.ROL_absx,
+        # ROR
+        0x6A: Instruction.ROR_accumulator,
+        0x66: Instruction.ROR_zero,
+        0x76: Instruction.ROR_zerox,
+        0x6E: Instruction.ROR_abs,
+        0x7E: Instruction.ROR_absx,
+        # RTI
+        0x4D: Instruction.RTI,
+        # RTS
+        0x60: Instruction.RTS,
+        # SBC
+        0xE9: Instruction.SBC_inmediate,
+        0xE5: Instruction.SBC_zero,
+        0xF5: Instruction.SBC_zerox,
+        0xED: Instruction.SBC_abs,
+        0xFD: Instruction.SBC_absx,
+        0xF9: Instruction.SBC_absy,
+        0xE1: Instruction.SBC_preindexi,
+        0xF1: Instruction.SBC_postindexi,
+        # SEC
+        0x38: Instruction.SEC,
+        # SED
+        0xF8: Instruction.SED,
+        # SEI
+        0x78: Instruction.SEI,
+        # STA
+        0x85: Instruction.STA_zero,
+        0x95: Instruction.STA_zerox,
+        0x80: Instruction.STA_abs,
+        0x90: Instruction.STA_absx,
+        0x99: Instruction.STA_absy,
+        0x81: Instruction.STA_preindexi,
+        0x91: Instruction.STA_postindexi,
+        # STX
+        0x86: Instruction.STX_zero,
+        0x96: Instruction.STX_zeroy,
+        0x8E: Instruction.STX_abs,
+        # STY
+        0x84: Instruction.STY_zero,
+        0x94: Instruction.STY_zerox,
+        0x8C: Instruction.STY_abs,
+        # TAX
+        0xAA: Instruction.TAX,
+        # TAY
+        0xA8: Instruction.TAY,
+        # TSX
+        0xBA: Instruction.TSX,
+        # TXA
+        0x8A: Instruction.TXA,
+        # TXS
+        0x9A: Instruction.TXS,
+        # TYA
+        0x98: Instruction.TYA,
+    }
+
 
 
 ###############################################################################
@@ -126,9 +325,9 @@ class ADC_inmediate(ADC):
         super(ADC_inmediate, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x69
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0x69
+    BYTES = 2
+    CYCLES = 2
 
 
 class ADC_zero(ADC):
@@ -141,9 +340,9 @@ class ADC_zero(ADC):
         super(ADC_zero, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x65
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0x65
+    BYTES = 2
+    CYCLES = 3
 
 
 class ADC_zerox(ADC):
@@ -156,9 +355,9 @@ class ADC_zerox(ADC):
         super(ADC_zerox, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x75
-    _BYTES = 2
-    _CYCLES = 4
+    OPCODE = 0x75
+    BYTES = 2
+    CYCLES = 4
 
 
 class ADC_abs(ADC):
@@ -171,9 +370,9 @@ class ADC_abs(ADC):
         super(ADC_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x60
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x60
+    BYTES = 3
+    CYCLES = 4
 
 
 class ADC_absx(ADC):
@@ -186,9 +385,9 @@ class ADC_absx(ADC):
         super(ADC_absx, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x70
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x70
+    BYTES = 3
+    CYCLES = 4
 
 
 class ADC_absy(ADC):
@@ -201,9 +400,9 @@ class ADC_absy(ADC):
         super(ADC_absy, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x79
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x79
+    BYTES = 3
+    CYCLES = 4
 
 class ADC_preindexi(ADC):
 
@@ -215,9 +414,9 @@ class ADC_preindexi(ADC):
         super(ADC_preindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x61
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0x61
+    BYTES = 2
+    CYCLES = 6
 
 
 class ADC_postindexi(ADC):
@@ -230,9 +429,9 @@ class ADC_postindexi(ADC):
         super(ADC_postindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x71
-    _BYTES = 2
-    _CYCLES = 5
+    OPCODE = 0x71
+    BYTES = 2
+    CYCLES = 5
 
 
 ###############################################################################
@@ -263,9 +462,9 @@ class AND_inmediate(AND):
         super(AND_inmediate, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x29
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0x29
+    BYTES = 2
+    CYCLES = 2
 
 class AND_zero(AND):
 
@@ -277,9 +476,9 @@ class AND_zero(AND):
         super(AND_zero, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x25
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0x25
+    BYTES = 2
+    CYCLES = 3
 
 
 class AND_zerox(AND):
@@ -292,9 +491,9 @@ class AND_zerox(AND):
         super(AND_zerox, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x35
-    _BYTES = 2
-    _CYCLES = 4
+    OPCODE = 0x35
+    BYTES = 2
+    CYCLES = 4
 
 
 class AND_abs(AND):
@@ -307,9 +506,9 @@ class AND_abs(AND):
         super(AND_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x2D
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x2D
+    BYTES = 3
+    CYCLES = 4
 
 
 class AND_absx(AND):
@@ -322,9 +521,9 @@ class AND_absx(AND):
         super(AND_absx, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x3D
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x3D
+    BYTES = 3
+    CYCLES = 4
 
 
 class AND_absy(AND):
@@ -337,9 +536,9 @@ class AND_absy(AND):
         super(AND_absy, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x39
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x39
+    BYTES = 3
+    CYCLES = 4
 
 class AND_preindexi(AND):
 
@@ -351,9 +550,9 @@ class AND_preindexi(AND):
         super(AND_preindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x21
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0x21
+    BYTES = 2
+    CYCLES = 6
 
 
 class AND_postindexi(AND):
@@ -366,9 +565,9 @@ class AND_postindexi(AND):
         super(AND_postindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x31
-    _BYTES = 2
-    _CYCLES = 5
+    OPCODE = 0x31
+    BYTES = 2
+    CYCLES = 5
 
 
 ###############################################################################
@@ -400,9 +599,9 @@ class ASL_accumulator(ASL):
         self._cpu.set_reg_a(result)
 
     # Variables privadas
-    _OPCODE = 0x0A
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0x0A
+    BYTES = 1
+    CYCLES = 2
 
 class ASL_zero(ASL):
 
@@ -415,9 +614,9 @@ class ASL_zero(ASL):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x06
-    _BYTES = 2
-    _CYCLES = 5
+    OPCODE = 0x06
+    BYTES = 2
+    CYCLES = 5
 
 
 class ASL_zerox(ASL):
@@ -431,9 +630,9 @@ class ASL_zerox(ASL):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x16
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0x16
+    BYTES = 2
+    CYCLES = 6
 
 
 class ASL_abs(ASL):
@@ -447,9 +646,9 @@ class ASL_abs(ASL):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x0E
-    _BYTES = 3
-    _CYCLES = 6
+    OPCODE = 0x0E
+    BYTES = 3
+    CYCLES = 6
 
 
 class ASL_absx(ASL):
@@ -463,9 +662,9 @@ class ASL_absx(ASL):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x1E
-    _BYTES = 3
-    _CYCLES = 7
+    OPCODE = 0x1E
+    BYTES = 3
+    CYCLES = 7
 
 
 ###############################################################################
@@ -482,9 +681,9 @@ class BCC(Instruction):
 
 
     # Variables privadas
-    _OPCODE = 0x90
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0x90
+    BYTES = 2
+    CYCLES = 2
 
 ###############################################################################
 # BCS Branch on carry set
@@ -501,9 +700,9 @@ class BCS(Instruction):
 
     # Variables privadas
     _operand = None
-    _OPCODE = 0xB0
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0xB0
+    BYTES = 2
+    CYCLES = 2
 
 ###############################################################################
 # BEQ Branch on result zero
@@ -519,9 +718,9 @@ class BEQ(Instruction):
 
 
     # Variables privadas
-    _OPCODE = 0xF0
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0xF0
+    BYTES = 2
+    CYCLES = 2
 
 
 ###############################################################################
@@ -560,9 +759,9 @@ class BIT_zero(BIT):
         super(BIT_zero, self).__init__()
 
     # Variables privadas
-    _OPCODE = 0x24
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0x24
+    BYTES = 2
+    CYCLES = 3
 
 
 class BIT_abs(BIT):
@@ -571,9 +770,9 @@ class BIT_abs(BIT):
         super(BIT_abs, self).__init__()
 
     # Variables privadas
-    _OPCODE = 0x2C
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x2C
+    BYTES = 3
+    CYCLES = 4
 
 
 ###############################################################################
@@ -590,9 +789,9 @@ class BMI(Instruction):
 
 
     # Variables privadas
-    _OPCODE = 0x30
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0x30
+    BYTES = 2
+    CYCLES = 2
 
 
 ###############################################################################
@@ -609,9 +808,9 @@ class BNE(Instruction):
 
 
     # Variables privadas
-    _OPCODE = 0xD0
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0xD0
+    BYTES = 2
+    CYCLES = 2
 
 
 ###############################################################################
@@ -628,9 +827,9 @@ class BPL(Instruction):
 
 
     # Variables privadas
-    _OPCODE = 0x10
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0x10
+    BYTES = 2
+    CYCLES = 2
 
 
 ###############################################################################
@@ -655,9 +854,9 @@ class BRK(Instruction):
 
 
     # Variables privadas
-    _OPCODE = 0x9A
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0x9A
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -674,9 +873,9 @@ class BVC(Instruction):
 
 
     # Variables privadas
-    _OPCODE = 0x50
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0x50
+    BYTES = 2
+    CYCLES = 2
 
 
 ###############################################################################
@@ -693,9 +892,9 @@ class BVS(Instruction):
 
 
     # Variables privadas
-    _OPCODE = 0x70
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0x70
+    BYTES = 2
+    CYCLES = 2
 
 
 ###############################################################################
@@ -710,9 +909,9 @@ class CLC(Instruction):
         self._cpu.set_reg_p_c_bit(0)
 
     # Variables privadas
-    _OPCODE = 0x18
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0x18
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -727,9 +926,9 @@ class CLD(Instruction):
         self._cpu.set_reg_p_d_bit(0)
 
     # Variables privadas
-    _OPCODE = 0xD8
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0xD8
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -744,9 +943,9 @@ class CLI(Instruction):
         self._cpu.set_reg_p_i_bit(0)
 
     # Variables privadas
-    _OPCODE = 0x58
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0x58
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -761,9 +960,9 @@ class CLV(Instruction):
         self._cpu.set_reg_p_v_bit(0)
 
     # Variables privadas
-    _OPCODE = 0xB8
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0xB8
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -793,9 +992,9 @@ class CMP_inmediate(CMP):
         super(CMP_inmediate, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xC9
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0xC9
+    BYTES = 2
+    CYCLES = 2
 
 
 class CMP_zero(CMP):
@@ -808,9 +1007,9 @@ class CMP_zero(CMP):
         super(CMP_zero, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xC5
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0xC5
+    BYTES = 2
+    CYCLES = 3
 
 
 class CMP_zerox(CMP):
@@ -823,9 +1022,9 @@ class CMP_zerox(CMP):
         super(CMP_zerox, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xD5
-    _BYTES = 2
-    _CYCLES = 4
+    OPCODE = 0xD5
+    BYTES = 2
+    CYCLES = 4
 
 
 class CMP_abs(CMP):
@@ -838,9 +1037,9 @@ class CMP_abs(CMP):
         super(CMP_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xCD
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xCD
+    BYTES = 3
+    CYCLES = 4
 
 
 class CMP_absx(CMP):
@@ -853,9 +1052,9 @@ class CMP_absx(CMP):
         super(CMP_absx, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xDD
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xDD
+    BYTES = 3
+    CYCLES = 4
 
 
 class CMP_absy(CMP):
@@ -868,9 +1067,9 @@ class CMP_absy(CMP):
         super(CMP_absy, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xD9
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xD9
+    BYTES = 3
+    CYCLES = 4
 
 
 class CMP_preindexi(CMP):
@@ -883,9 +1082,9 @@ class CMP_preindexi(CMP):
         super(CMP_preindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xC1
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0xC1
+    BYTES = 2
+    CYCLES = 6
 
 
 class CMP_postindexi(CMP):
@@ -898,9 +1097,9 @@ class CMP_postindexi(CMP):
         super(CMP_postindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xD1
-    _BYTES = 2
-    _CYCLES = 5
+    OPCODE = 0xD1
+    BYTES = 2
+    CYCLES = 5
 
 
 ###############################################################################
@@ -930,9 +1129,9 @@ class CPX_inmediate(CPX):
         super(CPX_inmediate, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xE0
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0xE0
+    BYTES = 2
+    CYCLES = 2
 
 
 class CPX_zero(CPX):
@@ -945,9 +1144,9 @@ class CPX_zero(CPX):
         super(CPX_zero, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xE4
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0xE4
+    BYTES = 2
+    CYCLES = 3
 
 
 class CPX_abs(CPX):
@@ -960,9 +1159,9 @@ class CPX_abs(CPX):
         super(CPX_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xEC
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xEC
+    BYTES = 3
+    CYCLES = 4
 
 
 ###############################################################################
@@ -992,9 +1191,9 @@ class CPY_inmediate(CPY):
         super(CPY_inmediate, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xC0
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0xC0
+    BYTES = 2
+    CYCLES = 2
 
 
 class CPY_zero(CPY):
@@ -1007,9 +1206,9 @@ class CPY_zero(CPY):
         super(CPY_zero, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xC4
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0xC4
+    BYTES = 2
+    CYCLES = 3
 
 
 class CPY_abs(CPY):
@@ -1022,9 +1221,9 @@ class CPY_abs(CPY):
         super(CPY_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xCC
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xCC
+    BYTES = 3
+    CYCLES = 4
 
 
 ###############################################################################
@@ -1055,9 +1254,9 @@ class DEC_zero(DEC):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0xC6
-    _BYTES = 2
-    _CYCLES = 5
+    OPCODE = 0xC6
+    BYTES = 2
+    CYCLES = 5
 
 
 class DEC_zerox(DEC):
@@ -1071,9 +1270,9 @@ class DEC_zerox(DEC):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0xD6
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0xD6
+    BYTES = 2
+    CYCLES = 6
 
 
 class DEC_abs(DEC):
@@ -1087,9 +1286,9 @@ class DEC_abs(DEC):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0xCE
-    _BYTES = 3
-    _CYCLES = 6
+    OPCODE = 0xCE
+    BYTES = 3
+    CYCLES = 6
 
 
 class DEC_absx(DEC):
@@ -1103,9 +1302,9 @@ class DEC_absx(DEC):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0xDE
-    _BYTES = 3
-    _CYCLES = 7
+    OPCODE = 0xDE
+    BYTES = 3
+    CYCLES = 7
 
 
 ###############################################################################
@@ -1125,9 +1324,9 @@ class DEX(Instruction):
         self._cpu.set_reg_x(result)
 
     # Variables privadas
-    _OPCODE = 0xCA
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0xCA
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -1147,9 +1346,9 @@ class DEY(Instruction):
         self._cpu.set_reg_y(result)
 
     # Variables privadas
-    _OPCODE = 0x88
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0x88
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -1180,9 +1379,9 @@ class EOR_inmediate(EOR):
         super(EOR_inmediate, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x49
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0x49
+    BYTES = 2
+    CYCLES = 2
 
 
 class EOR_zero(EOR):
@@ -1195,9 +1394,9 @@ class EOR_zero(EOR):
         super(EOR_zero, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x45
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0x45
+    BYTES = 2
+    CYCLES = 3
 
 
 class EOR_zerox(EOR):
@@ -1210,9 +1409,9 @@ class EOR_zerox(EOR):
         super(EOR_zerox, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x55
-    _BYTES = 2
-    _CYCLES = 4
+    OPCODE = 0x55
+    BYTES = 2
+    CYCLES = 4
 
 
 class EOR_abs(EOR):
@@ -1225,9 +1424,9 @@ class EOR_abs(EOR):
         super(EOR_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x40
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x40
+    BYTES = 3
+    CYCLES = 4
 
 
 class EOR_absx(EOR):
@@ -1240,9 +1439,9 @@ class EOR_absx(EOR):
         super(EOR_absx, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x50
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x50
+    BYTES = 3
+    CYCLES = 4
 
 
 class EOR_absy(EOR):
@@ -1255,9 +1454,9 @@ class EOR_absy(EOR):
         super(EOR_absy, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x59
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x59
+    BYTES = 3
+    CYCLES = 4
 
 
 class EOR_preindexi(EOR):
@@ -1270,9 +1469,9 @@ class EOR_preindexi(EOR):
         super(EOR_preindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x41
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0x41
+    BYTES = 2
+    CYCLES = 6
 
 
 class EOR_postindexi(EOR):
@@ -1285,9 +1484,9 @@ class EOR_postindexi(EOR):
         super(EOR_postindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x51
-    _BYTES = 2
-    _CYCLES = 5
+    OPCODE = 0x51
+    BYTES = 2
+    CYCLES = 5
 
 
 ###############################################################################
@@ -1318,9 +1517,9 @@ class INC_zero(INC):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0xE6
-    _BYTES = 2
-    _CYCLES = 5
+    OPCODE = 0xE6
+    BYTES = 2
+    CYCLES = 5
 
 
 class INC_zerox(INC):
@@ -1334,9 +1533,9 @@ class INC_zerox(INC):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0xF6
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0xF6
+    BYTES = 2
+    CYCLES = 6
 
 
 class INC_abs(INC):
@@ -1350,9 +1549,9 @@ class INC_abs(INC):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0xEE
-    _BYTES = 3
-    _CYCLES = 6
+    OPCODE = 0xEE
+    BYTES = 3
+    CYCLES = 6
 
 
 class INC_absx(INC):
@@ -1366,9 +1565,9 @@ class INC_absx(INC):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0xFE
-    _BYTES = 3
-    _CYCLES = 7
+    OPCODE = 0xFE
+    BYTES = 3
+    CYCLES = 7
 
 
 ###############################################################################
@@ -1388,9 +1587,9 @@ class INX(Instruction):
         self._cpu.set_reg_x(result)
 
     # Variables privadas
-    _OPCODE = 0xE8
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0xE8
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -1410,9 +1609,9 @@ class INY(Instruction):
         self._cpu.set_reg_y(result)
 
     # Variables privadas
-    _OPCODE = 0xC8
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0xC8
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -1437,9 +1636,9 @@ class JMP_abs(JMP):
         super(JMP_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x4C
-    _BYTES = 3
-    _CYCLES = 3
+    OPCODE = 0x4C
+    BYTES = 3
+    CYCLES = 3
 
 
 class JMP_indirect(JMP):
@@ -1456,9 +1655,9 @@ class JMP_indirect(JMP):
         super(JMP_indirect, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x6C
-    _BYTES = 3
-    _CYCLES = 5
+    OPCODE = 0x6C
+    BYTES = 3
+    CYCLES = 5
 
 
 ###############################################################################
@@ -1478,9 +1677,9 @@ class JSR(Instruction):
         self._cpu.set_reg_pc(op)
 
     # Variables privadas
-    _OPCODE = 0x20
-    _BYTES = 3
-    _CYCLES = 6
+    OPCODE = 0x20
+    BYTES = 3
+    CYCLES = 6
 
 
 ###############################################################################
@@ -1510,9 +1709,9 @@ class LDA_inmediate(LDA):
         super(LDA_inmediate, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xA9
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0xA9
+    BYTES = 2
+    CYCLES = 2
 
 
 class LDA_zero(LDA):
@@ -1525,9 +1724,9 @@ class LDA_zero(LDA):
         super(LDA_zero, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xA5
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0xA5
+    BYTES = 2
+    CYCLES = 3
 
 
 class LDA_zerox(LDA):
@@ -1540,9 +1739,9 @@ class LDA_zerox(LDA):
         super(LDA_zerox, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xB5
-    _BYTES = 2
-    _CYCLES = 4
+    OPCODE = 0xB5
+    BYTES = 2
+    CYCLES = 4
 
 
 class LDA_abs(LDA):
@@ -1555,9 +1754,9 @@ class LDA_abs(LDA):
         super(LDA_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xAD
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xAD
+    BYTES = 3
+    CYCLES = 4
 
 
 class LDA_absx(LDA):
@@ -1570,9 +1769,9 @@ class LDA_absx(LDA):
         super(LDA_absx, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xBD
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xBD
+    BYTES = 3
+    CYCLES = 4
 
 
 class LDA_absy(LDA):
@@ -1585,9 +1784,9 @@ class LDA_absy(LDA):
         super(LDA_absy, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xB9
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xB9
+    BYTES = 3
+    CYCLES = 4
 
 
 class LDA_preindexi(LDA):
@@ -1600,9 +1799,9 @@ class LDA_preindexi(LDA):
         super(LDA_preindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xA1
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0xA1
+    BYTES = 2
+    CYCLES = 6
 
 
 class LDA_postindexi(LDA):
@@ -1615,9 +1814,9 @@ class LDA_postindexi(LDA):
         super(LDA_postindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xB1
-    _BYTES = 2
-    _CYCLES = 5
+    OPCODE = 0xB1
+    BYTES = 2
+    CYCLES = 5
 
 
 ###############################################################################
@@ -1647,9 +1846,9 @@ class LDX_inmediate(LDX):
         super(LDX_inmediate, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xA2
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0xA2
+    BYTES = 2
+    CYCLES = 2
 
 
 class LDX_zero(LDX):
@@ -1662,9 +1861,9 @@ class LDX_zero(LDX):
         super(LDX_zero, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xA6
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0xA6
+    BYTES = 2
+    CYCLES = 3
 
 
 class LDX_zeroy(LDX):
@@ -1677,9 +1876,9 @@ class LDX_zeroy(LDX):
         super(LDX_zeroy, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xB6
-    _BYTES = 2
-    _CYCLES = 4
+    OPCODE = 0xB6
+    BYTES = 2
+    CYCLES = 4
 
 
 class LDX_abs(LDX):
@@ -1692,9 +1891,9 @@ class LDX_abs(LDX):
         super(LDX_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xAE
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xAE
+    BYTES = 3
+    CYCLES = 4
 
 
 class LDX_absy(LDX):
@@ -1707,9 +1906,9 @@ class LDX_absy(LDX):
         super(LDX_absy, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xBE
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xBE
+    BYTES = 3
+    CYCLES = 4
 
 
 ###############################################################################
@@ -1739,9 +1938,9 @@ class LDY_inmediate(LDY):
         super(LDY_inmediate, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xA0
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0xA0
+    BYTES = 2
+    CYCLES = 2
 
 
 class LDY_zero(LDY):
@@ -1754,9 +1953,9 @@ class LDY_zero(LDY):
         super(LDY_zero, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xA4
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0xA4
+    BYTES = 2
+    CYCLES = 3
 
 
 class LDY_zerox(LDY):
@@ -1769,9 +1968,9 @@ class LDY_zerox(LDY):
         super(LDY_zerox, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xB4
-    _BYTES = 2
-    _CYCLES = 4
+    OPCODE = 0xB4
+    BYTES = 2
+    CYCLES = 4
 
 
 class LDY_abs(LDY):
@@ -1784,9 +1983,9 @@ class LDY_abs(LDY):
         super(LDY_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xAC
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xAC
+    BYTES = 3
+    CYCLES = 4
 
 
 class LDY_absx(LDY):
@@ -1799,9 +1998,9 @@ class LDY_absx(LDY):
         super(LDY_absx, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xBC
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xBC
+    BYTES = 3
+    CYCLES = 4
 
 
 ###############################################################################
@@ -1824,8 +2023,8 @@ class LSR(Instruction):
 
 class LSR_accumulator(LSR):
 
-    def __init__(self, operand, cpu):
-        super(LSR_accumulator, self).__init__(operand, cpu)
+    def __init__(self, cpu):
+        super(LSR_accumulator, self).__init__(None, cpu)
 
     def execute(self):
         op = self.fetch_accumulator_addrmode()
@@ -1833,9 +2032,9 @@ class LSR_accumulator(LSR):
         self._cpu.set_reg_a(result)
 
     # Variables privadas
-    _OPCODE = 0x4A
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0x4A
+    BYTES = 1
+    CYCLES = 2
 
 
 class LSR_zero(LSR):
@@ -1849,9 +2048,9 @@ class LSR_zero(LSR):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x46
-    _BYTES = 2
-    _CYCLES = 5
+    OPCODE = 0x46
+    BYTES = 2
+    CYCLES = 5
 
 
 class LSR_zerox(LSR):
@@ -1865,9 +2064,9 @@ class LSR_zerox(LSR):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x56
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0x56
+    BYTES = 2
+    CYCLES = 6
 
 
 class LSR_abs(LSR):
@@ -1881,9 +2080,9 @@ class LSR_abs(LSR):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x4E
-    _BYTES = 3
-    _CYCLES = 6
+    OPCODE = 0x4E
+    BYTES = 3
+    CYCLES = 6
 
 
 class LSR_absx(LSR):
@@ -1897,9 +2096,9 @@ class LSR_absx(LSR):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x5E
-    _BYTES = 3
-    _CYCLES = 7
+    OPCODE = 0x5E
+    BYTES = 3
+    CYCLES = 7
 
 
 ###############################################################################
@@ -1914,9 +2113,9 @@ class NOP(Instruction):
         pass
 
     # Variables privadas
-    _OPCODE = 0xEA
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0xEA
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -1947,9 +2146,9 @@ class ORA_inmediate(ORA):
         super(ORA_inmediate, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x09
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0x09
+    BYTES = 2
+    CYCLES = 2
 
 
 class ORA_zero(ORA):
@@ -1962,9 +2161,9 @@ class ORA_zero(ORA):
         super(ORA_zero, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x05
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0x05
+    BYTES = 2
+    CYCLES = 3
 
 
 class ORA_zerox(ORA):
@@ -1977,9 +2176,9 @@ class ORA_zerox(ORA):
         super(ORA_zerox, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x15
-    _BYTES = 2
-    _CYCLES = 4
+    OPCODE = 0x15
+    BYTES = 2
+    CYCLES = 4
 
 
 class ORA_abs(ORA):
@@ -1992,9 +2191,9 @@ class ORA_abs(ORA):
         super(ORA_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x0D
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x0D
+    BYTES = 3
+    CYCLES = 4
 
 
 class ORA_absx(ORA):
@@ -2007,9 +2206,9 @@ class ORA_absx(ORA):
         super(ORA_absx, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x1D
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x1D
+    BYTES = 3
+    CYCLES = 4
 
 
 class ORA_absy(ORA):
@@ -2022,9 +2221,9 @@ class ORA_absy(ORA):
         super(ORA_absy, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x19
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x19
+    BYTES = 3
+    CYCLES = 4
 
 
 class ORA_preindexi(ORA):
@@ -2037,9 +2236,9 @@ class ORA_preindexi(ORA):
         super(ORA_preindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x01
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0x01
+    BYTES = 2
+    CYCLES = 6
 
 
 class ORA_postindexi(ORA):
@@ -2052,9 +2251,9 @@ class ORA_postindexi(ORA):
         super(ORA_postindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x11
-    _BYTES = 2
-    _CYCLES = 5
+    OPCODE = 0x11
+    BYTES = 2
+    CYCLES = 5
 
 
 ###############################################################################
@@ -2069,9 +2268,9 @@ class PHA(Instruction):
         self._cpu.push_stack(self._cpu.get_reg_a())
 
     # Variables privadas
-    _OPCODE = 0x48
-    _BYTES = 1
-    _CYCLES = 3
+    OPCODE = 0x48
+    BYTES = 1
+    CYCLES = 3
 
 
 ###############################################################################
@@ -2086,9 +2285,9 @@ class PHP(Instruction):
         self._cpu.push_stack(self._cpu.get_reg_p())
 
     # Variables privadas
-    _OPCODE = 0x08
-    _BYTES = 1
-    _CYCLES = 3
+    OPCODE = 0x08
+    BYTES = 1
+    CYCLES = 3
 
 
 ###############################################################################
@@ -2103,9 +2302,9 @@ class PLA(Instruction):
         self._cpu.set_reg_a(self._cpu.pull_stack())
 
     # Variables privadas
-    _OPCODE = 0x68
-    _BYTES = 1
-    _CYCLES = 4
+    OPCODE = 0x68
+    BYTES = 1
+    CYCLES = 4
 
 
 ###############################################################################
@@ -2120,9 +2319,9 @@ class PLP(Instruction):
         self._cpu.set_reg_p(self._cpu.pull_stack())
 
     # Variables privadas
-    _OPCODE = 0x28
-    _BYTES = 1
-    _CYCLES = 4
+    OPCODE = 0x28
+    BYTES = 1
+    CYCLES = 4
 
 
 ###############################################################################
@@ -2147,8 +2346,8 @@ class ROL(Instruction):
 
 class ROL_accumulator(ROL):
 
-    def __init__(self, operand, cpu):
-        super(ROL_accumulator, self).__init__(operand, cpu)
+    def __init__(self, cpu):
+        super(ROL_accumulator, self).__init__(None, cpu)
 
     def execute(self, op):
         op = self.fetch_accumulator_addrmode()
@@ -2156,9 +2355,9 @@ class ROL_accumulator(ROL):
         self._cpu.set_reg_a(result)
 
     # Variables privadas
-    _OPCODE = 0x2A
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0x2A
+    BYTES = 1
+    CYCLES = 2
 
 
 class ROL_zero(ROL):
@@ -2172,9 +2371,9 @@ class ROL_zero(ROL):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x26
-    _BYTES = 2
-    _CYCLES = 5
+    OPCODE = 0x26
+    BYTES = 2
+    CYCLES = 5
 
 
 class ROL_zerox(ROL):
@@ -2188,9 +2387,9 @@ class ROL_zerox(ROL):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x36
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0x36
+    BYTES = 2
+    CYCLES = 6
 
 
 class ROL_abs(ROL):
@@ -2204,9 +2403,9 @@ class ROL_abs(ROL):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x2E
-    _BYTES = 3
-    _CYCLES = 6
+    OPCODE = 0x2E
+    BYTES = 3
+    CYCLES = 6
 
 
 class ROL_absx(ROL):
@@ -2220,9 +2419,9 @@ class ROL_absx(ROL):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x3E
-    _BYTES = 3
-    _CYCLES = 7
+    OPCODE = 0x3E
+    BYTES = 3
+    CYCLES = 7
 
 
 ###############################################################################
@@ -2247,8 +2446,8 @@ class ROR(Instruction):
 
 class ROR_accumulator(ROR):
 
-    def __init__(self, operand, cpu):
-        super(ROR_accumulator, self).__init__(operand, cpu)
+    def __init__(self, cpu):
+        super(ROR_accumulator, self).__init__(None, cpu)
 
     def execute(self):
         op = self.fetch_accumulator_addrmode()
@@ -2256,9 +2455,9 @@ class ROR_accumulator(ROR):
         self._cpu.set_reg_a(result)
 
     # Variables privadas
-    _OPCODE = 0x6A
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0x6A
+    BYTES = 1
+    CYCLES = 2
 
 
 class ROR_zero(ROR):
@@ -2272,9 +2471,9 @@ class ROR_zero(ROR):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x66
-    _BYTES = 2
-    _CYCLES = 5
+    OPCODE = 0x66
+    BYTES = 2
+    CYCLES = 5
 
 
 class ROR_zerox(ROR):
@@ -2288,9 +2487,9 @@ class ROR_zerox(ROR):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x76
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0x76
+    BYTES = 2
+    CYCLES = 6
 
 
 class ROR_abs(ROR):
@@ -2304,9 +2503,9 @@ class ROR_abs(ROR):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x6E
-    _BYTES = 3
-    _CYCLES = 6
+    OPCODE = 0x6E
+    BYTES = 3
+    CYCLES = 6
 
 
 class ROR_absx(ROR):
@@ -2320,9 +2519,9 @@ class ROR_absx(ROR):
         self._cpu.get_mem().write_data(result, addr)
 
     # Variables privadas
-    _OPCODE = 0x7E
-    _BYTES = 3
-    _CYCLES = 7
+    OPCODE = 0x7E
+    BYTES = 3
+    CYCLES = 7
 
 
 ###############################################################################
@@ -2341,9 +2540,9 @@ class RTI(Instruction):
         self._cpu.set_reg_pc(pc)
 
     # Variables privadas
-    _OPCODE = 0x4D
-    _BYTES = 1
-    _CYCLES = 6
+    OPCODE = 0x4D
+    BYTES = 1
+    CYCLES = 6
 
 
 ###############################################################################
@@ -2361,9 +2560,9 @@ class RTS(Instruction):
         self._cpu.set_reg_pc(pc)
 
     # Variables privadas
-    _OPCODE = 0x60
-    _BYTES = 1
-    _CYCLES = 6
+    OPCODE = 0x60
+    BYTES = 1
+    CYCLES = 6
 
 
 ###############################################################################
@@ -2402,9 +2601,9 @@ class SBC_inmediate(SBC):
         super(SBC_inmediate, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xE9
-    _BYTES = 2
-    _CYCLES = 2
+    OPCODE = 0xE9
+    BYTES = 2
+    CYCLES = 2
 
 
 class SBC_zero(SBC):
@@ -2417,9 +2616,9 @@ class SBC_zero(SBC):
         super(SBC_zero, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xE5
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0xE5
+    BYTES = 2
+    CYCLES = 3
 
 
 class SBC_zerox(SBC):
@@ -2432,9 +2631,9 @@ class SBC_zerox(SBC):
         super(SBC_zerox, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xF5
-    _BYTES = 2
-    _CYCLES = 4
+    OPCODE = 0xF5
+    BYTES = 2
+    CYCLES = 4
 
 
 class SBC_abs(SBC):
@@ -2447,9 +2646,9 @@ class SBC_abs(SBC):
         super(SBC_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xED
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xED
+    BYTES = 3
+    CYCLES = 4
 
 
 class SBC_absx(SBC):
@@ -2462,9 +2661,9 @@ class SBC_absx(SBC):
         super(SBC_absx, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xFD
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xFD
+    BYTES = 3
+    CYCLES = 4
 
 
 class SBC_absy(SBC):
@@ -2477,9 +2676,9 @@ class SBC_absy(SBC):
         super(SBC_absy, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xF9
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0xF9
+    BYTES = 3
+    CYCLES = 4
 
 
 class SBC_preindexi(SBC):
@@ -2492,9 +2691,9 @@ class SBC_preindexi(SBC):
         super(SBC_preindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xE1
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0xE1
+    BYTES = 2
+    CYCLES = 6
 
 
 class SBC_postindexi(SBC):
@@ -2507,9 +2706,9 @@ class SBC_postindexi(SBC):
         super(SBC_postindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0xF1
-    _BYTES = 2
-    _CYCLES = 5
+    OPCODE = 0xF1
+    BYTES = 2
+    CYCLES = 5
 
 
 ###############################################################################
@@ -2524,9 +2723,9 @@ class SEC(Instruction):
         self._cpu.set_reg_p_c_bit(1)
 
     # Variables privadas
-    _OPCODE = 0x38
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0x38
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -2541,9 +2740,9 @@ class SED(Instruction):
         self._cpu.set_reg_p_d_bit(1)
 
     # Variables privadas
-    _OPCODE = 0xF8
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0xF8
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -2558,9 +2757,9 @@ class SEI(Instruction):
         self._cpu.set_reg_p_i_bit(1)
 
     # Variables privadas
-    _OPCODE = 0x78
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0x78
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -2586,9 +2785,9 @@ class STA_zero(STA):
         super(STA_zero, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x85
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0x85
+    BYTES = 2
+    CYCLES = 3
 
 
 class STA_zerox(STA):
@@ -2601,9 +2800,9 @@ class STA_zerox(STA):
         super(STA_zerox, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x95
-    _BYTES = 2
-    _CYCLES = 4
+    OPCODE = 0x95
+    BYTES = 2
+    CYCLES = 4
 
 
 class STA_abs(STA):
@@ -2616,9 +2815,9 @@ class STA_abs(STA):
         super(STA_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x80
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x80
+    BYTES = 3
+    CYCLES = 4
 
 
 class STA_absx(STA):
@@ -2631,9 +2830,9 @@ class STA_absx(STA):
         super(STA_absx, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x90
-    _BYTES = 3
-    _CYCLES = 5
+    OPCODE = 0x90
+    BYTES = 3
+    CYCLES = 5
 
 
 class STA_absy(STA):
@@ -2646,9 +2845,9 @@ class STA_absy(STA):
         super(STA_absy, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x99
-    _BYTES = 3
-    _CYCLES = 5
+    OPCODE = 0x99
+    BYTES = 3
+    CYCLES = 5
 
 class STA_preindexi(STA):
 
@@ -2660,9 +2859,9 @@ class STA_preindexi(STA):
         super(STA_preindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x81
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0x81
+    BYTES = 2
+    CYCLES = 6
 
 
 class STA_postindexi(STA):
@@ -2675,9 +2874,9 @@ class STA_postindexi(STA):
         super(STA_postindexi, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x91
-    _BYTES = 2
-    _CYCLES = 6
+    OPCODE = 0x91
+    BYTES = 2
+    CYCLES = 6
 
 
 ###############################################################################
@@ -2703,9 +2902,9 @@ class STX_zero(STX):
         super(STX_zero, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x86
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0x86
+    BYTES = 2
+    CYCLES = 3
 
 
 class STX_zeroy(STX):
@@ -2718,9 +2917,9 @@ class STX_zeroy(STX):
         super(STX_zeroy, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x96
-    _BYTES = 2
-    _CYCLES = 4
+    OPCODE = 0x96
+    BYTES = 2
+    CYCLES = 4
 
 
 class STX_abs(STX):
@@ -2733,9 +2932,9 @@ class STX_abs(STX):
         super(STX_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x8E
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x8E
+    BYTES = 3
+    CYCLES = 4
 
 
 ###############################################################################
@@ -2761,9 +2960,9 @@ class STY_zero(STY):
         super(STY_zero, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x84
-    _BYTES = 2
-    _CYCLES = 3
+    OPCODE = 0x84
+    BYTES = 2
+    CYCLES = 3
 
 
 class STY_zerox(STY):
@@ -2776,9 +2975,9 @@ class STY_zerox(STY):
         super(STY_zerox, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x94
-    _BYTES = 2
-    _CYCLES = 4
+    OPCODE = 0x94
+    BYTES = 2
+    CYCLES = 4
 
 
 class STY_abs(STY):
@@ -2791,9 +2990,9 @@ class STY_abs(STY):
         super(STY_abs, self).execute(op)
 
     # Variables privadas
-    _OPCODE = 0x8C
-    _BYTES = 3
-    _CYCLES = 4
+    OPCODE = 0x8C
+    BYTES = 3
+    CYCLES = 4
 
 
 ###############################################################################
@@ -2813,9 +3012,9 @@ class TAX(Instruction):
         self._set_reg_x(ac)
 
     # Variables privadas
-    _OPCODE = 0xAA
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0xAA
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -2835,9 +3034,9 @@ class TAY(Instruction):
         self._set_reg_y(ac)
 
     # Variables privadas
-    _OPCODE = 0xA8
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0xA8
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -2857,9 +3056,9 @@ class TSX(Instruction):
         self._set_reg_x(sp)
 
     # Variables privadas
-    _OPCODE = 0xBA
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0xBA
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -2879,9 +3078,9 @@ class TXA(Instruction):
         self._set_reg_a(reg_x)
 
     # Variables privadas
-    _OPCODE = 0x8A
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0x8A
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -2898,9 +3097,9 @@ class TXS(Instruction):
         self._set_reg_sp(reg_x)
 
     # Variables privadas
-    _OPCODE = 0x9A
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0x9A
+    BYTES = 1
+    CYCLES = 2
 
 
 ###############################################################################
@@ -2920,6 +3119,6 @@ class TYA(Instruction):
         self._set_reg_a(reg_y)
 
     # Variables privadas
-    _OPCODE = 0x98
-    _BYTES = 1
-    _CYCLES = 2
+    OPCODE = 0x98
+    BYTES = 1
+    CYCLES = 2
