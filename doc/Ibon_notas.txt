@@ -1,0 +1,1 @@
+- Atención: los opcodes de alguna instrucción del documento 6502.txt están mal. 

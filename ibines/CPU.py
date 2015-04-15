@@ -146,6 +146,7 @@ class CPU(object):
     # Decodifica la instrucción encontrada en la posición addr y deveulve un objeto de su clase
     def decode(self, addr):
         opcode = self._mem.read_data(addr)
+
         inst_class = Instruction.Instruction.OPCODE_INDEX[opcode]
 
         inst = None
@@ -153,8 +154,8 @@ class CPU(object):
         if inst_class.BYTES == 1:                    # Instrucciones sin operando
             inst = inst_class(self)
         elif inst_class.BYTES == 2:                  # Instrucciones con oprando de 1 byte
-            inst = inst_class(operand, self)
             operand = self._mem.read_data(addr+1)
+            inst = inst_class(operand, self)
         elif inst_class.BYTES == 3:                  # Instrucciones con oprando de 2 bytes
             operand = self._mem.read_data(addr+1)
             operand = operand | (self._mem.read_data(addr+2) << 8)

@@ -33,7 +33,7 @@ class ROM(object):
 
     def load_file(self, file_name):
         f = open(file_name, 'r')
-        self._rom = list(bytearray(file.read()))
+        self._rom = bytearray(f.read())
         f.close()
 
         # Comprueba que el formato de la cabecera sea corrector
@@ -44,10 +44,10 @@ class ROM(object):
             self._rom_control_1 = self._rom[6]
             self._rom_control_2 = self._rom[7]
             self._ram_banks = self._rom[8]
-            self._reserved = self._rom[9]
+            self._reserved = self._rom[9:16]
 
             # Ahora carga la info
-            i = 10
+            i = 16
             # Si hay un trainer lo carga primero
             if self.get_control_1_trainer_bit_2():
                 self._trainer = self._rom[i:i + 512]

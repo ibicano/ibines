@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+import time
 from ROM import ROM
 from PPU import PPU
 from CPU import CPU
@@ -15,7 +16,6 @@ class NES(object):
         #######################################################################
         # Variables de instancia
         #######################################################################
-        file_name = "roms/Super Mario Bros. (E).nes"
         self._rom = ROM(file_name)
 
         self._ppu = PPU()
@@ -23,7 +23,7 @@ class NES(object):
 
         self._memory = Memory(self._ppu, self._rom)
 
-        self._cpu = CPU(memory, ppu)
+        self._cpu = CPU(self._memory, self._ppu)
         #######################################################################
         #######################################################################
 
@@ -38,7 +38,7 @@ class NES(object):
 
                 # Fetch y Exec siguiente instrucción (si hemos ejecutado una
                 # interrupción en el paso anterior será su rutina de interrupción)
-                inst = self._cpu.fetch()
+                inst = self._cpu.fetch_inst()
                 inst.execute()
 
             # Restamos un ciclo de ejecución a la instrucción actual y la PPU
@@ -52,5 +52,6 @@ class NES(object):
 ###############################################################################
 # Inicio del programa
 ###############################################################################
-nes = NES()
+file_name = "../roms/Super Mario Bros. (E).nes"
+nes = NES(file_name)
 nes.run()

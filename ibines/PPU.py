@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import nesutils
+import time
 from PPUMemory import PPUMemory
 from SpriteMemory import SpriteMemory
 from GFX import GFX
@@ -65,14 +66,14 @@ class PPU(object):
     # Ejecuta un ciclo de reloj. Aquí va toda la chicha del dibujado y de
     # activación de cosas en función del ciclo del frame en el que nos
     # encontremos
-    def exec_cycles(self):
+    def exec_cycle(self):
         if self._cycles_frame > 0:     # En mitad del frame
-            if self._cycles_frame >= self._VBLANK_CYCLES:     # Dibujando scanlines
+            if self._cycles_frame >= self.VBLANK_CYCLES:     # Dibujando scanlines
                 if self._cycles_scanline == 0:
                     self.draw_scanline()
                     self._gfx.update()
-            elif self._cycles_frame < self._VBLANK_CYCLES:     # En el periodo de vblank
-                if self._cycles_frame == self._VBLANK_CYCLES:    # Este es el ciclo en el que entramos en VBLANK
+            elif self._cycles_frame < self.VBLANK_CYCLES:     # En el periodo de vblank
+                if self._cycles_frame == self.VBLANK_CYCLES:    # Este es el ciclo en el que entramos en VBLANK
                     self.set_vblank()    # Activamos el período VBLANk al inicio del período
         elif self._cycles_frame == 0:     # Fin del Frame
             self.clear_vblank() # Finalizamos el período VBLANK
@@ -85,7 +86,7 @@ class PPU(object):
         else:
             self._cycles_frame -= 1
 
-        if self._cycles_scanlines == 0:
+        if self._cycles_scanline == 0:
             self._cycles_scanline = self._cycles_scanline = self.SCANLINE_CYCLES - 1
         else:
             self._cycles_scanline -= 1
