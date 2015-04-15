@@ -19,7 +19,7 @@ class PPU(object):
     VBLANK_CYCLES = 7420
     FRAME_SCANLINES = 312
     VBLANK_SCANLINES = 70
-    FRAME_PERIOD = 0.020        # Periodo de frame en milisegundos
+    FRAME_PERIOD = 0.020        # Periodo de frame en segundos
 
     def __init__(self):
         #######################################################################
@@ -33,7 +33,11 @@ class PPU(object):
         self._gfx = GFX()
 
         # Ciclos restantes hasta próximo evento
-        self._cycles_frame = self.FRAME_CYCLES
+        self._cycles_frame = self.FRAME_CYCLES - 1
+        self._cycles_scanline = self.SCANLINE_CYCLES - 1
+
+        # Scanline actual
+        self._scanline_number = 0
 
         # Registros
 
@@ -62,19 +66,29 @@ class PPU(object):
     # activación de cosas en función del ciclo del frame en el que nos
     # encontremos
     def exec_cycles(self):
-        if self._cycles_frame == 0:
+        if self._cycles_frame > 0:     # En mitad del frame
+            if self._cycles_frame >= self._VBLANK_CYCLES:     # Dibujando scanlines
+                if self._cycles_scanline == 0:
+                    self.draw_scanline()
+                    self._gfx.update()
+            elif self._cycles_frame < self._VBLANK_CYCLES:     # En el periodo de vblank
+                if self._cycles_frame == self._VBLANK_CYCLES:    # Este es el ciclo en el que entramos en VBLANK
+                    self.set_vblank()    # Activamos el período VBLANk al inicio del período
+        elif self._cycles_frame == 0:     # Fin del Frame
             self.clear_vblank() # Finalizamos el período VBLANK
-            self._cycles_frame = self.SCANLINE_FRAME
-        else:
-            # Este es el periodo de vblank
-            if self._cycles_frame <= self._VBLANK_CYCLES:
-                if self._cycles_frame == self._VBLANK_CYCLES: self.set_vblank()    # Activamos el período VBLANk al inicio del período
-            # Si no estamos en VBLANK dibujamos scanlines
-            else:
-                pass # TODO: Dibujar scanlines
+            self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
 
-            # Decrementamos el contador de ciclos
+
+        # Decrementamos el contador de ciclos
+        if self._cycles_frame == 0:
+            self._cycles_frame = self._cycles_frame = self.FRAME_CYCLES - 1
+        else:
             self._cycles_frame -= 1
+
+        if self._cycles_scanlines == 0:
+            self._cycles_scanline = self._cycles_scanline = self.SCANLINE_CYCLES - 1
+        else:
+            self._cycles_scanline -= 1
 
 
     # Lee el registro indicado por su dirección en memoria
@@ -322,17 +336,7 @@ class PPU(object):
         nesutils.get_bit(self._reg_status, 7)
 
 
-    # TODO: paracticamente todo
-    # FUNCIONES DE DIBUJADO
-    def draw_frame(self):
-        for y in range(240):
-            self._reg_vram_addr = self._reg_vram_tmp
-            self.draw_scanline(y)
-            self._gfx.update()
-            self.set_vblank()
-
-
-    def draw_scanline(self, y):
+    def draw_scanline(self):
         # Copia el desplazamiento X del registro tmp al addr al principio del scanline
         tmp = self._reg_vram_tmp
 
@@ -345,12 +349,10 @@ class PPU(object):
         self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 10, tmp & 0x0400)
 
         for x in range(256):
-            self.draw_pixel(x, y)
+            self.draw_pixel(x, self._scanline_number)
 
 
-    # TODO: implementar la función "get_pattern_rgb()" al que se le proporciona el
-    # número de patrón y devuelve un matrix 8x8 con los colores de cada pixel
-    # ya calculados como una tupla (R,G,B)
+    # Dibuja un pixel de la pantalla
     def draw_pixel(self, x, y):
         #sprites_pt = self.control_1_sprites_pattern_bit_3()
         #background_pt = self.control_1_background_pattern_bit_4()

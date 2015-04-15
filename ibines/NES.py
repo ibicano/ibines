@@ -45,6 +45,9 @@ class NES(object):
             self._cpu.exec_cycle()
             self._ppu.exec_cycle()
 
+            # Emula la velocidad de la NES
+            time.sleep(0.0000006)
+
 
 ###############################################################################
 # Inicio del programa
