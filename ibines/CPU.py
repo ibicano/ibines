@@ -83,34 +83,34 @@ class CPU(object):
 
     # Devuelve una referencia a la memoria
     def get_mem(self):
-        return self.__mem
+        return self._mem
 
 
     # Devuelve el contenido los registros
     def get_reg_pc(self):
-        return self.__reg_pc
+        return self._reg_pc
 
     def get_reg_sp(self):
-        return self.__reg_sp
+        return self._reg_sp
 
     def get_reg_a(self):
-        return self.__reg_a
+        return self._reg_a
 
     def get_reg_x(self):
-        return self.__reg_x
+        return self._reg_x
 
     def get_reg_y(self):
-        return self.__reg_y
+        return self._reg_y
 
     def get_reg_p(self):
-        return self.__reg_p
+        return self._reg_p
 
     # Escribe el contenido de los registros
     def set_reg_pc(self, r):
-        self.__reg_pc = r & 0xFFFF
+        self._reg_pc = r & 0xFFFF
 
     def set_reg_sp(self, r):
-        self.__reg_sp = r & 0xFF
+        self._reg_sp = r & 0xFF
 
     def set_reg_a(self, r):
         self._reg_a = r & 0xFF
@@ -143,7 +143,7 @@ class CPU(object):
         return inst
 
 
-    # Decodifica la instrucción encontrada en la posición addr y deveulve un objeto de su clase
+    # Decodifica la instrucción encontrada en la posición addr y devuelve un objeto de su clase
     def decode(self, addr):
         opcode = self._mem.read_data(addr)
 

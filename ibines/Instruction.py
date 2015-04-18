@@ -615,8 +615,8 @@ class BPL(Instruction):
         super(BPL, self).__init__(operand, cpu)
 
     def execute(self):
-        if not self._cpu.get_reg_p_n_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc + self.operand)
+        if not self._cpu.get_reg_p_s_bit():
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + self._operand)
 
 
     # Variables privadas
@@ -2802,7 +2802,7 @@ class TAX(Instruction):
         self._cpu.set_carry_bit(ac)
         self._cpu.set_sign_bit(ac)
 
-        self._set_reg_x(ac)
+        self._cpu.set_reg_x(ac)
 
     # Variables privadas
     OPCODE = 0xAA
@@ -2824,7 +2824,7 @@ class TAY(Instruction):
         self._cpu.set_carry_bit(ac)
         self._cpu.set_sign_bit(ac)
 
-        self._set_reg_y(ac)
+        self._cpu.set_reg_y(ac)
 
     # Variables privadas
     OPCODE = 0xA8
@@ -2846,7 +2846,7 @@ class TSX(Instruction):
         self._cpu.set_carry_bit(sp)
         self._cpu.set_sign_bit(sp)
 
-        self._set_reg_x(sp)
+        self._cpu.set_reg_x(sp)
 
     # Variables privadas
     OPCODE = 0xBA
@@ -2868,7 +2868,7 @@ class TXA(Instruction):
         self._cpu.set_carry_bit(reg_x)
         self._cpu.set_sign_bit(reg_x)
 
-        self._set_reg_a(reg_x)
+        self._cpu.set_reg_a(reg_x)
 
     # Variables privadas
     OPCODE = 0x8A
@@ -2887,7 +2887,7 @@ class TXS(Instruction):
     def execute(self):
         reg_x = self._cpu.get_reg_x()
 
-        self._set_reg_sp(reg_x)
+        self._cpu.set_reg_sp(reg_x)
 
     # Variables privadas
     OPCODE = 0x9A
@@ -2909,7 +2909,7 @@ class TYA(Instruction):
         self._cpu.set_carry_bit(reg_y)
         self._cpu.set_sign_bit(reg_y)
 
-        self._set_reg_a(reg_y)
+        self._cpu.set_reg_a(reg_y)
 
     # Variables privadas
     OPCODE = 0x98

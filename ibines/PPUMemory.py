@@ -11,17 +11,17 @@ class PPUMemory(object):
         #######################################################################
         # Variables de instancia
         #######################################################################
-        self._pattern_table_0 = []
-        self._pattern_table_1 = []
+        self._pattern_table_0 = [None] * 0x1000
+        self._pattern_table_1 = [None] * 0x1000
 
-        self._name_table_0 = []
-        self._attr_table_0 = []
+        self._name_table_0 = [None] * 0x03C0
+        self._attr_table_0 = [None] * 0x0040
 
-        self._name_table_1 = []
-        self._attr_table_1 = []
+        self._name_table_1 = [None] * 0x03C0
+        self._attr_table_1 = [None] * 0x0040
 
-        self._image_palette = []
-        self._sprite_palette = []
+        self._image_palette = [None] * 0x0010
+        self._sprite_palette = [None] * 0x0010
 
         # Referencia a la PPU
         self._ppu = ppu

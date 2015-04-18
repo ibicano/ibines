@@ -93,7 +93,7 @@ class PPU(object):
 
 
     # Lee el registro indicado por su dirección en memoria
-    def read_reg(self, data, addr):
+    def read_reg(self, addr):
         d = 0x00
 
         if addr == 0x2002:
@@ -107,7 +107,7 @@ class PPU(object):
     # Según el documento SKINNY.TXT
     def read_reg_2002(self):
         self._reg_vram_switch = 0
-        return self.get_reg_status()
+        return self._reg_status
 
 
     # Escribe el registro indicado por su dirección en memoria
