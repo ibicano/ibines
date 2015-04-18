@@ -4,7 +4,7 @@
 import time
 from ROM import ROM
 from PPU import PPU
-from CPU import CPU
+from CPU import *
 from Memory import Memory
 from Instruction import *
 
@@ -38,8 +38,13 @@ class NES(object):
 
                 # Fetch y Exec siguiente instrucción (si hemos ejecutado una
                 # interrupción en el paso anterior será su rutina de interrupción)
-                inst = self._cpu.fetch_inst()
-                inst.execute()
+                try:
+                    inst = self._cpu.fetch_inst()
+                    inst.execute()
+                except OpcodeError as e:
+                    print "Error: Opcode inválido"
+                    print e
+
 
             # Restamos un ciclo de ejecución a la instrucción actual y la PPU
             self._cpu.exec_cycle()

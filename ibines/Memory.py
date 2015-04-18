@@ -15,7 +15,7 @@ class Memory(object):
         #######################################################################
 
         # Array para almacenar el contenido de la memoria
-        self._memory = [None] * 0x10000
+        self._memory = [0x00] * 0x10000
         self._ppu = ppu
         self._rom = rom
         #######################################################################

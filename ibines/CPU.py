@@ -134,31 +134,23 @@ class CPU(object):
     # y delvolver el objeto
     # Devuelve la instrucción a ejecutar
     def fetch_inst(self):
-        # Devuelve el objeto de clase "Instruction"
-        inst = self.decode(self._reg_pc)
+        opcode = self._mem.read_data(self._reg_pc)
 
-        # Incrementa el registro contador de programa PC
-        self.incr_pc(inst.BYTES)
-
-        return inst
-
-
-    # Decodifica la instrucción encontrada en la posición addr y devuelve un objeto de su clase
-    def decode(self, addr):
-        opcode = self._mem.read_data(addr)
-
-        inst_class = Instruction.Instruction.OPCODE_INDEX[opcode]
+        if opcode in Instruction.Instruction.OPCODE_INDEX.keys():
+            inst_class = Instruction.Instruction.OPCODE_INDEX[opcode]
+        else:
+            raise OpcodeError(self._reg_pc, opcode)
 
         inst = None
 
         if inst_class.BYTES == 1:                    # Instrucciones sin operando
             inst = inst_class(self)
         elif inst_class.BYTES == 2:                  # Instrucciones con oprando de 1 byte
-            operand = self._mem.read_data(addr+1)
+            operand = self._mem.read_data(self._reg_pc+1)
             inst = inst_class(operand, self)
-        elif inst_class.BYTES == 3:                  # Instrucciones con oprando de 2 bytes
-            operand = self._mem.read_data(addr+1)
-            operand = operand | (self._mem.read_data(addr+2) << 8)
+        elif inst_class.BYTES == 3:                  # Instrucciones con operando de 2 bytes
+            operand = self._mem.read_data(self._reg_pc+1)
+            operand = operand | (self._mem.read_data(self._reg_pc+2) << 8)
             inst = inst_class(operand, self)
 
         return inst
@@ -261,3 +253,15 @@ class CPU(object):
         byte = self.get_mem().read_data(sp_addr)
         self.set_reg_sp(self.get_reg_sp() + 1)
         return byte
+
+
+# Excepciones
+
+class OpcodeError(Exception):
+
+    def __init__(self, addr, opcode):
+        self._addr = addr
+        self._opcode = opcode
+
+    def __str__(self):
+        return repr(hex(self._addr) + ": " + hex(self._opcode))
