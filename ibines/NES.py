@@ -18,7 +18,7 @@ class NES(object):
         #######################################################################
         self._rom = ROM(file_name)
 
-        self._ppu = PPU()
+        self._ppu = PPU(self._rom)
         self._ppu.set_mirroring(self._rom.get_mirroring())    # Establece el modo mirroring especificado en la ROM
 
         self._memory = Memory(self._ppu, self._rom)
@@ -30,6 +30,7 @@ class NES(object):
     # Aquí se implementa el bucle principal de la NES. Cada iteración equivale a un
     # ciclo de reloj, para más precisión y exactitud conceptual
     def run(self):
+        count = 0
         while True:
             if not self._cpu.is_busy():
                 # Si hay interrupciones y la CPU no está ocupada, las lanzamos
@@ -49,6 +50,9 @@ class NES(object):
             # Restamos un ciclo de ejecución a la instrucción actual y la PPU
             self._cpu.exec_cycle()
             self._ppu.exec_cycle()
+
+            count += 1
+            print count
 
             # Emula la velocidad de la NES
             time.sleep(0.0000006)

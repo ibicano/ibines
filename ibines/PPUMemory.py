@@ -6,25 +6,44 @@ PPUMemory
 Descripción: Implementa la Memoria del procesador gráfico
 """
 class PPUMemory(object):
+    # Constantes
+    ADDR_PATTERN_0 = 0x0000
+    ADDR_PATTERN_1 = 0x1000
 
-    def __init__(self, ppu):
+    ADDR_NAME_0 = 0x2000
+    ADDR_ATTR_0 = 0x23C0
+    ADDR_NAME_1 = 0x2400
+    ADDR_ATTR_1 = 0x27C0
+    ADDR_NAME_2 = 0x2800
+    ADDR_ATTR_2 = 0x2BC0
+    ADDR_NAME_3 = 0x2C00
+    ADDR_ATTR_3 = 0x2FC0
+
+    ADDR_IMAGE_PALETTE = 0x3F00
+    ADDR_SPRITE_PALETTE = 0x3F10
+
+
+    def __init__(self, ppu, rom):
         #######################################################################
         # Variables de instancia
         #######################################################################
-        self._pattern_table_0 = [None] * 0x1000
-        self._pattern_table_1 = [None] * 0x1000
+        self._pattern_table_0 = [0x00] * 0x1000
+        self._pattern_table_1 = [0x00] * 0x1000
 
-        self._name_table_0 = [None] * 0x03C0
-        self._attr_table_0 = [None] * 0x0040
+        self._name_table_0 = [0x00] * 0x03C0
+        self._attr_table_0 = [0x00] * 0x0040
 
-        self._name_table_1 = [None] * 0x03C0
-        self._attr_table_1 = [None] * 0x0040
+        self._name_table_1 = [0x00] * 0x03C0
+        self._attr_table_1 = [0x00] * 0x0040
 
-        self._image_palette = [None] * 0x0010
-        self._sprite_palette = [None] * 0x0010
+        self._image_palette = [0x00] * 0x0010
+        self._sprite_palette = [0x00] * 0x0010
 
         # Referencia a la PPU
         self._ppu = ppu
+
+        # Referencia a la ROM
+        self._rom = rom
 
         # TODO: completar inicialización del modo mirror
         self._mirror_mode = 0x0        # Modo de mirror de los "name tables" (sacado de la ROM). 0: horizontal, 1: vertical
@@ -38,9 +57,15 @@ class PPUMemory(object):
         data = 0x00
         # Pattern tables:
         if a >= 0x0000 and a <= 0x0FFF:
-             data = self._pattern_table_0[a % 0x1000]
+            if self._rom.get_chr_count() == 0:                  # Si la pattern table 0 NO está en la ROM
+                data = self._pattern_table_0[a % 0x1000]
+            else:                                               # Si la pattern table  0 SÍ está en la ROM
+                data = self._rom.read_chr_data(a)
         elif a >= 0x1000 and a <= 0x1FFF:
-             data = self._pattern_table_1[a % 0x1000]
+            if self._rom.get_chr_count() < 2:                   # Si la pattern table 1 NO está en la ROM
+                data = self._pattern_table_1[a % 0x1000]
+            else:                                               # Si la pattern table 0 SÍ está en la ROM
+                data = self._rom.read_chr_data(a)
         # Name tables y attribute tables:
         elif a >= 0x2000 and a <= 0x23BF:
             data = self._name_table_0[a % 0x03C0]
@@ -106,9 +131,11 @@ class PPUMemory(object):
         d = data & 0xFF
         # Pattern tables:
         if a >= 0x0000 and a <= 0x0FFF:
-             self._pattern_table_0[a % 0x1000] = d
+            if self._rom.get_chr_count() == 0:
+                self._pattern_table_0[a % 0x1000] = d
         elif a >= 0x1000 and a <= 0x1FFF:
-             self._pattern_table_1[a % 0x1000] = d
+            if self._rom.get_chr_count() < 2:
+                self._pattern_table_1[a % 0x1000] = d
         # Name tables y attribute tables:
         elif a >= 0x2000 and a <= 0x23BF:
             self._name_table_0[a % 0x03C0] = d

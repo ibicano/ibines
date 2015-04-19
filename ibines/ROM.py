@@ -17,11 +17,11 @@ class ROM(object):
         self._ram_banks = 0
         self._reserved = 0
 
-        self._pgr_1 = []
-        self._pgr_2 = []
+        self._pgr_1 = [0x00] * 0x4000
+        self._pgr_2 = [0x00] * 0x4000
 
-        self._chr_1 = []
-        self._chr_2 = []
+        self._chr_1 = [0x00] * 0x1000
+        self._chr_2 = [0x00] * 0x1000
 
         # Guarda si la ROM ha cargado correctamente
         self._load_ok = False
@@ -103,17 +103,39 @@ class ROM(object):
     def get_control_1_mirroring_bit_3(self):
         return (self._rom_control_1 & 0x08) >> 3
 
+    # Devuelve el número de bancos de 16KB de memoria de programa disponibles
+    def get_pgr_count(self):
+        return self._pgr_rom_banks
+
+    # Devuelve el número de bancos de 16KB de memoria de patrones gráficos disponibles
+    def get_chr_count(self):
+        return self._chr_rom_banks
+
     def get_pgr(self):
         return self._pgr_1 + self._pgr_2
+
+    def get_chr(self):
+        return self._chr_1 + self._chr_2
 
 
     def read_pgr_data(self, addr):
         a = addr & 0xFFFF
-        d = 0
+        d = 0x00
         if a >= 0x0000 and a <= 0x3FFF:
             d = self._pgr_1[a]
         elif a >= 0x4000:
             d = self._pgr_2[a]
+
+        return d
+
+
+    def read_chr_data(self, addr):
+        a = addr & 0xFFFF
+        d = 0x00
+        if a >= 0x0000 and a <= 0x1000:
+            d = self._chr_1[a]
+        elif a >= 0x1000 and a < 0x2000:
+            d = self._chr_2[a]
 
         return d
 

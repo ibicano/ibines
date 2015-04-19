@@ -15,19 +15,22 @@ class PPU(object):
     ###########################################################################
     # Constantes
     ###########################################################################
-    FRAME_CYCLES = 330072
+    FRAME_CYCLES = 33072
     SCANLINE_CYCLES = 106
     VBLANK_CYCLES = 7420
     FRAME_SCANLINES = 312
     VBLANK_SCANLINES = 70
     FRAME_PERIOD = 0.020        # Periodo de frame en segundos
 
-    def __init__(self):
+    FRAME_WIDTH = 256
+    FRAME_HEIGHT = 256
+
+    def __init__(self, rom):
         #######################################################################
         # Variables de instancia
         #######################################################################
         # Memoria de la PPU
-        self._memoria = PPUMemory(self)
+        self._memory = PPUMemory(self, rom)
         self._sprite_memory = SpriteMemory()
 
         # Motor gráfico del emulador
@@ -73,7 +76,7 @@ class PPU(object):
                     self.draw_scanline()
                     self._gfx.update()
             elif self._cycles_frame < self.VBLANK_CYCLES:     # En el periodo de vblank
-                if self._cycles_frame == self.VBLANK_CYCLES:    # Este es el ciclo en el que entramos en VBLANK
+                if self._cycles_frame == self.VBLANK_CYCLES - 1:    # Este es el ciclo en el que entramos en VBLANK
                     self.set_vblank()    # Activamos el período VBLANk al inicio del período
         elif self._cycles_frame == 0:     # Fin del Frame
             self.clear_vblank() # Finalizamos el período VBLANK
@@ -82,12 +85,12 @@ class PPU(object):
 
         # Decrementamos el contador de ciclos
         if self._cycles_frame == 0:
-            self._cycles_frame = self._cycles_frame = self.FRAME_CYCLES - 1
+            self._cycles_frame = self.FRAME_CYCLES - 1
         else:
             self._cycles_frame -= 1
 
         if self._cycles_scanline == 0:
-            self._cycles_scanline = self._cycles_scanline = self.SCANLINE_CYCLES - 1
+            self._cycles_scanline = self.SCANLINE_CYCLES - 1
         else:
             self._cycles_scanline -= 1
 
@@ -149,7 +152,7 @@ class PPU(object):
     def write_reg_spr_io(self, data):
         d = data & 0xFF
         self._reg_spr_io = d
-        self._memoria.write_sprite_data(d, self._reg_spr_addr)
+        self._memory.write_sprite_data(d, self._reg_spr_addr)
 
 
     # Según el documento SKINNY.TXT
@@ -218,7 +221,7 @@ class PPU(object):
         d = data & 0xFF
         a = self._reg_vram_tmp
         self._reg_vram_io = d
-        self._memoria.write_data(d, a)
+        self._memory.write_data(d, a)
 
 
     # Escribe el registro y hace una transferencia dma
@@ -363,9 +366,12 @@ class PPU(object):
         pattern_pixel_x = x % 8
         pattern_pixel_y = y % 8
 
+        pattern_table = self.control_1_background_pattern_bit_4()
         pattern_index = self._memory.read_data(self._reg_vram_addr)
-        pattern_rgb = self.get_pattern_rgb(pattern_index)
-        self.gfx.draw_pixel(x, y, pattern_rgb[pattern_pixel_x][pattern_pixel_y])
+
+        # TODO: cambiar el color para los patrones calculando el color adecuado de la tabla de atributos
+        pattern_rgb = self.get_pattern_rgb(pattern_table, pattern_index, 0, PPUMemory.ADDR_IMAGE_PALETTE)
+        self._gfx.draw_pixel(x, y, pattern_rgb[pattern_pixel_x][pattern_pixel_y])
 
         # Dibuja los sprites
         sprites_list = self.get_sprites_list()
@@ -378,15 +384,15 @@ class PPU(object):
         off_x = sprite.get_offset_x()
         off_y = sprite.get_offset_y()
 
-        if x >= off_x and x > off_x+8:
+        if x >= off_x and x < off_x+8:
             if y >= off_y and y < off_y+8:
-                sprite_x = x - off_x
-                sprite_y = y - off_y
+                pixel_x = x - off_x
+                pixel_y = y - off_y
 
-                pt = self.control_1_sprites_pattern_bit_3()
-                pattern_rgb = self.get_pattern_rgb(pt, sprite.get_index(), sprite.get_attr_color(), 0x3F10)
+                pattern_table = self.control_1_sprites_pattern_bit_3()
+                pattern_rgb = self.get_pattern_rgb(pattern_table, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
 
-                self._gfx.draw_pixel(x, y, pattern_rgb[sprite_x][sprite_y])
+                self._gfx.draw_pixel(x, y, pattern_rgb[pixel_x][pixel_y])
 
     # Devuelve una lista de objetos de clase Sprite con los sprites de la memoria de sprites
     # FIX: Esto habría que reorganizarlo para que quede más claro
@@ -394,8 +400,8 @@ class PPU(object):
         sprites_list = []
         for addr in range(0x00,0xFF,0x04):
             sprite = Sprite()
-            sprite.load_by_addr(self.sprite_memory, addr)
-            sprites_list.appen(sprite)
+            sprite.load_by_addr(self._sprite_memory, addr)
+            sprites_list.append(sprite)
 
         return sprites_list
 
@@ -406,9 +412,9 @@ class PPU(object):
     # (R,G,B) con el color calculado de cada pixel
     # TODO: adaptar la paleta a si se está trabajando en fondo o sprites
     def get_pattern_rgb(self, pattern_table, pattern_index, attr_color, palette_addr):
-        pattern = self._get_pattern_mem(pattern_table, pattern_index)
+        pattern = self.get_pattern_mem(pattern_table, pattern_index)
 
-        pattern_rgb=[]
+        pattern_rgb=[[(0, 0, 0)] * 8] * 8
         # Procesa los bytes del patrón para formatearlos en el valor de retorno
         for y in range(8):
             byte_1 = pattern[y]
@@ -418,7 +424,7 @@ class PPU(object):
                 # Calcula la dirección del color en la paleta de memoria y lo extrae de la tabla de colores
                 addr_color = palette_addr + (0x00 | ((byte_1 & (0x01 << x)) >> x) | (((byte_2 & (0x01 << x)) >> x) << 1) | ((attr_color & 0x03) << 2))
                 color_index = self._memory.read_data(addr_color)
-                rgb = self._COLOUR_PALETTE(color_index)
+                rgb = self._COLOUR_PALETTE[color_index]
 
                 # FIX: puede que esté al revés el patrón. Veremos como aparece Mario.
                 # Asigna el valor RGB a la posición correspondiente:
@@ -426,7 +432,7 @@ class PPU(object):
 
         return pattern_rgb
 
-
+    # Devuelve los 16 bytes del patrón indicado tal como se almacenan en la tabla de patrones especificada
     def get_pattern_mem(self, pattern_table, pattern_index):
         if pattern_table == 0:
             addr = 0x0000

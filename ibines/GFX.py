@@ -35,7 +35,7 @@ class GFX(object):
 
 
     def update(self):
-        self._screen.update()
+        pygame.display.update()
 
 
     def run(self):

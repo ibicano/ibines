@@ -2,8 +2,10 @@
 
 class SpriteMemory(object):
 
+    SIZE = 256
+
     def __init__(self):
-        self._memory = []
+        self._memory = [0x00] * SpriteMemory.SIZE
 
     def read_data(self, addr):
         return self._memory[addr]
