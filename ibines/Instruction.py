@@ -51,7 +51,7 @@ class Instruction(object):
 
         # Calcula la dirección final del operando
         addr = self._cpu.get_mem().read_data(index)
-        addr = addr + (self._cpu.get_mem().read_data(index+1) << 2)
+        addr += self._cpu.get_mem().read_data(index + 1) << 2
 
         data = self._cpu.get_mem().read_data(addr)
 
@@ -490,10 +490,11 @@ class BCC(Instruction):
         super(BCC, self).__init__(operand, cpu)
 
     def execute(self):
+        # Incrementa el registro contador (PC) de la CPU
+        self._cpu.incr_pc(self.BYTES)
+
         if not self._cpu.get_reg_p_c_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self.operand))
-        else:
-            self._cpu.incr_pc(self.BYTES)
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
 
 
     # Variables privadas
@@ -510,10 +511,11 @@ class BCS(Instruction):
         super(BCS, self).__init__(operand, cpu)
 
     def execute(self):
+        # Incrementa el registro contador (PC) de la CPU
+        self._cpu.incr_pc(self.BYTES)
+
         if self._cpu.get_reg_p_c_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self.operand))
-        else:
-            self._cpu.incr_pc(self.BYTES)
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
 
 
     # Variables privadas
@@ -531,10 +533,11 @@ class BEQ(Instruction):
         super(BEQ, self).__init__(operand, cpu)
 
     def execute(self):
+        # Incrementa el registro contador (PC) de la CPU
+        self._cpu.incr_pc(self.BYTES)
+
         if self._cpu.get_reg_p_z_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self.operand))
-        else:
-            self._cpu.incr_pc(self.BYTES)
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
 
 
     # Variables privadas
@@ -607,10 +610,11 @@ class BMI(Instruction):
         super(BMI, self).__init__(operands, cpu)
 
     def execute(self):
+        # Incrementa el registro contador (PC) de la CPU
+        self._cpu.incr_pc(self.BYTES)
+
         if self._cpu.get_reg_p_n_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self.operand))
-        else:
-            self._cpu.incr_pc(self.BYTES)
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
 
 
     # Variables privadas
@@ -628,10 +632,11 @@ class BNE(Instruction):
         super(BNE, self).__init__(operand, cpu)
 
     def execute(self):
+        # Incrementa el registro contador (PC) de la CPU
+        self._cpu.incr_pc(self.BYTES)
+
         if not self._cpu.get_reg_p_z_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self.operand))
-        else:
-            self._cpu.incr_pc(self.BYTES)
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
 
 
     # Variables privadas
@@ -649,10 +654,11 @@ class BPL(Instruction):
         super(BPL, self).__init__(operand, cpu)
 
     def execute(self):
+        # Incrementa el registro contador (PC) de la CPU
+        self._cpu.incr_pc(self.BYTES)
+
         if not self._cpu.get_reg_p_s_bit():
             self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
-        else:
-            self._cpu.incr_pc(self.BYTES)
 
 
     # Variables privadas
@@ -697,10 +703,11 @@ class BVC(Instruction):
         super(BVC, self).__init__(operand, cpu)
 
     def execute(self):
+        # Incrementa el registro contador (PC) de la CPU
+        self._cpu.incr_pc(self.BYTES)
+
         if not self._cpu.get_reg_p_v_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self.operand))
-        else:
-            self._cpu.incr_pc(self.BYTES)
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
 
 
     # Variables privadas
@@ -718,10 +725,11 @@ class BVS(Instruction):
         super(BVS, self).__init__(operand, cpu)
 
     def execute(self):
+        # Incrementa el registro contador (PC) de la CPU
+        self._cpu.incr_pc(self.BYTES)
+
         if self._cpu.get_reg_p_v_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self.operand))
-        else:
-            self._cpu.incr_pc(self.BYTES)
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
 
 
     # Variables privadas

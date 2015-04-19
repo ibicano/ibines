@@ -25,11 +25,9 @@ def set_bit(word, bit_number, bit_value):
     return result
 
 
-# Devuelve el valor entero de un byte cuando el bit 7 indica el signo
+# Devuelve el valor entero de un byte en complemento a 2 cuando trabajamos con números con signo
 def signed_value(byte):
-    b = byte & 0x7F
-
     if byte & 0x80:
-        return -b
+        return -(0x100 - byte)
     else:
-        return b
+        return byte

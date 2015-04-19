@@ -1,1 +1,4 @@
 - Atención: los opcodes de alguna instrucción del documento 6502.txt están mal. 
+- En el mismo documento se espcifica que en los números con signo el bit 7
+específica el signo y los otros bits el valosr. ESTA MAL, deben interprestarse como
+números en complemento a 2.
