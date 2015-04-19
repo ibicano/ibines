@@ -1189,7 +1189,7 @@ class DEX(Instruction):
     def __init__(self, cpu):
         super(DEX, self).__init__(None, cpu)
 
-    def execute(self, op):
+    def execute(self):
         result = self._cpu.get_reg_x() - 1
 
         self._cpu.set_sign_bit(result)
@@ -1214,7 +1214,7 @@ class DEY(Instruction):
     def __init__(self, cpu):
         super(DEY, self).__init__(None, cpu)
 
-    def execute(self, op):
+    def execute(self):
         result = self._cpu.get_reg_y() - 1
 
         self._cpu.set_sign_bit(result)
@@ -1239,7 +1239,7 @@ class EOR(Instruction):
     def __init__(self, operand, cpu):
         super(EOR, self).__init__(operand, cpu)
 
-    def execute(self, op):
+    def execute(self):
         ac = self._cpu.get_reg_a()
         result = ac ^ op
 
@@ -1473,7 +1473,7 @@ class INX(Instruction):
     def __init__(self, cpu):
         super(INX, self).__init__(None, cpu)
 
-    def execute(self, op):
+    def execute(self):
         result = self._cpu.get_reg_x() + 1
 
         self._cpu.set_sign_bit(result)
@@ -1498,7 +1498,7 @@ class INY(Instruction):
     def __init__(self, cpu):
         super(INY, self).__init__(None, cpu)
 
-    def execute(self, op):
+    def execute(self):
         result = self._cpu.get_reg_y() + 1
 
         self._cpu.set_sign_bit(result)
@@ -1570,12 +1570,11 @@ class JSR(Instruction):
         super(JSR, self).__init__(operand, cpu)
 
     def execute(self):
-        pc = self._cpu.get_reg_pc() + self.BYTES
+        pc = self._cpu.get_reg_pc() + self.BYTES - 1
         self._cpu.push_stack((pc >> 8) & 0xFF)
         self._cpu.push_stack(pc & 0xFF)
 
-        op = self._cpu.fetch_absolute_addrmode()
-        self._cpu.set_reg_pc(op)
+        self._cpu.set_reg_pc(self._operand)
 
     # Variables privadas
     OPCODE = 0x20
@@ -2290,7 +2289,7 @@ class ROL_accumulator(ROL):
     def __init__(self, cpu):
         super(ROL_accumulator, self).__init__(None, cpu)
 
-    def execute(self, op):
+    def execute(self):
         op = self.fetch_accumulator_addrmode()
         result = super(ROL_accumulator, self).execute(op)
         self._cpu.set_reg_a(result)

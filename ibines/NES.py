@@ -30,11 +30,14 @@ class NES(object):
     # Aquí se implementa el bucle principal de la NES. Cada iteración equivale a un
     # ciclo de reloj, para más precisión y exactitud conceptual
     def run(self):
-        count = 0
+        cycles = 0
+        loop_time = 0
+        total_time = 0
         while True:
+            loop_time = time.time()
             if not self._cpu.is_busy():
                 # Si hay interrupciones y la CPU no está ocupada, las lanzamos
-                if self._ppu.is_vblank():
+                if self._ppu.get_int_vblank():
                     self._cpu.interrupt_vblank()        # Procesamos VBLANK
 
                 # Fetch y Exec siguiente instrucción (si hemos ejecutado una
@@ -51,11 +54,18 @@ class NES(object):
             self._cpu.exec_cycle()
             self._ppu.exec_cycle()
 
-            count += 1
-            print count
+            loop_time = time.time() - loop_time
+            total_time += loop_time
+            cycles += 1
+
+            if total_time >= 1:
+                print str(cycles / total_time) + "ciclos por segundo"
+                cycles = 0
+                toal_time = 0
+
 
             # Emula la velocidad de la NES
-            time.sleep(0.0000006)
+            #time.sleep(0.0000006)
 
 
 ###############################################################################

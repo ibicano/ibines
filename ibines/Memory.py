@@ -51,7 +51,7 @@ class Memory(object):
         d = data & 0xFF
 
         if a >= 0x0000 and a <= 0x1FFF:
-            n = 0x2000 + (a % 0x800)
+            n = a % 0x800
             self._memory[n] = d
             self._memory[0x0800 + n] = d
             self._memory[0x1000 + n] = d

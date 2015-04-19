@@ -67,9 +67,11 @@ class CPU(object):
         if not self.is_busy():
             self.push_stack((self._reg_pc >> 8) & 0xFF)
             self.push_stack(self._reg_pc & 0xFF)
-            self.push_stack(self._reg_eg_p)
+            self.push_stack(self._reg_p)
+            self.set_reg_p_i_bit(1)
             addr = self._mem.read_data(vector_addr) & 0xFF
-            addr = addr | (self._mem.read_data(vector_addr) << 8)
+            addr = addr | (self._mem.read_data(vector_addr + 1) << 8)
+            self._reg_pc = addr
 
             return True
         else:
@@ -78,6 +80,7 @@ class CPU(object):
 
     # Procesa la interrupción VBlank
     def interrupt_vblank(self):
+        self._ppu.set_int_vblank(0)
         return self.interrupt(self.INT_ADDR_VBLANK)
 
 
@@ -153,6 +156,8 @@ class CPU(object):
             operand = operand | (self._mem.read_data(self._reg_pc+2) << 8)
             inst = inst_class(operand, self)
 
+        self._cycles_inst = inst.CYCLES
+
         return inst
 
 
@@ -187,25 +192,25 @@ class CPU(object):
 
     # Establece el valor de los bits del registro de estado
     def set_reg_p_c_bit(self, v):
-        nesutils.set_bit(self._reg_p, self.REG_P_BIT_C, v)
+        self._reg_p = nesutils.set_bit(self._reg_p, self.REG_P_BIT_C, v)
 
     def set_reg_p_z_bit(self, v):
-        nesutils.set_bit(self._reg_p, self.REG_P_BIT_Z, v)
+        self._reg_p = nesutils.set_bit(self._reg_p, self.REG_P_BIT_Z, v)
 
     def set_reg_p_i_bit(self, v):
-        nesutils.set_bit(self._reg_p, self.REG_P_BIT_I, v)
+        self._reg_p = nesutils.set_bit(self._reg_p, self.REG_P_BIT_I, v)
 
     def set_reg_p_d_bit(self, v):
-        nesutils.set_bit(self._reg_p, self.REG_P_BIT_D, v)
+        self._reg_p = nesutils.set_bit(self._reg_p, self.REG_P_BIT_D, v)
 
     def set_reg_p_b_bit(self, v):
-        nesutils.set_bit(self._reg_p, self.REG_P_BIT_B, v)
+        self._reg_p = nesutils.set_bit(self._reg_p, self.REG_P_BIT_B, v)
 
     def set_reg_p_v_bit(self, v):
-        nesutils.set_bit(self._reg_p, self.REG_P_BIT_V, v)
+        self._reg_p = nesutils.set_bit(self._reg_p, self.REG_P_BIT_V, v)
 
     def set_reg_p_s_bit(self, v):
-        nesutils.set_bit(self._reg_p, self.REG_P_BIT_S, v)
+        self._reg_p = nesutils.set_bit(self._reg_p, self.REG_P_BIT_S, v)
 
     # Establece el valor de los bits del registro de estado en función
     # del resultado de una instrucción
@@ -244,12 +249,12 @@ class CPU(object):
 
     # Funciones para meter y sacar datos de la Pila
     def push_stack(self, byte):
-        sp_addr = 0x0100 & self.get_reg_sp()
-        self.get_mem().write_data(self, byte, sp_addr)
+        sp_addr = 0x0100 | self.get_reg_sp()
+        self.get_mem().write_data(byte, sp_addr)
         self.set_reg_sp(self.get_reg_sp() - 1)
 
     def pull_stack(self):
-        sp_addr = 0x0100 & self.get_reg_sp()
+        sp_addr = 0x0100 | self.get_reg_sp() + 1
         byte = self.get_mem().read_data(sp_addr)
         self.set_reg_sp(self.get_reg_sp() + 1)
         return byte

@@ -124,7 +124,7 @@ class ROM(object):
         if a >= 0x0000 and a <= 0x3FFF:
             d = self._pgr_1[a]
         elif a >= 0x4000:
-            d = self._pgr_2[a]
+            d = self._pgr_2[a % 0x4000]
 
         return d
 
@@ -135,7 +135,7 @@ class ROM(object):
         if a >= 0x0000 and a <= 0x1000:
             d = self._chr_1[a]
         elif a >= 0x1000 and a < 0x2000:
-            d = self._chr_2[a]
+            d = self._chr_2[a % 0x1000]
 
         return d
 

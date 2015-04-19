@@ -43,6 +43,9 @@ class PPU(object):
         # Scanline actual
         self._scanline_number = 0
 
+        # Interrupciones
+        self._int_vblank = 0
+
         # Registros
 
         # Registros I/O
@@ -73,13 +76,14 @@ class PPU(object):
         if self._cycles_frame > 0:     # En mitad del frame
             if self._cycles_frame >= self.VBLANK_CYCLES:     # Dibujando scanlines
                 if self._cycles_scanline == 0:
-                    self.draw_scanline()
-                    self._gfx.update()
+                    pass
+                    #self.draw_scanline()
+                    #self._gfx.update()
             elif self._cycles_frame < self.VBLANK_CYCLES:     # En el periodo de vblank
                 if self._cycles_frame == self.VBLANK_CYCLES - 1:    # Este es el ciclo en el que entramos en VBLANK
-                    self.set_vblank()    # Activamos el período VBLANk al inicio del período
+                    self.start_vblank()    # Activamos el período VBLANk al inicio del período
         elif self._cycles_frame == 0:     # Fin del Frame
-            self.clear_vblank() # Finalizamos el período VBLANK
+            self.end_vblank() # Finalizamos el período VBLANK
             self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
 
 
@@ -326,18 +330,28 @@ class PPU(object):
 
 
     # Inicia un período VBLANK
-    def set_vblank(self):
+    def start_vblank(self):
         self._reg_status = nesutils.set_bit(self._reg_status, 7, 1)
+        self._int_vblank = 1
 
 
     # Finaliza un período VBLANK
-    def clear_vblank(self):
+    def end_vblank(self):
         self._reg_status = nesutils.set_bit(self._reg_status, 7, 0)
+
+
+    # Devuelve si hay una solicitud de interrupción vblank
+    def get_int_vblank(self):
+        return self._int_vblank
+
+    # Establece el valor de la solicitud de interrupción vblank
+    def set_int_vblank(self, value):
+        self._int_vblank = value
 
 
     # Indica si nos encontramos en un periodo VBLANK
     def is_vblank(self):
-        nesutils.get_bit(self._reg_status, 7)
+        return nesutils.get_bit(self._reg_status, 7)
 
 
     def draw_scanline(self):
