@@ -660,7 +660,6 @@ class BPL(Instruction):
         if not self._cpu.get_reg_p_s_bit():
             self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
 
-
     # Variables privadas
     OPCODE = 0x10
     BYTES = 2
