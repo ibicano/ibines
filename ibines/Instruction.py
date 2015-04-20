@@ -51,7 +51,7 @@ class Instruction(object):
 
         # Calcula la dirección final del operando
         addr = self._cpu.get_mem().read_data(index)
-        addr += self._cpu.get_mem().read_data(index + 1) << 2
+        addr = addr | self._cpu.get_mem().read_data(index + 1) << 8
 
         data = self._cpu.get_mem().read_data(addr)
 
@@ -61,7 +61,7 @@ class Instruction(object):
         # Calcula el índice de la dirección donde se almacena la dirección
         # base del operando a la que se sumará el desplazamiento Y
         base_addr = self._cpu.get_mem().read_data(self._operand)
-        base_addr = base_addr + (self._cpu.get_mem().read_data(self._operand+1)) << 2
+        base_addr = base_addr | (self._cpu.get_mem().read_data(self._operand+1)) << 8
 
         addr = base_addr + self._cpu.get_reg_y()
 
@@ -389,8 +389,8 @@ class ASL(Instruction):
 
 class ASL_accumulator(ASL):
 
-    def __init__(self, operand, cpu):
-        super(ASL_accumulator, self).__init__(operand, cpu)
+    def __init__(self, cpu):
+        super(ASL_accumulator, self).__init__(None, cpu)
 
     def execute(self):
         op = self.fetch_accumulator_addrmode()
@@ -1239,7 +1239,7 @@ class EOR(Instruction):
     def __init__(self, operand, cpu):
         super(EOR, self).__init__(operand, cpu)
 
-    def execute(self):
+    def execute(self, op):
         ac = self._cpu.get_reg_a()
         result = ac ^ op
 
@@ -1548,12 +1548,11 @@ class JMP_indirect(JMP):
         super(JMP_indirect, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self._cpu.get_mem(self._operand)
-        addr = addr + (self._cpu.get_mem(self._operand + 1) << 8)
+        mem = self._cpu.get_mem()
+        addr = mem.read_data(self._operand)
+        addr = addr + (mem.read_data(self._operand + 1) << 8)
 
-        op = self._cpu.get_mem().read_data(addr)
-
-        super(JMP_indirect, self).execute(op)
+        super(JMP_indirect, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x6C
@@ -2766,7 +2765,7 @@ class STA_zero(STA):
         super(STA_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        op = self.fetch_absolute_addrmode()[0]
         super(STA_zero, self).execute(op)
 
     # Variables privadas
@@ -2781,7 +2780,7 @@ class STA_zerox(STA):
         super(STA_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        op = self.fetch_indexed_x_addrmode()[0]
         super(STA_zerox, self).execute(op)
 
     # Variables privadas
@@ -2796,7 +2795,7 @@ class STA_abs(STA):
         super(STA_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        op = self.fetch_absolute_addrmode()[0]
         super(STA_abs, self).execute(op)
 
     # Variables privadas
@@ -2811,7 +2810,7 @@ class STA_absx(STA):
         super(STA_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        op = self.fetch_indexed_x_addrmode()[0]
         super(STA_absx, self).execute(op)
 
     # Variables privadas
@@ -2826,7 +2825,7 @@ class STA_absy(STA):
         super(STA_absy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()[1]
+        op = self.fetch_indexed_y_addrmode()[0]
         super(STA_absy, self).execute(op)
 
     # Variables privadas
@@ -2840,7 +2839,7 @@ class STA_preindexi(STA):
         super(STA_preindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_preindexed_addrmode()[1]
+        op = self.fetch_preindexed_addrmode()[0]
         super(STA_preindexi, self).execute(op)
 
     # Variables privadas
@@ -2855,7 +2854,7 @@ class STA_postindexi(STA):
         super(STA_postindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_postindexed_addrmode()[1]
+        op = self.fetch_postindexed_addrmode()[0]
         super(STA_postindexi, self).execute(op)
 
     # Variables privadas
@@ -2886,7 +2885,7 @@ class STX_zero(STX):
         super(STX_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        op = self.fetch_absolute_addrmode()[0]
         super(STX_zero, self).execute(op)
 
     # Variables privadas
@@ -2901,7 +2900,7 @@ class STX_zeroy(STX):
         super(STX_zeroy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()[1]
+        op = self.fetch_indexed_y_addrmode()[0]
         super(STX_zeroy, self).execute(op)
 
     # Variables privadas
@@ -2916,7 +2915,7 @@ class STX_abs(STX):
         super(STX_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        op = self.fetch_absolute_addrmode()[0]
         super(STX_abs, self).execute(op)
 
     # Variables privadas
@@ -2947,7 +2946,7 @@ class STY_zero(STY):
         super(STY_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        op = self.fetch_absolute_addrmode()[0]
         super(STY_zero, self).execute(op)
 
     # Variables privadas
@@ -2962,7 +2961,7 @@ class STY_zerox(STY):
         super(STY_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        op = self.fetch_indexed_x_addrmode()[0]
         super(STY_zerox, self).execute(op)
 
     # Variables privadas
@@ -2977,7 +2976,7 @@ class STY_abs(STY):
         super(STY_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        op = self.fetch_absolute_addrmode()[0]
         super(STY_abs, self).execute(op)
 
     # Variables privadas
