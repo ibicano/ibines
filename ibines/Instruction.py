@@ -47,7 +47,7 @@ class Instruction(object):
     def fetch_preindexed_addrmode(self):
         # Calcula el índice de la dirección donde se almacena la dirección
         # final del operando
-        index = self._operand + self._cpu.get_reg_x()
+        index = (self._operand + self._cpu.get_reg_x()) & 0xFF
 
         # Calcula la dirección final del operando
         addr = self._cpu.get_mem().read_data(index)
@@ -61,7 +61,7 @@ class Instruction(object):
         # Calcula el índice de la dirección donde se almacena la dirección
         # base del operando a la que se sumará el desplazamiento Y
         base_addr = self._cpu.get_mem().read_data(self._operand)
-        base_addr = base_addr | ((self._cpu.get_mem().read_data(self._operand+1)) << 8)
+        base_addr = base_addr | ((self._cpu.get_mem().read_data(self._operand + 1)) << 8)
 
         addr = base_addr + self._cpu.get_reg_y()
 
@@ -1532,8 +1532,8 @@ class JMP_abs(JMP):
         super(JMP_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self._cpu.fetch_absolute_addrmode()[1]
-        super(JMP_abs, self).execute(op)
+        addr = self._cpu.fetch_absolute_addrmode()[0]
+        super(JMP_abs, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x4C
