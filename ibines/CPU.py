@@ -223,7 +223,8 @@ class CPU(object):
             return 0
 
     def set_zero_bit(self, inst_result):
-        if inst_result == 0x00:
+        rst = inst_result & 0xFF
+        if rst == 0x00:
             self.set_reg_p_z_bit(1)
             return 1
         else:
@@ -231,7 +232,8 @@ class CPU(object):
             return 0
 
     def set_sign_bit(self, inst_result):
-        if inst_result & 0x80:
+        rst = inst_result & 0xFF
+        if rst & 0x80:
             self.set_reg_p_s_bit(1)
             return 1
         else:

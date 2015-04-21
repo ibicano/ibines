@@ -31,9 +31,10 @@ class NES(object):
     # Aquí se implementa el bucle principal de la NES. Cada iteración equivale a un
     # ciclo de reloj, para más precisión y exactitud conceptual
     def run(self):
-        debug_file = open("/tmp/ibines.log", "w")
+        debug_file = open("/home/ibon/tmp/ibines.log", "w")
         cycles = 0
         total_time = 0
+        counter = 0
         while True:
             loop_time = time.time()
             if not self._cpu.is_busy():
@@ -45,8 +46,9 @@ class NES(object):
                 # interrupción en el paso anterior será su rutina de interrupción)
                 try:
                     inst = self._cpu.fetch_inst()
-                    debug_file.write(hex(self._cpu._reg_pc) + ": " + hex(inst.OPCODE) + str(inst.__class__) + "\n")
+                    debug_file.write(str(counter) + ": " + hex(self._cpu._reg_pc) + ": " + hex(inst.OPCODE) + str(inst.__class__) + "\n")
                     inst.execute()
+                    counter += 1
                 except OpcodeError as e:
                     debug_file.write(str(e) + "\n")
                     debug_file.close()

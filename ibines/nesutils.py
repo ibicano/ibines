@@ -25,9 +25,19 @@ def set_bit(word, bit_number, bit_value):
     return result
 
 
-# Devuelve el valor entero de un byte en complemento a 2 cuando trabajamos con números con signo
-def signed_value(byte):
+# Devuelve el valor entero de un byte en complemento a 2
+def c2_to_int(byte):
     if byte & 0x80:
         return -(0x100 - byte)
     else:
         return byte
+
+# Convierte un entero a complemento a 2
+def int_to_c2(n):
+    if n >= 0:
+        c2 = n
+    else:
+        c2 = (~n + 1) & 0xFF
+
+    return c2
+

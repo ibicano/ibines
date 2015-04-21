@@ -332,12 +332,14 @@ class PPU(object):
     # Inicia un período VBLANK
     def start_vblank(self):
         self._reg_status = nesutils.set_bit(self._reg_status, 7, 1)
-        self._int_vblank = 1
+
+        if self._reg_control_1 & 0x80:
+            self._int_vblank = 1
 
 
     # Finaliza un período VBLANK
     def end_vblank(self):
-        self._reg_status = nesutils.set_bit(self._reg_status, 7, 0)
+        self._reg_status = self._reg_status & 0x7F
 
 
     # Devuelve si hay una solicitud de interrupción vblank

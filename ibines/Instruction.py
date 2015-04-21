@@ -61,7 +61,7 @@ class Instruction(object):
         # Calcula el índice de la dirección donde se almacena la dirección
         # base del operando a la que se sumará el desplazamiento Y
         base_addr = self._cpu.get_mem().read_data(self._operand)
-        base_addr = base_addr | (self._cpu.get_mem().read_data(self._operand+1)) << 8
+        base_addr = base_addr | ((self._cpu.get_mem().read_data(self._operand+1)) << 8)
 
         addr = base_addr + self._cpu.get_reg_y()
 
@@ -91,7 +91,7 @@ class ADC(Instruction):
         ac = self._cpu.get_reg_a()
         carry = self._cpu.get_reg_p_c_bit()
 
-        rst = ac + op + carry
+        rst = (ac + op + carry) & 0xFF
 
         # Establece el bit CARRY del registro P
         self._cpu.set_carry_bit(rst)
@@ -494,7 +494,7 @@ class BCC(Instruction):
         self._cpu.incr_pc(self.BYTES)
 
         if not self._cpu.get_reg_p_c_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
 
 
     # Variables privadas
@@ -515,7 +515,7 @@ class BCS(Instruction):
         self._cpu.incr_pc(self.BYTES)
 
         if self._cpu.get_reg_p_c_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
 
 
     # Variables privadas
@@ -537,7 +537,7 @@ class BEQ(Instruction):
         self._cpu.incr_pc(self.BYTES)
 
         if self._cpu.get_reg_p_z_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
 
 
     # Variables privadas
@@ -614,7 +614,7 @@ class BMI(Instruction):
         self._cpu.incr_pc(self.BYTES)
 
         if self._cpu.get_reg_p_n_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
 
 
     # Variables privadas
@@ -636,7 +636,7 @@ class BNE(Instruction):
         self._cpu.incr_pc(self.BYTES)
 
         if not self._cpu.get_reg_p_z_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
 
 
     # Variables privadas
@@ -658,7 +658,7 @@ class BPL(Instruction):
         self._cpu.incr_pc(self.BYTES)
 
         if not self._cpu.get_reg_p_s_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
 
     # Variables privadas
     OPCODE = 0x10
@@ -706,7 +706,7 @@ class BVC(Instruction):
         self._cpu.incr_pc(self.BYTES)
 
         if not self._cpu.get_reg_p_v_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
 
 
     # Variables privadas
@@ -728,7 +728,7 @@ class BVS(Instruction):
         self._cpu.incr_pc(self.BYTES)
 
         if self._cpu.get_reg_p_v_bit():
-            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.signed_value(self._operand))
+            self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
 
 
     # Variables privadas
@@ -1189,7 +1189,7 @@ class DEX(Instruction):
         super(DEX, self).__init__(None, cpu)
 
     def execute(self):
-        result = self._cpu.get_reg_x() - 1
+        result = (self._cpu.get_reg_x() - 1) & 0xFF
 
         self._cpu.set_sign_bit(result)
         self._cpu.set_zero_bit(result)
@@ -1214,7 +1214,7 @@ class DEY(Instruction):
         super(DEY, self).__init__(None, cpu)
 
     def execute(self):
-        result = self._cpu.get_reg_y() - 1
+        result = (self._cpu.get_reg_y() - 1) & 0xFF
 
         self._cpu.set_sign_bit(result)
         self._cpu.set_zero_bit(result)
@@ -2508,7 +2508,7 @@ class RTI(Instruction):
         self._cpu.set_reg_pc(pc)
 
     # Variables privadas
-    OPCODE = 0x4D
+    OPCODE = 0x40
     BYTES = 1
     CYCLES = 6
 
@@ -2750,9 +2750,9 @@ class STA(Instruction):
     def __init__(self, operand, cpu):
         super(STA, self).__init__(operand, cpu)
 
-    def execute(self, op):
+    def execute(self, addr):
         ac = self._cpu.get_reg_a()
-        self._cpu.get_mem().write_data(ac, op)
+        self._cpu.get_mem().write_data(ac, addr)
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
@@ -2764,8 +2764,8 @@ class STA_zero(STA):
         super(STA_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[0]
-        super(STA_zero, self).execute(op)
+        addr = self.fetch_absolute_addrmode()[0]
+        super(STA_zero, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x85
@@ -2779,8 +2779,8 @@ class STA_zerox(STA):
         super(STA_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[0]
-        super(STA_zerox, self).execute(op)
+        addr = self.fetch_indexed_x_addrmode()[0]
+        super(STA_zerox, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x95
@@ -2794,8 +2794,8 @@ class STA_abs(STA):
         super(STA_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[0]
-        super(STA_abs, self).execute(op)
+        addr = self.fetch_absolute_addrmode()[0]
+        super(STA_abs, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x8D
@@ -2809,8 +2809,8 @@ class STA_absx(STA):
         super(STA_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[0]
-        super(STA_absx, self).execute(op)
+        addr = self.fetch_indexed_x_addrmode()[0]
+        super(STA_absx, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x9D
@@ -2824,8 +2824,8 @@ class STA_absy(STA):
         super(STA_absy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()[0]
-        super(STA_absy, self).execute(op)
+        addr = self.fetch_indexed_y_addrmode()[0]
+        super(STA_absy, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x99
@@ -2838,8 +2838,8 @@ class STA_preindexi(STA):
         super(STA_preindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_preindexed_addrmode()[0]
-        super(STA_preindexi, self).execute(op)
+        addr = self.fetch_preindexed_addrmode()[0]
+        super(STA_preindexi, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x81
@@ -2853,8 +2853,8 @@ class STA_postindexi(STA):
         super(STA_postindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_postindexed_addrmode()[0]
-        super(STA_postindexi, self).execute(op)
+        addr = self.fetch_postindexed_addrmode()[0]
+        super(STA_postindexi, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x91
@@ -2870,9 +2870,9 @@ class STX(Instruction):
     def __init__(self, operand, cpu):
         super(STX, self).__init__(operand, cpu)
 
-    def execute(self, op):
+    def execute(self, addr):
         ac = self._cpu.get_reg_x()
-        self._cpu.get_mem().write_data(ac, op)
+        self._cpu.get_mem().write_data(ac, addr)
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
@@ -2884,8 +2884,8 @@ class STX_zero(STX):
         super(STX_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[0]
-        super(STX_zero, self).execute(op)
+        addr = self.fetch_absolute_addrmode()[0]
+        super(STX_zero, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x86
@@ -2899,8 +2899,8 @@ class STX_zeroy(STX):
         super(STX_zeroy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()[0]
-        super(STX_zeroy, self).execute(op)
+        addr = self.fetch_indexed_y_addrmode()[0]
+        super(STX_zeroy, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x96
@@ -2914,8 +2914,8 @@ class STX_abs(STX):
         super(STX_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[0]
-        super(STX_abs, self).execute(op)
+        addr = self.fetch_absolute_addrmode()[0]
+        super(STX_abs, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x8E
@@ -2931,9 +2931,9 @@ class STY(Instruction):
     def __init__(self, operand, cpu):
         super(STY, self).__init__(operand, cpu)
 
-    def execute(self, op):
+    def execute(self, addr):
         ac = self._cpu.get_reg_y()
-        self._cpu.get_mem().write_data(ac, op)
+        self._cpu.get_mem().write_data(ac, addr)
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
@@ -2945,8 +2945,8 @@ class STY_zero(STY):
         super(STY_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[0]
-        super(STY_zero, self).execute(op)
+        addr = self.fetch_absolute_addrmode()[0]
+        super(STY_zero, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x84
@@ -2960,8 +2960,8 @@ class STY_zerox(STY):
         super(STY_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[0]
-        super(STY_zerox, self).execute(op)
+        addr = self.fetch_indexed_x_addrmode()[0]
+        super(STY_zerox, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x94
@@ -2975,8 +2975,8 @@ class STY_abs(STY):
         super(STY_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[0]
-        super(STY_abs, self).execute(op)
+        addr = self.fetch_absolute_addrmode()[0]
+        super(STY_abs, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x8C

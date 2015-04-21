@@ -2,3 +2,8 @@
 - En el mismo documento se espcifica que en los números con signo el bit 7
 específica el signo y los otros bits el valosr. ESTA MAL, deben interprestarse como
 números en complemento a 2.
+
+DEPURACIÓN
+- Analizar la instrucción 17830 (STA_posindexi) que machaca la pila (en conjunción con la 17825, STX_zero).
+- Revisar el cálculod e la dirección de los branches para saber si incrementa el PC antes del cálculo.
+- Comprobar que las siguientes instrucciones funcionan bien: CPY, BNE, STX_zero, CPX_inmediate, BPL, DEX, STA_postindexi
