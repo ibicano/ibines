@@ -33,7 +33,7 @@ class NES(object):
     # Aquí se implementa el bucle principal de la NES. Cada iteración equivale a un
     # ciclo de reloj, para más precisión y exactitud conceptual
     def run(self):
-        if NES.DEBUG: debug_file = open("/home/ibon/tmp/ibines.log", "w")
+        #if NES.DEBUG: debug_file = open("/home/ibon/tmp/ibines.log", "w")
 
         stats_cycles = 0
         stats_total_time = 0
@@ -46,16 +46,16 @@ class NES(object):
 
             # Fetch y Exec siguiente instrucción (si hemos ejecutado una
             # interrupción en el paso anterior será su rutina de interrupción)
-            try:
-                inst = self._cpu.fetch_inst()
-                if NES.DEBUG: debug_file.write(str(counter) + ": " + hex(self._cpu._reg_pc) + ": " + hex(inst.OPCODE) + str(inst.__class__) + "\n")
-                inst.execute()
-            except OpcodeError as e:
-                if NES.DEBUG:
-                    debug_file.write(str(e) + "\n")
-                    debug_file.close()
-                print "Error: Opcode inválido"
-                print e
+            #try:
+            inst = self._cpu.fetch_inst()
+                # if NES.DEBUG: debug_file.write(str(counter) + ": " + hex(self._cpu._reg_pc) + ": " + hex(inst.OPCODE) + str(inst.__class__) + "\n")
+            inst.execute()
+            #except OpcodeError as e:
+                # if NES.DEBUG:
+                #     debug_file.write(str(e) + "\n")
+                #     debug_file.close()
+            #    print "Error: Opcode inválido"
+            #    print e
 
             # Restamos un ciclo de ejecución a la instrucción actual y la PPU
             self._cpu.exec_cycle(inst.CYCLES)
@@ -64,11 +64,11 @@ class NES(object):
             stats_counter += inst.CYCLES
             stats_cycles += inst.CYCLES
 
-            if stats_cycles % 1000 == 0:
+            if stats_cycles % 5000 == 0:
                 stats_clock = time.clock()
 
                 if stats_clock - stats_total_time >= 1:
-                    print str(stats_cycles / (stats_clock - stats_total_time)) + " ciclos por segundo"
+                    print str(stats_cycles) + " ciclos por segundo"
                     stats_cycles = 0
                     stats_total_time = stats_clock
 
