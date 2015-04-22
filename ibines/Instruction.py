@@ -1544,7 +1544,7 @@ class JMP_abs(JMP):
         super(JMP_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self._cpu.fetch_absolute_addrmode()[0]
+        addr = self.fetch_absolute_addrmode()[0]
         super(JMP_abs, self).execute(addr)
 
     # Variables privadas

@@ -64,15 +64,15 @@ class NES(object):
             self._cpu.exec_cycle()
             self._ppu.exec_cycle()
 
-            loop_time = time.time() - loop_time
-            total_time += loop_time
             cycles += 1
 
-            if total_time >= 1:
-                print str(cycles / total_time) + " ciclos por segundo"
-                cycles = 0
-                total_time = 0
+            if cycles % 1000 == 0:
+                clock = time.clock()
 
+                if clock - total_time >= 1:
+                    print str(cycles / (clock - total_time)) + " ciclos por segundo"
+                    cycles = 0
+                    total_time = clock
 
             # Emula la velocidad de la NES
             #time.sleep(0.0000006)

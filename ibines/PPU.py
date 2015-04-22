@@ -77,8 +77,8 @@ class PPU(object):
             if self._cycles_frame >= self.VBLANK_CYCLES:     # Dibujando scanlines
                 if self._cycles_scanline == 0:
                     pass
-                    #self.draw_scanline()
-                    #self._gfx.update()
+                    self.draw_scanline()
+                    self._gfx.update()
             elif self._cycles_frame < self.VBLANK_CYCLES:     # En el periodo de vblank
                 if self._cycles_frame == self.VBLANK_CYCLES - 1:    # Este es el ciclo en el que entramos en VBLANK
                     self.start_vblank()    # Activamos el período VBLANk al inicio del período
@@ -106,7 +106,7 @@ class PPU(object):
         if addr == 0x2002:
             d = self.read_reg_2002()
         elif addr == 0x2007:
-            d = self.get_vram_io()
+            d = self.read_reg_2007()
 
         return d
 
@@ -115,6 +115,12 @@ class PPU(object):
     def read_reg_2002(self):
         self._reg_vram_switch = 0
         return self._reg_status
+
+
+    def read_reg_2007(self):
+        data = self._memory.read_data(self._reg_vram_addr)
+        self._reg_vram_io = data
+        return data
 
 
     # Escribe el registro indicado por su dirección en memoria
