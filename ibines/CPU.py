@@ -58,8 +58,8 @@ class CPU(object):
         #######################################################################
 
     # Ejecuta un ciclo de reloj
-    def exec_cycle(self):
-        self._cycles_inst -= 1
+    def exec_cycle(self, cycles):
+        self._cycles_inst -= cycles
 
 
     # Procesa una interrupción

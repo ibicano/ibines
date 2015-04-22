@@ -35,43 +35,42 @@ class NES(object):
     def run(self):
         if NES.DEBUG: debug_file = open("/home/ibon/tmp/ibines.log", "w")
 
-        cycles = 0
-        total_time = 0
-        counter = 0
+        stats_cycles = 0
+        stats_total_time = 0
+        stats_counter = 0
+
         while True:
-            if not self._cpu.is_busy():
-                # Si hay interrupciones y la CPU no está ocupada, las lanzamos
-                if self._ppu.get_int_vblank():
-                    self._cpu.interrupt_vblank()        # Procesamos VBLANK
+            # Si hay interrupciones y la CPU no está ocupada, las lanzamos
+            if self._ppu.get_int_vblank():
+                self._cpu.interrupt_vblank()        # Procesamos VBLANK
 
-                # Fetch y Exec siguiente instrucción (si hemos ejecutado una
-                # interrupción en el paso anterior será su rutina de interrupción)
-                try:
-                    inst = self._cpu.fetch_inst()
-                    if NES.DEBUG: debug_file.write(str(counter) + ": " + hex(self._cpu._reg_pc) + ": " + hex(inst.OPCODE) + str(inst.__class__) + "\n")
-                    inst.execute()
-                    counter += 1
-                except OpcodeError as e:
-                    if NES.DEBUG:
-                        debug_file.write(str(e) + "\n")
-                        debug_file.close()
-                    print "Error: Opcode inválido"
-                    print e
-
+            # Fetch y Exec siguiente instrucción (si hemos ejecutado una
+            # interrupción en el paso anterior será su rutina de interrupción)
+            try:
+                inst = self._cpu.fetch_inst()
+                if NES.DEBUG: debug_file.write(str(counter) + ": " + hex(self._cpu._reg_pc) + ": " + hex(inst.OPCODE) + str(inst.__class__) + "\n")
+                inst.execute()
+            except OpcodeError as e:
+                if NES.DEBUG:
+                    debug_file.write(str(e) + "\n")
+                    debug_file.close()
+                print "Error: Opcode inválido"
+                print e
 
             # Restamos un ciclo de ejecución a la instrucción actual y la PPU
-            self._cpu.exec_cycle()
-            #self._ppu.exec_cycle()
+            self._cpu.exec_cycle(inst.CYCLES)
+            #self._ppu.exec_cycle(inst.CYCLES)
 
-            cycles += 1
+            stats_counter += inst.CYCLES
+            stats_cycles += inst.CYCLES
 
-            if cycles % 1000 == 0:
-                clock = time.clock()
+            if stats_cycles % 1000 == 0:
+                stats_clock = time.clock()
 
-                if clock - total_time >= 1:
-                    print str(cycles / (clock - total_time)) + " ciclos por segundo"
-                    cycles = 0
-                    total_time = clock
+                if stats_clock - stats_total_time >= 1:
+                    print str(stats_cycles / (stats_clock - stats_total_time)) + " ciclos por segundo"
+                    stats_cycles = 0
+                    stats_total_time = stats_clock
 
             # Emula la velocidad de la NES
             #time.sleep(0.0000006)

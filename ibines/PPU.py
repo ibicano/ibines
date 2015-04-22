@@ -40,6 +40,10 @@ class PPU(object):
         self._cycles_frame = self.FRAME_CYCLES - 1
         self._cycles_scanline = self.SCANLINE_CYCLES - 1
 
+        # Indica si hemos terminado con algo de lo indicado
+        self._end_frame = False
+        self._end_scanline = False
+
         # Scanline actual
         self._scanline_number = 0
 
@@ -72,31 +76,34 @@ class PPU(object):
     # Ejecuta un ciclo de reloj. Aquí va toda la chicha del dibujado y de
     # activación de cosas en función del ciclo del frame en el que nos
     # encontremos
-    def exec_cycle(self):
-        if self._cycles_frame > 0:     # En mitad del frame
+    def exec_cycle(self, cycles):
+        if not self._end_frame:     # En mitad del frame
             if self._cycles_frame >= self.VBLANK_CYCLES:     # Dibujando scanlines
-                if self._cycles_scanline == 0:
-                    pass
+                if self._end_scanline:
                     self.draw_scanline()
                     self._gfx.update()
+                    self._end_scanline = False
             elif self._cycles_frame < self.VBLANK_CYCLES:     # En el periodo de vblank
                 if self._cycles_frame == self.VBLANK_CYCLES - 1:    # Este es el ciclo en el que entramos en VBLANK
                     self.start_vblank()    # Activamos el período VBLANk al inicio del período
-        elif self._cycles_frame == 0:     # Fin del Frame
+        elif self._end_frame:     # Fin del Frame
             self.end_vblank() # Finalizamos el período VBLANK
             self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
+            self._end_frame = False
 
 
         # Decrementamos el contador de ciclos
-        if self._cycles_frame == 0:
-            self._cycles_frame = self.FRAME_CYCLES - 1
+        if self._cycles_frame < cycles:
+            self._cycles_frame = self.FRAME_CYCLES - cycles
+            self._end_frame = True
         else:
-            self._cycles_frame -= 1
+            self._cycles_frame -= cycles
 
-        if self._cycles_scanline == 0:
-            self._cycles_scanline = self.SCANLINE_CYCLES - 1
+        if self._cycles_scanline < cycles:
+            self._cycles_scanline = self.SCANLINE_CYCLES - cycles
+            self._end_scanline = True
         else:
-            self._cycles_scanline -= 1
+            self._cycles_scanline -= cycles
 
 
     # Lee el registro indicado por su dirección en memoria
