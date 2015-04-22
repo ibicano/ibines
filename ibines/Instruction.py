@@ -51,7 +51,7 @@ class Instruction(object):
 
         # Calcula la dirección final del operando
         addr = self._cpu.get_mem().read_data(index)
-        addr = addr | self._cpu.get_mem().read_data(index + 1) << 8
+        addr = addr | (self._cpu.get_mem().read_data(index + 1) << 8)
 
         data = self._cpu.get_mem().read_data(addr)
 
@@ -61,7 +61,7 @@ class Instruction(object):
         # Calcula el índice de la dirección donde se almacena la dirección
         # base del operando a la que se sumará el desplazamiento Y
         base_addr = self._cpu.get_mem().read_data(self._operand)
-        base_addr = base_addr | ((self._cpu.get_mem().read_data(self._operand + 1)) << 8)
+        base_addr = base_addr | (self._cpu.get_mem().read_data(self._operand + 1) << 8)
 
         addr = base_addr + self._cpu.get_reg_y()
 
@@ -91,7 +91,7 @@ class ADC(Instruction):
         ac = self._cpu.get_reg_a()
         carry = self._cpu.get_reg_p_c_bit()
 
-        rst = (ac + op + carry) & 0xFF
+        rst = ac + op + carry
 
         # Establece el bit CARRY del registro P
         self._cpu.set_carry_bit(rst)
@@ -581,8 +581,8 @@ class BIT(Instruction):
 
 class BIT_zero(BIT):
 
-    def __init__(self):
-        super(BIT_zero, self).__init__()
+    def __init__(self, operand, cpu):
+        super(BIT_zero, self).__init__(operand, cpu)
 
     # Variables privadas
     OPCODE = 0x24
@@ -592,8 +592,8 @@ class BIT_zero(BIT):
 
 class BIT_abs(BIT):
 
-    def __init__(self):
-        super(BIT_abs, self).__init__()
+    def __init__(self, operand, cpu):
+        super(BIT_abs, self).__init__(operand, cpu)
 
     # Variables privadas
     OPCODE = 0x2C
@@ -606,14 +606,14 @@ class BIT_abs(BIT):
 ###############################################################################
 class BMI(Instruction):
 
-    def __init__(self, operands, cpu):
-        super(BMI, self).__init__(operands, cpu)
+    def __init__(self, operand, cpu):
+        super(BMI, self).__init__(operand, cpu)
 
     def execute(self):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
-        if self._cpu.get_reg_p_n_bit():
+        if self._cpu.get_reg_p_s_bit():
             self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
 
 
@@ -677,7 +677,7 @@ class BRK(Instruction):
     def execute(self):
         pc = self._cpu.get_reg_pc() + 1
         self._cpu.push_stack((pc >> 8) & 0xFF)
-        self._cpu.push_stack(pc  & 0xFF)
+        self._cpu.push_stack(pc & 0xFF)
         self._cpu.set_reg_p_b_bit(1)
         self._cpu.push_stack(self._cpu.get_reg_p())
         self._cpu.set_reg_p_i_bit(1)
@@ -829,7 +829,11 @@ class CMP(Instruction):
         ac = self._cpu.get_reg_a()
         result = ac - op
 
-        self._cpu.set_carry_bit(result)
+        if result < 0x100:
+            self._cpu.set_reg_p_c_bit(1)
+        else:
+            self._cpu.set_reg_p_c_bit(0)
+
         self._cpu.set_sign_bit(result)
         self._cpu.set_zero_bit(result)
 
@@ -969,7 +973,11 @@ class CPX(Instruction):
         reg_x = self._cpu.get_reg_x()
         result = reg_x - op
 
-        self._cpu.set_carry_bit(result)
+        if result < 0x100:
+            self._cpu.set_reg_p_c_bit(1)
+        else:
+            self._cpu.set_reg_p_c_bit(0)
+
         self._cpu.set_sign_bit(result)
         self._cpu.set_zero_bit(result)
 
@@ -1034,7 +1042,11 @@ class CPY(Instruction):
         reg_y = self._cpu.get_reg_y()
         result = reg_y - op
 
-        self._cpu.set_carry_bit(result)
+        if result < 0x100:
+            self._cpu.set_reg_p_c_bit(1)
+        else:
+            self._cpu.set_reg_p_c_bit(0)
+
         self._cpu.set_sign_bit(result)
         self._cpu.set_zero_bit(result)
 
@@ -1096,7 +1108,7 @@ class DEC(Instruction):
         super(DEC, self).__init__(operand, cpu)
 
     def execute(self, op):
-        result = op - 1
+        result = (op - 1) & 0xFF
 
         self._cpu.set_sign_bit(result)
         self._cpu.set_zero_bit(result)
@@ -1380,7 +1392,7 @@ class INC(Instruction):
         super(INC, self).__init__(operand, cpu)
 
     def execute(self, op):
-        result = op + 1
+        result = (op + 1) & 0xFF
 
         self._cpu.set_sign_bit(result)
         self._cpu.set_zero_bit(result)
@@ -1473,7 +1485,7 @@ class INX(Instruction):
         super(INX, self).__init__(None, cpu)
 
     def execute(self):
-        result = self._cpu.get_reg_x() + 1
+        result = (self._cpu.get_reg_x() + 1) & 0xFF
 
         self._cpu.set_sign_bit(result)
         self._cpu.set_zero_bit(result)
@@ -1498,7 +1510,7 @@ class INY(Instruction):
         super(INY, self).__init__(None, cpu)
 
     def execute(self):
-        result = self._cpu.get_reg_y() + 1
+        result = (self._cpu.get_reg_y() + 1) & 0xFF
 
         self._cpu.set_sign_bit(result)
         self._cpu.set_zero_bit(result)
@@ -1549,7 +1561,7 @@ class JMP_indirect(JMP):
     def execute(self):
         mem = self._cpu.get_mem()
         addr = mem.read_data(self._operand)
-        addr = addr + (mem.read_data(self._operand + 1) << 8)
+        addr = addr | (mem.read_data(self._operand + 1) << 8)
 
         super(JMP_indirect, self).execute(addr)
 
@@ -1953,7 +1965,7 @@ class LSR_zero(LSR):
         super(LSR_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()[1]
+        addr, op = self.fetch_absolute_addrmode()
         result = super(LSR_zero, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2307,7 +2319,7 @@ class ROL_zero(ROL):
         super(ROL_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()[1]
+        addr, op = self.fetch_absolute_addrmode()
         result = super(ROL_zero, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2387,6 +2399,7 @@ class ROR(Instruction):
 
     def execute(self, op):
         result = op >> 1
+
         if self._cpu.get_reg_p_c_bit():
             result = result | 0x80
 
@@ -2422,7 +2435,7 @@ class ROR_zero(ROR):
         super(ROR_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()[1]
+        addr, op = self.fetch_absolute_addrmode()
         result = super(ROR_zero, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2548,7 +2561,11 @@ class SBC(Instruction):
         rst = ac - op - carry
 
         # Establece el bit CARRY del registro P
-        self._cpu.set_carry_bit(rst)
+        if rst < 0x100:
+            self._cpu.set_reg_p_c_bit(1)
+        else:
+            self._cpu.set_reg_p_c_bit(0)
+
         # Establece el bit ZERO del registro P
         self._cpu.set_zero_bit(rst)
         # Establece el bit OVERFLOW del registro P
@@ -2871,8 +2888,8 @@ class STX(Instruction):
         super(STX, self).__init__(operand, cpu)
 
     def execute(self, addr):
-        ac = self._cpu.get_reg_x()
-        self._cpu.get_mem().write_data(ac, addr)
+        reg_x = self._cpu.get_reg_x()
+        self._cpu.get_mem().write_data(reg_x, addr)
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
@@ -2932,8 +2949,8 @@ class STY(Instruction):
         super(STY, self).__init__(operand, cpu)
 
     def execute(self, addr):
-        ac = self._cpu.get_reg_y()
-        self._cpu.get_mem().write_data(ac, addr)
+        reg_y = self._cpu.get_reg_y()
+        self._cpu.get_mem().write_data(reg_y, addr)
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)

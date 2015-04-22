@@ -5,5 +5,11 @@ números en complemento a 2.
 
 DEPURACIÓN
 - Analizar la instrucción 17830 (STA_posindexi) que machaca la pila (en conjunción con la 17825, STX_zero).
-- Revisar el cálculod e la dirección de los branches para saber si incrementa el PC antes del cálculo.
+- Revisar el cálculo de la dirección de los branches para saber si incrementa el PC antes del cálculo.
 - Comprobar que las siguientes instrucciones funcionan bien: CPY, BNE, STX_zero, CPX_inmediate, BPL, DEX, STA_postindexi
+
+22-04-2015:
+- Revisadas todas las instrucciones y los modos de funcionamiento para ver si están bien implementadas.
+- Localizado el bug que me lleva jodiendo 2 días: se debía a que estaba calculando mal el bit de carry en las
+restas y comparaciones, ya que cuando se resta se debe establecer al revés que cuando se suma (se pone a 1 cuando
+el resultado se encuentra entre 0x00 y 0xFF y a 0 en caso contrario).
