@@ -13,3 +13,5 @@ DEPURACIÓN
 - Localizado el bug que me lleva jodiendo 2 días: se debía a que estaba calculando mal el bit de carry en las
 restas y comparaciones, ya que cuando se resta se debe establecer al revés que cuando se suma (se pone a 1 cuando
 el resultado se encuentra entre 0x00 y 0xFF y a 0 en caso contrario).
+- Estudiar la librería Pyglet para los gráficos como alternativa para Pygame, que además puede usarse con el
+intérprete PyPy que es bastante más rápido que el oficial.

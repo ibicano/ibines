@@ -9,7 +9,22 @@ GFX
 Implementa el motor gráfico para pintar la salida a pantalla. La
 implementación inicial utiliza SDL a través de PyGame.
 """
+
 class GFX(object):
+    def __init__(self):
+        pass
+
+    def draw_pixel(self, x, y, color=(0, 0, 0)):
+        pass
+
+    def fill(self, color=(0, 0, 0)):
+        pass
+
+    def update(self):
+        pass
+
+
+class GFX_Pygame(GFX):
 
     def __init__(self):
         ###########################################################################

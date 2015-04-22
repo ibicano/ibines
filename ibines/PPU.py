@@ -4,7 +4,7 @@ import nesutils
 import time
 from PPUMemory import PPUMemory
 from SpriteMemory import SpriteMemory
-from GFX import GFX
+from GFX import *
 
 """
 PPU
@@ -34,7 +34,7 @@ class PPU(object):
         self._sprite_memory = SpriteMemory()
 
         # Motor gráfico del emulador
-        self._gfx = GFX()
+        self._gfx = GFX_Pygame()
 
         # Ciclos restantes hasta próximo evento
         self._cycles_frame = self.FRAME_CYCLES - 1
