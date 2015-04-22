@@ -39,7 +39,6 @@ class NES(object):
         total_time = 0
         counter = 0
         while True:
-            loop_time = time.time()
             if not self._cpu.is_busy():
                 # Si hay interrupciones y la CPU no está ocupada, las lanzamos
                 if self._ppu.get_int_vblank():
@@ -62,7 +61,7 @@ class NES(object):
 
             # Restamos un ciclo de ejecución a la instrucción actual y la PPU
             self._cpu.exec_cycle()
-            self._ppu.exec_cycle()
+            #self._ppu.exec_cycle()
 
             cycles += 1
 

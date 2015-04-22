@@ -24,7 +24,6 @@ class Memory(object):
         #######################################################################
 
 
-    # TODO: acabar esta función
     # Devuelve el contenido de una posición de memoria
     def read_data(self, addr):
         a = addr & 0xFFFF
