@@ -3,6 +3,8 @@
 # Clase que implementa la estructura de la ROM de un juego
 # TODO: empollarse e implementar los mappers
 class ROM(object):
+    PGR_SIZE = 16384
+    CHR_SIZE = 8192
 
     def __init__(self, file_name):
         ###########################################################################
@@ -121,7 +123,10 @@ class ROM(object):
 
 
     def get_chr(self):
-        return self._chr_1 + self._chr_2
+        if self._chr_rom_banks == 1:
+            return self._chr_1
+        elif self._chr_rom_banks == 2:
+            return self._chr_1 + self._chr_2
 
 
     def read_pgr_data(self, addr):

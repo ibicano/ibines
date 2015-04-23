@@ -256,6 +256,39 @@ class PPU(object):
             a += 1
             n += 1
 
+    def incr_xscroll(self):
+        r = self._reg_vram_addr
+        self._reg_x_offset = (self._reg_x_offset + 1) % 8
+        bit_10 = (r & 0x0400) >> 10
+        bits_0_4 = r & 0x001F
+
+        if self._reg_x_offset == 0:
+            bits_0_4 = (bits_0_4 + 1) % 32
+
+            if bits_0_4 == 0x0:
+                bit_10 = ~bit_10 & 0x1
+
+        r = (r & 0xFBE0) | (bit_10 << 10) | bits_0_4
+
+        self._reg_vram_addr = r
+
+
+    def incr_yscroll(self):
+        r = self._reg_vram_addr
+        y_offset = (((r & 0x7000) >> 13) + 1) % 8
+        bit_11 = (r & 0x0800) >> 11
+        bits_5_9 = (r & 0x03E0) >> 5
+
+        if y_offset == 0:
+            bits_5_9 = (bits_5_9 + 1) % 30
+
+            if bits_5_9 == 0x0:
+                bit_11 = ~bit_11 & 0x1
+
+        r = (r & 0x41F) | (y_offset << 12) | (bit_11 << 11) | (bits_5_9 << 5)
+
+        self._reg_vram_addr = r
+
 
     # Métodos para obtener información de los registros de control
 
@@ -373,7 +406,7 @@ class PPU(object):
 
     # FIXME: optimizar esta función que es la que se come toda la potencia (en draw_pixel())
     def draw_scanline(self):
-        if self._scanline_number >= 1 and self._scanline_number <= 240:
+        if 1 <= self._scanline_number <= 240:
             # Copia el desplazamiento X del registro tmp al addr al principio del scanline
             tmp = self._reg_vram_tmp
 
@@ -387,7 +420,11 @@ class PPU(object):
 
             for x in range(PPU.FRAME_WIDTH):
                 self.draw_pixel(x, self._scanline_number - 1)
+                self.incr_xscroll()
 
+            self.incr_yscroll()
+
+    # TODO: Función de prueba. Eliminar cuando funcione.
     def draw_scanline_test(self):
         for x in range(PPU.FRAME_WIDTH):
             if self._scanline_number > 0 and self._scanline_number < 241:
@@ -455,7 +492,7 @@ class PPU(object):
         # Procesa los bytes del patrón para formatearlos en el valor de retorno
         for y in range(8):
             byte_1 = pattern[y]
-            byte_2 = pattern[y+8]
+            byte_2 = pattern[y + 8]
 
             for x in range(8):
                 # Calcula la dirección del color en la paleta de memoria y lo extrae de la tabla de colores
