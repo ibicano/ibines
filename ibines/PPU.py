@@ -148,7 +148,7 @@ class PPU(object):
         elif addr == 0x2006:
             self.write_reg_vram_addr(data)
         elif addr == 0x2007:
-            self.write_reg_vram_io(data)
+            self.write_reg_2007(data)
 
 
     # Según el documento SKINNY.TXT
@@ -160,6 +160,8 @@ class PPU(object):
         self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 10, d & 0x01)
         self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 11, d & 0x02)
 
+    def write_reg_control_1(self, data):
+        self._reg_control_1 = data & 0xFF
 
     def write_reg_control_2(self, data):
         self._reg_control_2 = data & 0xFF
@@ -237,9 +239,9 @@ class PPU(object):
             self._reg_vram_switch = 0
 
 
-    def write_reg_vram_io(self, data):
+    def write_reg_2007(self, data):
         d = data & 0xFF
-        a = self._reg_vram_tmp
+        a = self._reg_vram_addr
         self._reg_vram_io = d
         self._memory.write_data(d, a)
 
@@ -440,18 +442,18 @@ class PPU(object):
         pattern_pixel_x = x % 8
         pattern_pixel_y = y % 8
 
-        pattern_table = self.control_1_background_pattern_bit_4()
+        pattern_table_number = self.control_1_background_pattern_bit_4()
         pattern_index = self._memory.read_data(self._reg_vram_addr)
 
         # TODO: cambiar el color para los patrones calculando el color adecuado de la tabla de atributos
-        pattern_rgb = self.get_pattern_rgb(pattern_table, pattern_index, 0, PPUMemory.ADDR_IMAGE_PALETTE)
+        pattern_rgb = self.get_pattern_rgb(pattern_table_number, pattern_index, 0x3, PPUMemory.ADDR_IMAGE_PALETTE)
         self._gfx.draw_pixel(x, y, pattern_rgb[pattern_pixel_x][pattern_pixel_y])
 
         # Dibuja los sprites
-        sprites_list = self.get_sprites_list()
-        for s in sprites_list:
-            if y >= s.get_offset_y()  and y <=(s.get_offset_y() + 8):
-                self.draw_sprite_pixel(s, x, y)
+        #sprites_list = self.get_sprites_list()
+        #for s in sprites_list:
+        #    if y >= s.get_offset_y()  and y <=(s.get_offset_y() + 8):
+        #        self.draw_sprite_pixel(s, x, y)
 
 
     def draw_sprite_pixel(self, sprite, x, y):
