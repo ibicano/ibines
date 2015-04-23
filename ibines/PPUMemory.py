@@ -27,8 +27,7 @@ class PPUMemory(object):
         #######################################################################
         # Variables de instancia
         #######################################################################
-        self._pattern_table_0 = [0x00] * 0x1000
-        self._pattern_table_1 = [0x00] * 0x1000
+        self._pattern_table = [0x00] * 0x2000
 
         self._name_table_0 = [0x00] * 0x03C0
         self._attr_table_0 = [0x00] * 0x0040
@@ -44,6 +43,8 @@ class PPUMemory(object):
 
         # Referencia a la ROM
         self._rom = rom
+        if self._rom.get_chr_count() == 1:
+            self._pattern_table = self._rom.get_chr()
 
         # TODO: completar inicialización del modo mirror
         self._mirror_mode = 0x0        # Modo de mirror de los "name tables" (sacado de la ROM). 0: horizontal, 1: vertical
@@ -56,16 +57,8 @@ class PPUMemory(object):
         a = addr & 0xFFFF
         data = 0x00
         # Pattern tables:
-        if a >= 0x0000 and a <= 0x0FFF:
-            if self._rom.get_chr_count() == 0:                  # Si la pattern table 0 NO está en la ROM
-                data = self._pattern_table_0[a % 0x1000]
-            else:                                               # Si la pattern table  0 SÍ está en la ROM
-                data = self._rom.read_chr_data(a)
-        elif a >= 0x1000 and a <= 0x1FFF:
-            if self._rom.get_chr_count() < 2:                   # Si la pattern table 1 NO está en la ROM
-                data = self._pattern_table_1[a % 0x1000]
-            else:                                               # Si la pattern table 0 SÍ está en la ROM
-                data = self._rom.read_chr_data(a)
+        if a >= 0x0000 and a < 0x2000:
+           data = self._pattern_table[a]
         # Name tables y attribute tables:
         elif a >= 0x2000 and a <= 0x23BF:
             data = self._name_table_0[a % 0x03C0]
@@ -130,12 +123,9 @@ class PPUMemory(object):
         a = addr & 0xFFFF
         d = data & 0xFF
         # Pattern tables:
-        if a >= 0x0000 and a <= 0x0FFF:
+        if a >= 0x0000 and a < 0x2000:
             if self._rom.get_chr_count() == 0:
-                self._pattern_table_0[a % 0x1000] = d
-        elif a >= 0x1000 and a <= 0x1FFF:
-            if self._rom.get_chr_count() < 2:
-                self._pattern_table_1[a % 0x1000] = d
+                self._pattern_table_[a] = d
         # Name tables y attribute tables:
         elif a >= 0x2000 and a <= 0x23BF:
             self._name_table_0[a % 0x03C0] = d
@@ -199,11 +189,12 @@ class PPUMemory(object):
         pattern = []
         if table == 0:
             for i in range(16):
-                pattern[i] = self._pattern_table_0[addr]
+                pattern[i] = self._pattern_table[addr]
                 addr += 1
         elif table == 1:
+            addr = addr + 0x1000
             for i in range(16):
-                pattern[i] = self._pattern_table_1[addr]
+                pattern[i] = self._pattern_table[addr]
                 addr += 1
 
         return pattern
