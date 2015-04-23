@@ -16,9 +16,11 @@ class Instruction(object):
         self._operand = operand
         self._cpu = cpu
 
+
     # Ejecuta la instrucción e incrementa el registro PC de la CPU
     def execute(self):
         pass
+
 
     # Calculan y devuelven el valor del operando y su posición de memoria
     # (cuando proceda) en forma de tupla (addr, data). Cuando el operando
@@ -26,23 +28,28 @@ class Instruction(object):
     def fetch_inmediate_addrmode(self):
         return self._operand
 
+
     def fetch_accumulator_addrmode(self):
         return self._cpu.get_reg_a()
+
 
     def fetch_absolute_addrmode(self):
         addr = self._operand
         data = self._cpu.get_mem().read_data(addr)
         return (addr, data)
 
+
     def fetch_indexed_x_addrmode(self):
         addr = self._operand + self._cpu.get_reg_x()
         data = self._cpu.get_mem().read_data(addr)
         return (addr, data)
 
+
     def fetch_indexed_y_addrmode(self):
         addr = self._operand + self._cpu.get_reg_y()
         data = self._cpu.get_mem().read_data(addr)
         return (addr, data)
+
 
     def fetch_preindexed_addrmode(self):
         # Calcula el índice de la dirección donde se almacena la dirección
@@ -57,6 +64,7 @@ class Instruction(object):
 
         return (addr, data)
 
+
     def fetch_postindexed_addrmode(self):
         # Calcula el índice de la dirección donde se almacena la dirección
         # base del operando a la que se sumará el desplazamiento Y
@@ -68,6 +76,7 @@ class Instruction(object):
         data = self._cpu.get_mem().read_data(addr)
 
         return (addr, data)
+
 
     ###########################################################################
     # Variables de clase
@@ -86,6 +95,7 @@ class ADC(Instruction):
 
     def __init__(self, operand, cpu):
         super(ADC, self).__init__(operand, cpu)
+
 
     def execute(self, op):
         ac = self._cpu.get_reg_a()
@@ -116,9 +126,11 @@ class ADC_inmediate(ADC):
     def __init__(self, operand, cpu):
         super(ADC_inmediate, self).__init__(operand, cpu)
 
+
     def execute(self):
         op = self.fetch_inmediate_addrmode()
         super(ADC_inmediate, self).execute(op)
+
 
     # Variables privadas
     OPCODE = 0x69
@@ -131,9 +143,11 @@ class ADC_zero(ADC):
     def __init__(self, operand, cpu):
         super(ADC_zero, self).__init__(operand, cpu)
 
+
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
         super(ADC_zero, self).execute(op)
+
 
     # Variables privadas
     OPCODE = 0x65

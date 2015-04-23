@@ -97,22 +97,28 @@ class ROM(object):
     def get_control_1_mirroring_bit_0(self):
         return self._rom_control_1 & 0x01
 
+
     def get_control_1_trainer_bit_2(self):
         return (self._rom_control_1 & 0x04) >> 2
 
+
     def get_control_1_mirroring_bit_3(self):
         return (self._rom_control_1 & 0x08) >> 3
+
 
     # Devuelve el número de bancos de 16KB de memoria de programa disponibles
     def get_pgr_count(self):
         return self._pgr_rom_banks
 
+
     # Devuelve el número de bancos de 16KB de memoria de patrones gráficos disponibles
     def get_chr_count(self):
         return self._chr_rom_banks
 
+
     def get_pgr(self):
         return self._pgr_1 + self._pgr_2
+
 
     def get_chr(self):
         return self._chr_1 + self._chr_2

@@ -37,9 +37,9 @@ class NES(object):
 
         stats_cycles = 0
         stats_total_time = 0
-        stats_counter = 0
+        #stats_counter = 0
 
-        while True:
+        while 1:
             # Si hay interrupciones y la CPU no está ocupada, las lanzamos
             if self._ppu.get_int_vblank():
                 self._cpu.interrupt_vblank()        # Procesamos VBLANK
@@ -58,10 +58,10 @@ class NES(object):
             #    print e
 
             # Restamos un ciclo de ejecución a la instrucción actual y la PPU
-            self._cpu.exec_cycle(inst.CYCLES)
-            #self._ppu.exec_cycle(inst.CYCLES)
 
-            stats_counter += inst.CYCLES
+            self._ppu.exec_cycle(inst.CYCLES)
+
+            #stats_counter += inst.CYCLES
             stats_cycles += inst.CYCLES
 
             if stats_cycles % 5000 == 0:

@@ -7,7 +7,7 @@ Descripción: Implementa la Memoria del sistema
 """
 class Memory(object):
 
-    SIZE = 65536
+    SIZE = 0x10000
 
     # Constructor
     # Se le pasa una instancia de la PPU y otra de la ROM para el mapeo en memoria de ambos
@@ -20,22 +20,25 @@ class Memory(object):
         self._memory = [0x00] * Memory.SIZE
         self._ppu = ppu
         self._rom = rom
+
+        # Cargamos la ROM en la memoria
+        self._memory[0x8000:0x10000] = self._rom.get_pgr()
+
         #######################################################################
         #######################################################################
 
 
     # Devuelve el contenido de una posición de memoria
     def read_data(self, addr):
-        a = addr & 0xFFFF
-
         d = 0x00
-        if a >= 0x0000 and a <= 0x1FFF:
-            d = self._memory[a]
-        elif a >= 0x2000 and a <= 0x3FFF:     # Direcciones de los registros PPU
-            n = 0x2000 + (a % 0x08)
+        if addr >= 0x8000:    # Lee la ROM
+            d = self._memory[addr]
+        elif addr >= 0x0000 and addr <= 0x1FFF:
+            d = self._memory[addr]
+        elif addr >= 0x2000 and addr <= 0x3FFF:     # Direcciones de los registros PPU
+            n = 0x2000 + (addr % 0x08)
             d = self._ppu.read_reg(n)
-        elif a >= 0x8000 and a <= 0xFFFF:    # Lee la ROM
-            d = self._rom.read_pgr_data(a % 0x8000)
+            d = 0x00
 
         return d
 
@@ -46,18 +49,17 @@ class Memory(object):
     # eficiente no escribir todas y mapear las posiciones en una soloa
     # OPTIMIZE: Lo expuesto anteriormente
     def write_data(self, data, addr):
-        a = addr & 0xFFFF
         d = data & 0xFF
 
-        if a >= 0x0000 and a <= 0x1FFF:
-            n = a % 0x800
+        if addr >= 0x0000 and addr <= 0x1FFF:
+            n = addr % 0x800
             self._memory[n] = d
             self._memory[0x0800 + n] = d
             self._memory[0x1000 + n] = d
             self._memory[0x1800 + n] = d
-        elif a >= 0x2000 and a <= 0x3FFF: # Direcciones de los registros PPU
-            n = a % 0x08
+        elif addr >= 0x2000 and addr <= 0x3FFF: # Direcciones de los registros PPU
+            n = addr % 0x08
             self._ppu.write_reg(d, n)
-        elif a >= 0x4000 and a <= 0x401F: # Más registros I/O
-            if a == 0x4014:
+        elif addr >= 0x4000 and addr <= 0x401F: # Más registros I/O
+            if addr == 0x4014:
                 self._ppu.write_sprite_dma(self, d)

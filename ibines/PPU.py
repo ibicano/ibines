@@ -23,7 +23,7 @@ class PPU(object):
     FRAME_PERIOD = 0.020        # Periodo de frame en segundos
 
     FRAME_WIDTH = 256
-    FRAME_HEIGHT = 256
+    FRAME_HEIGHT = 240
 
     def __init__(self, rom):
         #######################################################################
@@ -77,33 +77,36 @@ class PPU(object):
     # activación de cosas en función del ciclo del frame en el que nos
     # encontremos
     def exec_cycle(self, cycles):
-        if not self._end_frame:     # En mitad del frame
-            if self._cycles_frame >= self.VBLANK_CYCLES:     # Dibujando scanlines
-                if self._end_scanline:
-                    self.draw_scanline()
-                    self._gfx.update()
-                    self._end_scanline = False
-            elif self._cycles_frame < self.VBLANK_CYCLES:     # En el periodo de vblank
-                if self._cycles_frame == self.VBLANK_CYCLES - 1:    # Este es el ciclo en el que entramos en VBLANK
-                    self.start_vblank()    # Activamos el período VBLANk al inicio del período
-        elif self._end_frame:     # Fin del Frame
-            self.end_vblank() # Finalizamos el período VBLANK
-            self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
-            self._end_frame = False
-
-
         # Decrementamos el contador de ciclos
         if self._cycles_frame < cycles:
-            self._cycles_frame = self.FRAME_CYCLES - cycles
+            self._cycles_frame = (self._cycles_frame - cycles) % PPU.FRAME_CYCLES
             self._end_frame = True
         else:
             self._cycles_frame -= cycles
 
+
         if self._cycles_scanline < cycles:
-            self._cycles_scanline = self.SCANLINE_CYCLES - cycles
+            self._cycles_scanline = (self._cycles_scanline - cycles) % PPU.SCANLINE_CYCLES
             self._end_scanline = True
         else:
             self._cycles_scanline -= cycles
+
+
+        if not self._end_frame:     # En mitad del frame
+            # Procesamos scanline en el ciclo de reloj adecuado
+            if self._end_scanline:
+                self.draw_scanline()
+                self._gfx.update()
+                self._scanline_number = (self._scanline_number + 1) % PPU.FRAME_SCANLINES
+                self._end_scanline = False
+
+            if self._cycles_frame < self.VBLANK_CYCLES and not self.is_vblank():     # Este es el ciclo en el que entramos en VBLANK
+                self.start_vblank()    # Activamos el período VBLANK al inicio del período
+
+        elif self._end_frame:     # Fin del Frame
+            self.end_vblank() # Finalizamos el período VBLANK
+            self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
+            self._end_frame = False
 
 
     # Lee el registro indicado por su dirección en memoria
@@ -368,21 +371,27 @@ class PPU(object):
     def is_vblank(self):
         return nesutils.get_bit(self._reg_status, 7)
 
-
+    # FIXME: optimizar esta función que es la que se come toda la potencia (en draw_pixel())
     def draw_scanline(self):
-        # Copia el desplazamiento X del registro tmp al addr al principio del scanline
-        tmp = self._reg_vram_tmp
+        if self._scanline_number >= 1 and self._scanline_number <= 240:
+            # Copia el desplazamiento X del registro tmp al addr al principio del scanline
+            tmp = self._reg_vram_tmp
 
-        self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 0, tmp & 0x0001)
-        self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 1, tmp & 0x0002)
-        self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 2, tmp & 0x0004)
-        self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 3, tmp & 0x0008)
-        self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 4, tmp & 0x0010)
+            self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 0, tmp & 0x0001)
+            self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 1, tmp & 0x0002)
+            self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 2, tmp & 0x0004)
+            self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 3, tmp & 0x0008)
+            self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 4, tmp & 0x0010)
 
-        self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 10, tmp & 0x0400)
+            self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 10, tmp & 0x0400)
 
-        for x in range(256):
-            self.draw_pixel(x, self._scanline_number)
+            for x in range(PPU.FRAME_WIDTH):
+                self.draw_pixel(x, self._scanline_number - 1)
+
+    def draw_scanline_test(self):
+        for x in range(PPU.FRAME_WIDTH):
+            if self._scanline_number > 0 and self._scanline_number < 241:
+                self._gfx.draw_pixel(x, self._scanline_number - 1, (255,0,0))
 
 
     # Dibuja un pixel de la pantalla
@@ -390,7 +399,6 @@ class PPU(object):
         #sprites_pt = self.control_1_sprites_pattern_bit_3()
         #background_pt = self.control_1_background_pattern_bit_4()
         #sprite_size = self.control_1_sprites_size_bit_5()
-
         # Dibuja el fondo
         pattern_pixel_x = x % 8
         pattern_pixel_y = y % 8

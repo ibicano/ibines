@@ -71,6 +71,36 @@ class GFX_Pygame(GFX):
             time.sleep(0.04)
 
 
+class GFX_Test(GFX):
+
+    def __init__(self):
+        ###########################################################################
+        # Variables de instancia
+        ###########################################################################
+        self._screen = None
+        self._pixels = None
+        ###########################################################################
+        ###########################################################################
+
+        pygame.display.init()
+        self._screen = pygame.display.set_mode((256, 240))
+        self._screen.fill((0,0,0))
+        self._pixels = pygame.PixelArray(self._screen)
+
+
+    def draw_pixel(self, x, y, color=(0, 0, 0)):
+        self._pixels[x][y] = (255, 0, 0)
+
+
+    def fill(self, color=(0, 0, 0)):
+        self._screen.fill(color)
+
+
+    def update(self):
+        pygame.display.update()
+
+
+
 
 #gfx = GFX()
 #gfx.run()
