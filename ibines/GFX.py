@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import pygame
+#import pygame
+import sdl2.ext
 import time
 
 """
@@ -51,6 +52,47 @@ class GFX_Pygame(GFX):
 
     def update(self):
         pygame.display.update()
+
+
+    def run(self):
+        while 1:
+            self._screen.fill((255,0,0))
+            #for x in range(len(self._pixels)):
+                #for y in range(len(self._pixels[x])):
+                    #if (x % 2) == 0:
+                        #if (y % 2) != 0:
+                            #self._pixels[x][y] = self._screen.map_rgb((0,0,255))
+                    #elif (x % 2) != 0:
+                        #if (y % 2) == 0:
+                            #self._pixels[x][y] = self._screen.map_rgb((0,0,255))
+
+            self._pixels[50:100,20:200] = self._screen.map_rgb((0,0,255))
+
+            pygame.display.update()
+            time.sleep(0.04)
+
+
+class GFX_PySdl2(GFX):
+
+    def __init__(self):
+        self._window = sdl2.ext.Window("Ventana", size=(256, 240))
+        self._surface = self._window.get_surface()
+        self._pixels = sdl2.ext.PixelView(self._surface)
+        self.fill((0, 0, 0))
+        self._window.show()
+
+
+    def draw_pixel(self, x, y, color=(0, 0, 0)):
+        self._pixels[y][x] = sdl2.ext.COLOR(color)
+
+
+    def fill(self, color=(0, 0, 0)):
+        pass
+        #sdl2.ext.fill(self._pixels, sdl2.ext.COLOR(color))
+
+
+    def update(self):
+        self._window.refresh()
 
 
     def run(self):

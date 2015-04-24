@@ -57,64 +57,7 @@ class PPUMemory(object):
         a = addr & 0xFFFF
         data = 0x00
         # Pattern tables:
-        if a >= 0x0000 and a < 0x2000:
-           data = self._pattern_table[a]
-        # Name tables y attribute tables:
-        elif a >= 0x2000 and a <= 0x23BF:
-            data = self._name_table_0[a % 0x03C0]
-        elif a >= 0x23C0 and a <= 0x23FF:
-            data = self._attr_table_0[a % 0x0040]
-        elif a >= 0x2400 and a <= 0x27BF:
-            if self._mirror_mode == 0:
-                data = self._name_table_0[a % 0x03C0]
-            elif self._mirror_mode == 1:
-                data = self._name_table_1[a % 0x03C0]
-        elif a >= 0x27C0 and a <= 0x27FF:
-            if self._mirror_mode == 0:
-                data = self._attr_table_0[a % 0x0040]
-            elif self._mirror_mode == 1:
-                data = self._attr_table_1[a % 0x0040]
-        elif a >= 0x2800 and a <= 0x2BBF:
-            if self._mirror_mode == 0:
-                data = self._name_table_1[a % 0x03C0]
-            elif self._mirror_mode == 1:
-                data = self._name_table_0[a % 0x03C0]
-        elif a >= 0x2BC0 and a <= 0x2BFF:
-            if self._mirror_mode == 0:
-                data = self._attr_table_1[a % 0x0040]
-            elif self._mirror_mode == 1:
-                data = self._attr_table_0[a % 0x0040]
-        elif a >= 0x2C00 and a <= 0x2FBF:
-            if self._mirror_mode == 0:
-                data = self._name_table_1[a % 0x03C0]
-            elif self._mirror_mode == 1:
-                data = self._name_table_0[a % 0x03C0]
-        elif a >= 0x2FC0 and a <= 0x2FFF:
-            if self._mirror_mode == 0:
-                data = self._attr_table_1[a % 0x0040]
-            elif self._mirror_mode == 1:
-                data = self._attr_table_0[a % 0x0040]
-        # Mirrors name/attr tables:
-        elif a >= 0x3000 and a <= 0x3EFF:
-            data = self.read_data(0x2000 + (a % 0x0F00))
-        # Image Palette:
-        elif a >= 0x3F00 and a <= 0x3F0F:
-            if (a % 0x04) == 0:
-                data = self._image_palette[0x00]
-            else:
-                data = self._image_palette[a % 0x0010]
-        # Sprite Palette:
-        elif a >= 0x3F10 and a <= 0x3F1F:
-            if (a % 0x04) == 0:
-                data = self._image_palette[0x00]
-            else:
-                data = self._sprite_palette[a % 0x0010]
-        # Mirrors Palettes:
-        elif a >= 0x3F20 and a <= 0x3FFF:
-            data = self.read_data(0x3F00 + (a % 0x20))
-        # Mirrors generales:
-        elif a >= 0x4000 and a <= 0xFFFF:
-            data = self.read_data(a % 0x4000)
+
 
         return data
 
@@ -188,14 +131,10 @@ class PPUMemory(object):
         addr = pattern_number * 0x0010
         pattern = []
         if table == 0:
-            for i in range(16):
-                pattern[i] = self._pattern_table[addr]
-                addr += 1
+            pattern = self.self._pattern_table[addr:addr + 16]
         elif table == 1:
             addr = addr + 0x1000
-            for i in range(16):
-                pattern[i] = self._pattern_table[addr]
-                addr += 1
+            pattern = self.self._pattern_table[addr:addr + 16]
 
         return pattern
 

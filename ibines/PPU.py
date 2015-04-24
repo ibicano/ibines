@@ -34,7 +34,7 @@ class PPU(object):
         self._sprite_memory = SpriteMemory()
 
         # Motor gráfico del emulador
-        self._gfx = GFX_Pygame()
+        self._gfx = GFX_PySdl2()
 
         # Ciclos restantes hasta próximo evento
         self._cycles_frame = self.FRAME_CYCLES - 1
