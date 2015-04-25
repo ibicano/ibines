@@ -37,7 +37,6 @@ class Memory(object):
             d = self._memory[addr]
         elif addr >= 0x2000 and addr <= 0x3FFF:     # Direcciones de los registros PPU
             d = self._ppu.read_reg(addr)
-            d = 0x00
 
         return d
 
