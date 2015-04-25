@@ -213,7 +213,7 @@ class PPU(object):
         d = data & 0xFF
 
         # Primera escritura en $2006
-        if self.reg_vram_switch == 0:
+        if self._reg_vram_switch == 0:
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 8, d & 0x01)
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 9, d & 0x02)
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 10, d & 0x04)
@@ -236,7 +236,7 @@ class PPU(object):
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 6, d & 0x40)
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 7, d & 0x80)
 
-            self._reg_vram_addr = self.reg_vram_tmp
+            self._reg_vram_addr = self._reg_vram_tmp
 
             self._reg_vram_switch = 0
 

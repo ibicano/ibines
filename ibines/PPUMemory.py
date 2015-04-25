@@ -96,7 +96,7 @@ class PPUMemory(object):
                 data = self._attr_table_0[a & 0x040]
         # Mirrors name/attr tables:
         elif a < 0x3F00:
-            data = self.read_data(d, 0x2000 + (a % 0x0F00))
+            data = self.read_data(0x2000 + (a % 0x0F00))
         # Image Palette:
         elif a < 0x3F10:
             if (a % 0x04) == 0:
@@ -111,10 +111,10 @@ class PPUMemory(object):
                 data = self._sprite_palette[a % 0x0010]
         # Mirrors Palettes:
         elif a >= 0x3F20 and a <= 0x3FFF:
-            data = self.read_data(d, 0x3F00 + (a % 0x20))
+            data = self.read_data(0x3F00 + (a % 0x20))
         # Mirrors generales:
         elif a >= 0x4000 and a <= 0xFFFF:
-            data = self.read_data(d, a % 0x4000)
+            data = self.read_data(a % 0x4000)
 
         return data
 
