@@ -57,7 +57,64 @@ class PPUMemory(object):
         a = addr & 0xFFFF
         data = 0x00
         # Pattern tables:
-
+        if a < 0x2000:
+            data = self._pattern_table[a]
+        # Name Tables y Attr Tables
+        elif a < 0x23C0:
+            data = self._name_table_0[a % 0x3C0]
+        elif a < 0x2400:
+            data = self._attr_table_0[a & 0x040]
+        elif a < 0x27C0:
+            if self._mirror_mode == 0:
+                data = self._name_table_0[a % 0x3C0]
+            elif self._mirror_mode == 1:
+                data = self._name_table_1[a % 0x3C0]
+        elif a < 0x2800:
+            if self._mirror_mode == 0:
+                data = self._attr_table_0[a % 0x3C0]
+            elif self._mirror_mode == 1:
+                data = self._attr_table_1[a & 0x040]
+        elif a < 0x2BC0:
+            if self._mirror_mode == 0:
+                data = self._name_table_1[a % 0x3C0]
+            elif self._mirror_mode == 1:
+                data = self._name_table_0[a % 0x3C0]
+        elif a < 0x2C00:
+            if self._mirror_mode == 0:
+                data = self._attr_table_1[a & 0x040]
+            elif self._mirror_mode == 1:
+                data = self._attr_table_0[a & 0x040]
+        elif a < 0x2FC0:
+            if self._mirror_mode == 0:
+                data = self._name_table_1[a % 0x3C0]
+            elif self._mirror_mode == 1:
+                data = self._name_table_0[a % 0x3C0]
+        elif a < 0x3000:
+            if self._mirror_mode == 0:
+                data = self._attr_table_1[a & 0x040]
+            elif self._mirror_mode == 1:
+                data = self._attr_table_0[a & 0x040]
+        # Mirrors name/attr tables:
+        elif a < 0x3F00:
+            data = self.read_data(d, 0x2000 + (a % 0x0F00))
+        # Image Palette:
+        elif a < 0x3F10:
+            if (a % 0x04) == 0:
+                data = self._image_palette[0x00]
+            else:
+                data = self._image_palette[a % 0x0010]
+        # Sprite Palette:
+        elif a >= 0x3F10 and a <= 0x3F1F:
+            if (a % 0x04) == 0:
+                data = self._image_palette[0x00]
+            else:
+                data = self._sprite_palette[a % 0x0010]
+        # Mirrors Palettes:
+        elif a >= 0x3F20 and a <= 0x3FFF:
+            data = self.read_data(d, 0x3F00 + (a % 0x20))
+        # Mirrors generales:
+        elif a >= 0x4000 and a <= 0xFFFF:
+            data = self.read_data(d, a % 0x4000)
 
         return data
 
@@ -66,62 +123,65 @@ class PPUMemory(object):
         a = addr & 0xFFFF
         d = data & 0xFF
         # Pattern tables:
-        if a >= 0x0000 and a < 0x2000:
+        if a < 0x2000:
             if self._rom.get_chr_count() == 0:
                 self._pattern_table_[a] = d
         # Name tables y attribute tables:
-        elif a >= 0x2000 and a <= 0x23BF:
+        elif a < 0x23C0:
             self._name_table_0[a % 0x03C0] = d
-        elif a >= 0x23C0 and a <= 0x23FF:
+        elif a < 0x2400:
             self._attr_table_0[a % 0x0040] = d
-        elif a >= 0x2400 and a <= 0x27BF:
+        elif a < 0x27C0:
             if self._mirror_mode == 0:
                 self._name_table_0[a % 0x03C0] = d
             elif self._mirror_mode == 1:
                 self._name_table_1[a % 0x03C0] = d
-        elif a >= 0x27C0 and a <= 0x27FF:
+        elif a < 0x2800:
             if self._mirror_mode == 0:
                 self._attr_table_0[a % 0x0040] = d
             elif self._mirror_mode == 1:
                 self._attr_table_1[a % 0x0040] = d
-        elif a >= 0x2800 and a <= 0x2BBF:
+        elif a < 0x2BC0:
             if self._mirror_mode == 0:
                 self._name_table_1[a % 0x03C0] = d
             elif self._mirror_mode == 1:
                 self._name_table_0[a % 0x03C0] = d
-        elif a >= 0x2BC0 and a <= 0x2BFF:
+        elif a < 0x2C00:
             if self._mirror_mode == 0:
                 self._attr_table_1[a % 0x0040] = d
             elif self._mirror_mode == 1:
                 self._attr_table_0[a % 0x0040] = d
-        elif a >= 0x2C00 and a <= 0x2FBF:
+        elif a < 0x2FC0:
             if self._mirror_mode == 0:
                 self._name_table_1[a % 0x03C0] = d
             elif self._mirror_mode == 1:
                 self._name_table_0[a % 0x03C0] = d
-        elif a >= 0x2FC0 and a <= 0x2FFF:
+        elif a < 0x3000:
             if self._mirror_mode == 0:
                 self._attr_table_1[a % 0x0040] = d
             elif self._mirror_mode == 1:
                 self._attr_table_0[a % 0x0040] = d
         # Mirrors name/attr tables:
-        elif a >= 0x3000 and a <= 0x3EFF:
+        elif a < 0x3F00:
             self.write_data(d, 0x2000 + (a % 0x0F00))
         # Image Palette:
-        elif a >= 0x3F00 and a <= 0x3F0F:
+        elif a < 0x3F10:
+            print "Escribe en paleta"
             if (a % 0x04) == 0:
                 self._image_palette[0x00] = d
-            self._image_palette[a % 0x0010] = d
+            else:
+                self._image_palette[a % 0x0010] = d
         # Sprite Palette:
-        elif a >= 0x3F10 and a <= 0x3F1F:
+        elif a < 0x3F20:
             if (a % 0x04) == 0:
                 self._image_palette[0x00] = d
-            self._sprite_palette[a % 0x0010] = d
+            else:
+                self._sprite_palette[a % 0x0010] = d
         # Mirrors Palettes:
-        elif a >= 0x3F20 and a <= 0x3FFF:
+        elif a < 0x4000:
             self.write_data(d, 0x3F00 + (a % 0x20))
         # Mirrors generales:
-        elif a >= 0x4000 and a <= 0xFFFF:
+        elif a < 0x10000:
             self.write_data(d, a % 0x4000)
 
 

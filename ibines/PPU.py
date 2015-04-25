@@ -12,6 +12,8 @@ PPU
 Descripción: Implementa el procesador gráfico de la NES
 """
 class PPU(object):
+    DEBUG_DRAW = False
+
     ###########################################################################
     # Constantes
     ###########################################################################
@@ -144,9 +146,9 @@ class PPU(object):
         elif addr == 0x2004:
             self.write_reg_spr_io(data)
         elif addr == 0x2005:
-            self.write_reg_vram_tmp(data)
+            self.write_reg_2005(data)
         elif addr == 0x2006:
-            self.write_reg_vram_addr(data)
+            self.write_reg_2006(data)
         elif addr == 0x2007:
             self.write_reg_2007(data)
 
@@ -182,7 +184,7 @@ class PPU(object):
         d = data & 0xFF
 
         # Primera escritura en $2005
-        if self.reg_vram_switch == 0:
+        if self._reg_vram_switch == 0:
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 0, d & 0x08)
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 1, d & 0x10)
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 2, d & 0x20)
@@ -421,7 +423,8 @@ class PPU(object):
             self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 10, tmp & 0x0400)
 
             for x in range(PPU.FRAME_WIDTH):
-                self.draw_pixel(x, self._scanline_number - 1)
+                if PPU.DEBUG_DRAW:    # Si está el flag de depuración de dibujar se sibuja
+                    self.draw_pixel(x, self._scanline_number - 1)
                 self.incr_xscroll()
 
             self.incr_yscroll()

@@ -60,18 +60,14 @@ class CPU(object):
 
     # Procesa una interrupción
     def interrupt(self, vector_addr):
-        if not self.is_busy():
-            self.push_stack((self._reg_pc >> 8) & 0xFF)
-            self.push_stack(self._reg_pc & 0xFF)
-            self.push_stack(self._reg_p)
-            self.set_reg_p_i_bit(1)
-            addr = self._mem.read_data(vector_addr) & 0xFF
-            addr = addr | (self._mem.read_data(vector_addr + 1) << 8)
-            self._reg_pc = addr
+        self.push_stack((self._reg_pc >> 8) & 0xFF)
+        self.push_stack(self._reg_pc & 0xFF)
+        self.push_stack(self._reg_p)
+        self.set_reg_p_i_bit(1)
+        addr = self._mem.read_data(vector_addr) & 0xFF
+        addr = addr | (self._mem.read_data(vector_addr + 1) << 8)
+        self._reg_pc = addr
 
-            return True
-        else:
-            return False
 
 
     # Procesa la interrupción VBlank
@@ -154,17 +150,8 @@ class CPU(object):
         #except:
         #    print "Error al hacer fetch de instrucción " + str(inst_class.__name__) + " de " + str(inst_class.BYTES) + " bytes"
 
-        self._cycles_inst = inst.CYCLES
-
         return inst
 
-
-    # Devuelve "True" si está en mitad de ejecución de una instrucción
-    def is_busy(self):
-        if self._cycles_inst > 0:
-            return True
-        else:
-            return False
 
     # Devuelve el valor de los bits del registro de estado
     def get_reg_p_c_bit(self):
