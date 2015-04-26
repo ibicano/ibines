@@ -63,7 +63,7 @@ class PPUMemory(object):
         elif a < 0x23C0:
             data = self._name_table_0[a % 0x3C0]
         elif a < 0x2400:
-            data = self._attr_table_0[a & 0x040]
+            data = self._attr_table_0[a % 0x040]
         elif a < 0x27C0:
             if self._mirror_mode == 0:
                 data = self._name_table_0[a % 0x3C0]
@@ -71,9 +71,9 @@ class PPUMemory(object):
                 data = self._name_table_1[a % 0x3C0]
         elif a < 0x2800:
             if self._mirror_mode == 0:
-                data = self._attr_table_0[a % 0x3C0]
+                data = self._attr_table_0[a % 0x040]
             elif self._mirror_mode == 1:
-                data = self._attr_table_1[a & 0x040]
+                data = self._attr_table_1[a % 0x040]
         elif a < 0x2BC0:
             if self._mirror_mode == 0:
                 data = self._name_table_1[a % 0x3C0]
@@ -81,9 +81,9 @@ class PPUMemory(object):
                 data = self._name_table_0[a % 0x3C0]
         elif a < 0x2C00:
             if self._mirror_mode == 0:
-                data = self._attr_table_1[a & 0x040]
+                data = self._attr_table_1[a % 0x040]
             elif self._mirror_mode == 1:
-                data = self._attr_table_0[a & 0x040]
+                data = self._attr_table_0[a % 0x040]
         elif a < 0x2FC0:
             if self._mirror_mode == 0:
                 data = self._name_table_1[a % 0x3C0]
@@ -91,9 +91,9 @@ class PPUMemory(object):
                 data = self._name_table_0[a % 0x3C0]
         elif a < 0x3000:
             if self._mirror_mode == 0:
-                data = self._attr_table_1[a & 0x040]
+                data = self._attr_table_1[a % 0x040]
             elif self._mirror_mode == 1:
-                data = self._attr_table_0[a & 0x040]
+                data = self._attr_table_0[a % 0x040]
         # Mirrors name/attr tables:
         elif a < 0x3F00:
             data = self.read_data(0x2000 + (a % 0x0F00))

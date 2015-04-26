@@ -279,7 +279,7 @@ class PPU(object):
 
     def incr_yscroll(self):
         r = self._reg_vram_addr
-        y_offset = (((r & 0x7000) >> 13) + 1) % 8
+        y_offset = (((r & 0x7000) >> 12) + 1) % 8
         bit_11 = (r & 0x0800) >> 11
         bits_5_9 = (r & 0x03E0) >> 5
 
@@ -292,6 +292,16 @@ class PPU(object):
         r = (r & 0x41F) | (y_offset << 12) | (bit_11 << 11) | (bits_5_9 << 5)
 
         self._reg_vram_addr = r
+
+
+    # Devuelve el valor de 8 bits del registro de desplazamiento x del scroll de un tile
+    def get_x_offset(self):
+        return self._reg_x_offset
+
+
+    # Devuelve el valor de 8 bits del registro de desplazamiento y del scroll de un tile
+    def get_y_offset(self):
+        return (self._reg_vram_addr & 0x7000) >> 12
 
 
     # Métodos para obtener información de los registros de control
@@ -445,8 +455,8 @@ class PPU(object):
         #background_pt = self.control_1_background_pattern_bit_4()
         #sprite_size = self.control_1_sprites_size_bit_5()
         # Dibuja el fondo
-        pattern_pixel_x = x % 8
-        pattern_pixel_y = y % 8
+        pattern_pixel_x = self.get_x_offset()
+        pattern_pixel_y = self.get_y_offset()
 
         is_background = False
 
