@@ -176,7 +176,7 @@ class PPU(object):
     def write_reg_2004(self, data):
         d = data & 0xFF
         self._reg_spr_io = d
-        self._memory.write_sprite_data(d, self._reg_spr_addr)
+        self._sprite_memory.write_data(d, self._reg_spr_addr)
 
 
     # Según el documento SKINNY.TXT
@@ -458,13 +458,16 @@ class PPU(object):
         pattern_pixel_x = self.get_x_offset()
         pattern_pixel_y = self.get_y_offset()
 
+        # Calcula la dirección en la Name Table activa
+        name_table_addr = self.active_name_table_addr() + (self._reg_vram_addr & 0x0FFF)
+
         is_background = False
 
         pattern_table_number = self.control_1_background_pattern_bit_4()
-        pattern_index = self._memory.read_data(self._reg_vram_addr)
+        pattern_index = self._memory.read_data(name_table_addr)
 
         # TODO: cambiar el color para los patrones calculando el color adecuado de la tabla de atributos
-        pattern_palette = self.get_pattern_palette(pattern_table_number, pattern_index, 0x3)
+        pattern_palette = self.get_pattern_palette(pattern_table_number, pattern_index, 0x1)
 
         # Comprueba si el pixel actual es de background
         if pattern_palette[pattern_pixel_x][pattern_pixel_y] == 0:
