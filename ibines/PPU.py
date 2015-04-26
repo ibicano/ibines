@@ -466,8 +466,10 @@ class PPU(object):
         pattern_table_number = self.control_1_background_pattern_bit_4()
         pattern_index = self._memory.read_data(name_table_addr)
 
+        attr_color = self.calc_attr_color(name_table_addr)
+
         # TODO: cambiar el color para los patrones calculando el color adecuado de la tabla de atributos
-        pattern_palette = self.get_pattern_palette(pattern_table_number, pattern_index, 0x1)
+        pattern_palette = self.get_pattern_palette(pattern_table_number, pattern_index, attr_color)
 
         # Comprueba si el pixel actual es de background
         if pattern_palette[pattern_pixel_x][pattern_pixel_y] == 0:
@@ -481,6 +483,7 @@ class PPU(object):
         for s in sprites_list:
            if y >= s.get_offset_y()  and y < (s.get_offset_y() + 8):
                 self.draw_sprite_pixel(s, x, y, is_background)
+
 
 
     def draw_sprite_pixel(self, sprite, x, y, is_background):
@@ -514,6 +517,47 @@ class PPU(object):
 
         return sprites_list
 
+
+    # Devuelve el color almacenado en la attr table para el tile de una dirección de la name table
+    def calc_attr_color(self, name_table_addr):
+        # La posición de la name table en la que está el tile
+        pos = name_table_addr & 0x03FF
+
+        # Posición del grupo de 8x8 tiles que contiene el tile con el que estamos trabajando
+        group_x = (pos >> 2) & 0x07
+        group_y = (pos >> 7) & 0x07
+
+        # Posición del byte en la "attr table" correspondiente al grupo 8x8
+        attr_pos = (group_y * 8) + group_x
+
+        # Dirección de memoria de la "attr table"
+        attr_addr = (name_table_addr & 0xF400)  | attr_pos
+
+        # Byte leído de la attr table que contiene la info de color
+        attr_data = self._memory.read_data(attr_addr)
+
+        # Calculamos la posición relativa del tile dentro del grupo 8x8
+        # La posición x dentro del grupo 8x8 la dan los 2 bits menos significativos de la posición del tile en la name table
+        pos_x = pos & 0x03
+
+        # La posición x dentro del grupo 8x8 la dan los bits 5 y 6 de la posición del tile en la name table
+        pos_y = (pos >> 5) & 0x03
+
+        # En función de la posición dentro del grupo 8x8 devolvemos los 2 bits de color que correspondan
+        if pos_x < 2:
+            if pos_y < 2:
+                attr_area = 0
+            else:
+                attr_area = 2
+        else:
+            if pos_y < 2:
+                attr_area = 1
+            else:
+                attr_area = 3
+
+        color = (attr_data >> (attr_area * 2)) & 0x03
+
+        return color
 
 
     # Lee de la memoria de patrones un patrón especificado por su índice y lo
