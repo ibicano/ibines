@@ -52,6 +52,15 @@ class PPU(object):
         # Interrupciones
         self._int_vblank = 0
 
+        # Variables que almacenan el patrón que se está procesando
+        self._pattern_palette = [None] * 8
+        for x in range(8):
+            self._pattern_palette[x] = [0] * 8
+
+        self._pattern_rgb = [None] * 8
+        for x in range(8):
+            self._pattern_rgb[x] = [(0, 0, 0)] * 8
+
         # Registros
 
         # Registros I/O
@@ -470,14 +479,14 @@ class PPU(object):
         attr_color = self.calc_attr_color(name_table_addr)
 
         # TODO: cambiar el color para los patrones calculando el color adecuado de la tabla de atributos
-        pattern_palette = self.get_pattern_palette(pattern_table_number, pattern_index, attr_color)
+        self._pattern_palette = self.fetch_pattern_palette(pattern_table_number, pattern_index, attr_color)
 
         # Comprueba si el pixel actual es de background
-        if pattern_palette[pattern_pixel_x][pattern_pixel_y] == 0:
+        if self._pattern_palette[pattern_pixel_x][pattern_pixel_y] == 0:
             is_background = True
 
-        pattern_rgb = self.get_pattern_rgb(pattern_palette, PPUMemory.ADDR_IMAGE_PALETTE)
-        self._gfx.draw_pixel(x, y, pattern_rgb[pattern_pixel_x][pattern_pixel_y])
+        self._pattern_rgb = self.fetch_pattern_rgb(PPUMemory.ADDR_IMAGE_PALETTE)
+        self._gfx.draw_pixel(x, y, self._pattern_rgb[pattern_pixel_x][pattern_pixel_y])
 
         # Dibuja los sprites
         sprites_list = self.get_sprites_list()
@@ -497,14 +506,14 @@ class PPU(object):
                 pixel_y = y - off_y
 
                 pattern_table = self.control_1_sprites_pattern_bit_3()
-                pattern_palette = self.get_pattern_palette(pattern_table, sprite.get_index(), sprite.get_attr_color())
+                self._pattern_palette = self.fetch_pattern_palette(pattern_table, sprite.get_index(), sprite.get_attr_color())
 
-                if is_background & (pattern_palette[pixel_x][pixel_y] != 0):
+                if is_background & (self._pattern_palette[pixel_x][pixel_y] != 0):
                     self.set_sprite_hit(1)
                     print "Colisión sprite"
 
-                pattern_rgb = self.get_pattern_rgb(pattern_palette, PPUMemory.ADDR_SPRITE_PALETTE)
-                self._gfx.draw_pixel(x, y, pattern_rgb[pixel_x][pixel_y])
+                self._pattern_rgb = self.fetch_pattern_rgb(PPUMemory.ADDR_SPRITE_PALETTE)
+                self._gfx.draw_pixel(x, y, self._pattern_rgb[pixel_x][pixel_y])
 
 
     # Devuelve una lista de objetos de clase Sprite con los sprites de la memoria de sprites
@@ -565,10 +574,9 @@ class PPU(object):
     # devuelve como una lista 8x8 en la que cada posición es una tupla
     # (R,G,B) con el color calculado de cada pixel
     # TODO: adaptar la paleta a si se está trabajando en fondo o sprites
-    def get_pattern_palette(self, pattern_table, pattern_index, attr_color):
-        pattern = self.get_pattern_mem(pattern_table, pattern_index)
+    def fetch_pattern_palette(self, pattern_table, pattern_index, attr_color):
+        pattern = self.fetch_pattern_mem(pattern_table, pattern_index)
 
-        pattern_palette=[[0] * 8] * 8
         # Procesa los bytes del patrón para formatearlos en el valor de retorno
         for y in range(8):
             byte_1 = pattern[y]
@@ -579,24 +587,27 @@ class PPU(object):
                 palette_index = (0x00 | ((byte_1 & (0x01 << x)) >> x) | (((byte_2 & (0x01 << x)) >> x) << 1) | ((attr_color & 0x03) << 2))
 
                 # Asigna el índice de la paleta a la posición correspondiente:
-                pattern_palette[7 - x][7 - y] = palette_index
+                self._pattern_palette[7 - x][7 - y] = palette_index
 
-        return pattern_palette
+        return self._pattern_palette
 
 
-    def get_pattern_rgb(self, pattern_palette, palette_addr):
-        pattern_rgb=[[(0, 0, 0)] * 8] * 8
+    def fetch_pattern_rgb(self, palette_addr):
         for x in range(8):
             for y in range(8):
-                color_index = self._memory.read_data(palette_addr + pattern_palette[x][y])
+                color_index = self._memory.read_data(palette_addr + self._pattern_palette[x][y])
                 rgb = self._COLOUR_PALETTE[color_index]
-                pattern_rgb[x][y] = rgb
+                self._pattern_rgb[x][y] = rgb
 
-        return pattern_rgb
+                # Esto es para pruebas
+                #if self._pattern_palette[x][y]:
+                #    self._pattern_rgb[x][y] = ((255, 255, 255))
+
+        return self._pattern_rgb
 
 
     # Devuelve los 16 bytes del patrón indicado tal como se almacenan en la tabla de patrones especificada
-    def get_pattern_mem(self, pattern_table, pattern_index):
+    def fetch_pattern_mem(self, pattern_table, pattern_index):
         if pattern_table == 0:
             addr = 0x0000
         else:
@@ -606,7 +617,7 @@ class PPU(object):
 
         # Lee los bytes del patrón de memoria y lo guarda en una lista
         pattern = []
-        for a in range(addr, addr+16):
+        for a in range(addr, addr + 16):
             pattern.append(self._memory.read_data(a))
 
         return pattern

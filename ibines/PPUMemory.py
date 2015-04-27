@@ -27,16 +27,7 @@ class PPUMemory(object):
         #######################################################################
         # Variables de instancia
         #######################################################################
-        self._pattern_table = [0x00] * 0x2000
-
-        self._name_table_0 = [0x00] * 0x03C0
-        self._attr_table_0 = [0x00] * 0x0040
-
-        self._name_table_1 = [0x00] * 0x03C0
-        self._attr_table_1 = [0x00] * 0x0040
-
-        self._image_palette = [0x00] * 0x0010
-        self._sprite_palette = [0x00] * 0x0010
+        self._memory = [0x00] * 0x10000
 
         # Referencia a la PPU
         self._ppu = ppu
@@ -44,7 +35,7 @@ class PPUMemory(object):
         # Referencia a la ROM
         self._rom = rom
         if self._rom.get_chr_count() == 1:
-            self._pattern_table = self._rom.get_chr()
+            self._memory[0x0000:0x2000] = self._rom.get_chr()
 
         self._mirror_mode = rom.get_mirroring()        # Modo de mirror de los "name tables" (sacado de la ROM). 0: horizontal, 1: vertical
         #######################################################################
@@ -54,135 +45,46 @@ class PPUMemory(object):
     #Lee un dato de la memoria de la PPU:
     def read_data(self, addr):
         a = addr & 0xFFFF
-        data = 0x00
-        # Pattern tables:
-        if a < 0x2000:
-            data = self._pattern_table[a]
-        # Name Tables y Attr Tables
-        elif a < 0x23C0:
-            data = self._name_table_0[a - 0x2000]
-        elif a < 0x2400:
-            data = self._attr_table_0[a - 0x23C0]
-        elif a < 0x27C0:
-            if self._mirror_mode == 0:
-                data = self._name_table_0[a - 0x2400]
-            elif self._mirror_mode == 1:
-                data = self._name_table_1[a - 0x2400]
-        elif a < 0x2800:
-            if self._mirror_mode == 0:
-                data = self._attr_table_0[a - 0x27C0]
-            elif self._mirror_mode == 1:
-                data = self._attr_table_1[a - 0x27C0]
-        elif a < 0x2BC0:
-            if self._mirror_mode == 0:
-                data = self._name_table_1[a - 0x2800]
-            elif self._mirror_mode == 1:
-                data = self._name_table_0[a - 0x2800]
-        elif a < 0x2C00:
-            if self._mirror_mode == 0:
-                data = self._attr_table_1[a - 0x2BC0]
-            elif self._mirror_mode == 1:
-                data = self._attr_table_0[a - 0x2BC0]
-        elif a < 0x2FC0:
-            if self._mirror_mode == 0:
-                data = self._name_table_1[a - 0x2C00]
-            elif self._mirror_mode == 1:
-                data = self._name_table_0[a - 0x2C00]
-        elif a < 0x3000:
-            if self._mirror_mode == 0:
-                data = self._attr_table_1[a - 0x2FC0]
-            elif self._mirror_mode == 1:
-                data = self._attr_table_0[a - 0x2FC0]
-        # Mirrors name/attr tables:
-        elif a < 0x3F00:
-            data = self.read_data(a - 0x1000)
-        # Image Palette:
-        elif a < 0x3F10:
-            if (a - 0x3F00) == 0:
-                data = self._image_palette[0x00]
-            else:
-                data = self._image_palette[a - 0x3F00]
-        # Sprite Palette:
-        elif a >= 0x3F10 and a < 0x3F20:
-            if (a - 0x3F10) == 0:
-                data = self._sprite_palette[0x00]
-            else:
-                data = self._sprite_palette[a - 0x3F10]
-        # Mirrors Palettes:
-        elif a < 0x4000:
-            data = self.read_data((a - 0x3F20) % 0x0020)
-        # Mirrors generales:
-        elif a < 0x10000:
-            data = self.read_data((a - 0x4000) % 0x4000)
-
-        return data
+        return self._memory[a]
 
     # Escribe un dato en la memoria de la PPU
     def write_data(self, data, addr):
         a = addr & 0xFFFF
         d = data & 0xFF
-        # Pattern tables:
-        if a < 0x2000:
-            if self._rom.get_chr_count() == 0:
-                self._pattern_table_[a] = d
+
         # Name tables y attribute tables:
-        elif a < 0x23C0:
-            self._name_table_0[a - 0x2000] = d
-        elif a < 0x2400:
-            self._attr_table_0[a - 0x23C0] = d
-        elif a < 0x27C0:
+        if a >= 0x2000 and a < 0x2400:
             if self._mirror_mode == 0:
-                self._name_table_0[a - 0x2400] = d
+                self._memory[a + 0x0400] = d
             elif self._mirror_mode == 1:
-                self._name_table_1[a - 0x2400] = d
-        elif a < 0x2800:
+                self._memory[a + 0x0800] = d
+        elif a >= 0x2400 and a < 0x2800:
             if self._mirror_mode == 0:
-                self._attr_table_0[a - 0x27C0] = d
+                self._memory[a - 0x0400] = d
             elif self._mirror_mode == 1:
-                self._attr_table_1[a - 0x27C0] = d
-        elif a < 0x2BC0:
+                self._memory[a + 0x0800] = d
+        elif a >= 0x2800 and a < 0x2C00:
             if self._mirror_mode == 0:
-                self._name_table_1[a - 0x2800] = d
+                self._memory[a + 0x0400] = d
             elif self._mirror_mode == 1:
-                self._name_table_0[a - 0x2800] = d
-        elif a < 0x2C00:
+                self._memory[a - 0x0800] = d
+        elif a >= 0x2C00 and a < 0x3000:
             if self._mirror_mode == 0:
-                self._attr_table_1[a - 0x2BC0] = d
+                self._memory[a - 0x0400] = d
             elif self._mirror_mode == 1:
-                self._attr_table_0[a - 0x2BC0] = d
-        elif a < 0x2FC0:
-            if self._mirror_mode == 0:
-                self._name_table_1[a - 0x2C00] = d
-            elif self._mirror_mode == 1:
-                self._name_table_0[a - 0x2C00] = d
-        elif a < 0x3000:
-            if self._mirror_mode == 0:
-                self._attr_table_1[a - 0x2FC0] = d
-            elif self._mirror_mode == 1:
-                self._attr_table_0[a - 0x2FC0] = d
-        # Mirrors name/attr tables:
-        elif a < 0x3F00:
+                self._memory[a - 0x0800] = d
+        # Mirrors Name Tables y Attr Tables
+        elif a >= 0x3000 and a < 0x3F00:
             self.write_data(d, a - 0x1000)
-        # Image Palette:
-        elif a < 0x3F10:
-            if (a - 0x3F00) == 0:
-                self._image_palette[0x00] = d
-                print "Escribe paleta: " + str(d)
-            else:
-                self._image_palette[a - 0x3F00] = d
-                print "Escribe paleta: " + str(d)
-        # Sprite Palette:
-        elif a < 0x3F20:
-            if (a - 0x3F10) == 0:
-                self._sprite_palette[0x00] = d
-            else:
-                self._sprite_palette[a - 0x3F10] = d
-        # Mirrors Palettes:
-        elif a < 0x4000:
-            self.write_data(d, (a - 0x3F20) % 0x0020)
-        # Mirrors generales:
-        elif a < 0x10000:
+        # Mirrors paletas
+        elif a >= 0x3F20 and a < 0x4000:
+            self.write_data(d, ((a - 0x3F20) % 0x0020) + 0x3F00)
+        # Mirrors generales
+        elif a >= 0x4000 and a < 0x10000:
             self.write_data(d, (a - 0x4000) % 0x4000)
+
+        # Escribimos en la posición indicada
+        self._memory[a] = d
 
 
     # Funciones de ayuda
@@ -191,10 +93,10 @@ class PPUMemory(object):
         addr = pattern_number * 0x0010
         pattern = []
         if table == 0:
-            pattern = self.self._pattern_table[addr:addr + 16]
+            pattern = self._memory[addr:addr + 16]
         elif table == 1:
             addr = addr + 0x1000
-            pattern = self.self._pattern_table[addr:addr + 16]
+            pattern = self._memory[addr:addr + 16]
 
         return pattern
 
