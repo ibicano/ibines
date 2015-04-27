@@ -508,7 +508,7 @@ class PPU(object):
                 pattern_table = self.control_1_sprites_pattern_bit_3()
                 self._pattern_palette = self.fetch_pattern_palette(pattern_table, sprite.get_index(), sprite.get_attr_color())
 
-                if is_background & (self._pattern_palette[pixel_x][pixel_y] != 0):
+                if is_background & (self._pattern_palette[pixel_x][pixel_y] % 4 != 0):
                     self.set_sprite_hit(1)
                     print "Colisión sprite"
 
@@ -541,19 +541,20 @@ class PPU(object):
         attr_pos = (group_y * 8) + group_x
 
         # Dirección de memoria de la "attr table"
-        attr_addr = (name_table_addr & 0xF400)  | attr_pos
+        attr_addr = (name_table_addr & 0xF400)  | (0x03C0 | attr_pos)
+
 
         # Byte leído de la attr table que contiene la info de color
         attr_data = self._memory.read_data(attr_addr)
 
         # Calculamos la posición relativa del tile dentro del grupo 8x8
-        # La posición x dentro del grupo 8x8 la dan los 2 bits menos significativos de la posición del tile en la name table
+        # La posición x dentro del grupo 4x4 la dan los 2 bits menos significativos de la posición del tile en la name table
         pos_x = pos & 0x03
 
-        # La posición x dentro del grupo 8x8 la dan los bits 5 y 6 de la posición del tile en la name table
+        # La posición y dentro del grupo 4x4 la dan los bits 5 y 6 de la posición del tile en la name table
         pos_y = (pos >> 5) & 0x03
 
-        # En función de la posición dentro del grupo 8x8 devolvemos los 2 bits de color que correspondan
+        # En función de la posición dentro del grupo 4x4 devolvemos los 2 bits de color que correspondan
         if pos_x < 2:
             if pos_y < 2:
                 attr_area = 0
