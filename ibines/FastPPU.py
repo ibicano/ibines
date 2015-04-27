@@ -11,7 +11,7 @@ PPU
 
 Descripción: Implementa el procesador gráfico de la NES
 """
-class PPU(object):
+class FastPPU(object):
     ###########################################################################
     # Constantes
     ###########################################################################
@@ -62,6 +62,11 @@ class PPU(object):
         for x in range(8):
             self._pattern_rgb[x] = [(0, 0, 0)] * 8
 
+        # Matriz de tiles:
+        self._tiles_array = [None] * 960
+        for x in range(960):
+            self._tiles_array[x] = (0, 0, 0)
+
         # Registros
 
         # Registros I/O
@@ -91,14 +96,14 @@ class PPU(object):
     def exec_cycle(self, cycles):
         # Decrementamos el contador de ciclos
         if self._cycles_frame < cycles:
-            self._cycles_frame = (self._cycles_frame - cycles) % PPU.FRAME_CYCLES
+            self._cycles_frame = (self._cycles_frame - cycles) % FastPPU.FRAME_CYCLES
             self._end_frame = True
         else:
             self._cycles_frame -= cycles
 
 
         if self._cycles_scanline < cycles:
-            self._cycles_scanline = (self._cycles_scanline - cycles) % PPU.SCANLINE_CYCLES
+            self._cycles_scanline = (self._cycles_scanline - cycles) % FastPPU.SCANLINE_CYCLES
             self._end_scanline = True
         else:
             self._cycles_scanline -= cycles
@@ -107,19 +112,20 @@ class PPU(object):
         if not self._end_frame:     # En mitad del frame
             # Procesamos scanline en el ciclo de reloj adecuado
             if self._end_scanline:
-                self.draw_scanline()
+                #self.draw_scanline()
                 #self._gfx.update()
-                self._scanline_number = (self._scanline_number + 1) % PPU.FRAME_SCANLINES
+                self._scanline_number = (self._scanline_number + 1) % FastPPU.FRAME_SCANLINES
                 self._end_scanline = False
 
             if self._cycles_frame < self.VBLANK_CYCLES and not self.is_vblank():     # Este es el ciclo en el que entramos en VBLANK
+                self.draw_frame()
                 self.start_vblank()    # Activamos el período VBLANK al inicio del período
 
         elif self._end_frame:     # Fin del Frame
             self.end_vblank() # Finalizamos el período VBLANK
             self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
             self._end_frame = False
-            self._gfx.update()
+
 
 
     # Lee el registro indicado por su dirección en memoria
@@ -433,6 +439,41 @@ class PPU(object):
     def is_vblank(self):
         return nesutils.get_bit(self._reg_status, 7)
 
+
+    # Dibuja el frame
+    def draw_frame(self):
+
+        self.read_name_table()
+
+        for y in range(30):
+            for x in range(32):
+                n = 32 * y + x
+                pattern = self._tiles_array[n]
+                self.draw_pattern(pattern, x, y)
+
+        self._gfx.update()
+
+
+    # Dibuja un patrón en la posición 32x30 indicada
+    def draw_pattern(self, pattern, x, y):
+
+        for j in range(8):
+            for i in range(8):
+                pixel_x = 8*x + i
+                pixel_y = 8*y + j
+                self._gfx.draw_pixel(pixel_x, pixel_y, pattern[i][j])
+
+
+    def read_name_table(self):
+
+        for i in range(0x3C0):
+            p_addr = self._memory.read_data(0x2000 + i)
+            p_pal = self.fetch_pattern_palette(1, p_addr, 0)
+            p_rgb = self.fetch_pattern_rgb(p_pal, 0x3F00)
+            self._tiles_array[i] = p_rgb
+
+
+
     # FIXME: optimizar esta función que es la que se come toda la potencia (en draw_pixel())
     def draw_scanline(self):
         if 1 <= self._scanline_number <= 240:
@@ -582,6 +623,10 @@ class PPU(object):
     # (R,G,B) con el color calculado de cada pixel
     # TODO: adaptar la paleta a si se está trabajando en fondo o sprites
     def fetch_pattern_palette(self, pattern_table, pattern_index, attr_color):
+        pattern_palette = [None] * 8
+        for x in range(8):
+            pattern_palette[x] = [0] * 8
+
         pattern = self.fetch_pattern_mem(pattern_table, pattern_index)
 
         # Procesa los bytes del patrón para formatearlos en el valor de retorno
@@ -594,12 +639,17 @@ class PPU(object):
                 palette_index = (0x00 | ((byte_1 & (0x01 << x)) >> x) | (((byte_2 & (0x01 << x)) >> x) << 1) | ((attr_color & 0x03) << 2))
 
                 # Asigna el índice de la paleta a la posición correspondiente:
-                self._pattern_palette[7 - x][7 - y] = palette_index
+                pattern_palette[7 - x][7 - y] = palette_index
 
-        return self._pattern_palette
+        return pattern_palette
 
 
-    def fetch_pattern_rgb(self, palette_addr):
+    def fetch_pattern_rgb(self, pattern_palette, palette_addr):
+
+        pattern_rgb = [None] * 8
+        for x in range(8):
+            pattern_rgb[x] = [(0, 0, 0)] * 8
+
         for x in range(8):
             for y in range(8):
                 #color_index = self._memory.read_data(palette_addr + self._pattern_palette[x][y])
@@ -607,10 +657,10 @@ class PPU(object):
                 #self._pattern_rgb[x][y] = rgb
 
                 # Esto es para pruebas
-                if self._pattern_palette[x][y]:
-                    self._pattern_rgb[x][y] = ((255, 255, 255))
+                if pattern_palette[x][y]:
+                    pattern_rgb[x][y] = (255, 255, 255)
 
-        return self._pattern_rgb
+        return pattern_rgb
 
 
     # Devuelve los 16 bytes del patrón indicado tal como se almacenan en la tabla de patrones especificada

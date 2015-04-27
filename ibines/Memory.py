@@ -56,7 +56,8 @@ class Memory(object):
             self._memory[0x1000 + n] = d
             self._memory[0x1800 + n] = d
         elif addr >= 0x2000 and addr <= 0x3FFF: # Direcciones de los registros PPU
-            self._ppu.write_reg(d, addr)
+            n = 0x2000 + (addr & 0x07)
+            self._ppu.write_reg(d, n)
         elif addr >= 0x4000 and addr <= 0x401F: # Más registros I/O
             if addr == 0x4014:
                 self._ppu.write_sprite_dma(self, d)
