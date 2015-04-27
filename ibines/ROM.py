@@ -119,7 +119,13 @@ class ROM(object):
 
 
     def get_pgr(self):
-        return self._pgr_1 + self._pgr_2
+        pgr = []
+        if self._pgr_rom_banks == 1:
+            pgr = self._pgr_1 + self._pgr_1
+        elif self._pgr_rom_banks == 2:
+            pgr = self._pgr_1 + self._pgr_2
+
+        return pgr
 
 
     def get_chr(self):
@@ -132,9 +138,9 @@ class ROM(object):
     def read_pgr_data(self, addr):
         a = addr & 0xFFFF
         d = 0x00
-        if a >= 0x0000 and a <= 0x3FFF:
+        if a < 0x4000:
             d = self._pgr_1[a]
-        elif a >= 0x4000:
+        elif a >= 0x4000 and a < 0x8000:
             d = self._pgr_2[a % 0x4000]
 
         return d
@@ -143,7 +149,7 @@ class ROM(object):
     def read_chr_data(self, addr):
         a = addr & 0xFFFF
         d = 0x00
-        if a >= 0x0000 and a <= 0x1000:
+        if a < 0x1000:
             d = self._chr_1[a]
         elif a >= 0x1000 and a < 0x2000:
             d = self._chr_2[a % 0x1000]

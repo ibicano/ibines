@@ -260,6 +260,7 @@ class PPU(object):
             a += 1
             n += 1
 
+
     def incr_xscroll(self):
         r = self._reg_vram_addr
         self._reg_x_offset = (self._reg_x_offset + 1) % 8
@@ -578,9 +579,10 @@ class PPU(object):
                 palette_index = (0x00 | ((byte_1 & (0x01 << x)) >> x) | (((byte_2 & (0x01 << x)) >> x) << 1) | ((attr_color & 0x03) << 2))
 
                 # Asigna el índice de la paleta a la posición correspondiente:
-                pattern_palette[x][y] = palette_index
+                pattern_palette[7 - x][7 - y] = palette_index
 
         return pattern_palette
+
 
     def get_pattern_rgb(self, pattern_palette, palette_addr):
         pattern_rgb=[[(0, 0, 0)] * 8] * 8
@@ -591,6 +593,7 @@ class PPU(object):
                 pattern_rgb[x][y] = rgb
 
         return pattern_rgb
+
 
     # Devuelve los 16 bytes del patrón indicado tal como se almacenan en la tabla de patrones especificada
     def get_pattern_mem(self, pattern_table, pattern_index):

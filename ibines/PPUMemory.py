@@ -46,8 +46,7 @@ class PPUMemory(object):
         if self._rom.get_chr_count() == 1:
             self._pattern_table = self._rom.get_chr()
 
-        # TODO: completar inicialización del modo mirror
-        self._mirror_mode = 0x0        # Modo de mirror de los "name tables" (sacado de la ROM). 0: horizontal, 1: vertical
+        self._mirror_mode = rom.get_mirroring()        # Modo de mirror de los "name tables" (sacado de la ROM). 0: horizontal, 1: vertical
         #######################################################################
         #######################################################################
 
@@ -106,7 +105,7 @@ class PPUMemory(object):
         # Sprite Palette:
         elif a >= 0x3F10 and a < 0x3F20:
             if (a - 0x3F10) == 0:
-                data = self._image_palette[0x00]
+                data = self._sprite_palette[0x00]
             else:
                 data = self._sprite_palette[a - 0x3F10]
         # Mirrors Palettes:
@@ -166,15 +165,16 @@ class PPUMemory(object):
             self.write_data(d, a - 0x1000)
         # Image Palette:
         elif a < 0x3F10:
-            print "Escribe en paleta"
             if (a - 0x3F00) == 0:
                 self._image_palette[0x00] = d
+                print "Escribe paleta: " + str(d)
             else:
                 self._image_palette[a - 0x3F00] = d
+                print "Escribe paleta: " + str(d)
         # Sprite Palette:
         elif a < 0x3F20:
             if (a - 0x3F10) == 0:
-                self._image_palette[0x00] = d
+                self._sprite_palette[0x00] = d
             else:
                 self._sprite_palette[a - 0x3F10] = d
         # Mirrors Palettes:
