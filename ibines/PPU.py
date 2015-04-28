@@ -470,7 +470,8 @@ class PPU(object):
                 self.incr_xscroll()
 
                 # Si hemos dibujado el último pixel en anchura del "pattern", indicamos que hay que usar otro
-                if self._reg_x_offset == 0: self._fetch_pattern = True
+                if self._reg_x_offset == 0:
+                    self._fetch_pattern = True
 
             self.incr_yscroll()
 
@@ -488,7 +489,7 @@ class PPU(object):
         pattern_pixel_y = self.get_y_offset()
 
         # Calcula la dirección en la Name Table activa
-        name_table_addr = self.active_name_table_addr() + (self._reg_vram_addr & 0x0FFF)
+        name_table_addr = 0x2000 + (self._reg_vram_addr & 0x0FFF)
 
         is_background = False
 
@@ -510,6 +511,7 @@ class PPU(object):
 
         self._gfx.draw_pixel(x, y, self._pattern_rgb[pattern_pixel_x][pattern_pixel_y])
 
+        # FIXME: comentado para depuración
         # Dibuja los sprites
         '''
         sprites_list = self.get_sprites_list()
