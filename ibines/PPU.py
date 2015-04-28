@@ -53,6 +53,9 @@ class PPU(object):
         # Interrupciones
         self._int_vblank = 0
 
+        # Buffer de lectura de la VRAM (la lectura del registro $2007 se entrega retrasada)
+        self._vram_buffer = 0x00
+
         # Variables que almacenan el patrón que se está procesando
         self._pattern_palette = [None] * 8
         for x in range(8):
@@ -136,18 +139,28 @@ class PPU(object):
 
     # Según el documento SKINNY.TXT
     def read_reg_2002(self):
-        self._reg_vram_switch = 0
         r = self._reg_status
 
         # FIXME: repasar que este sea el comportamiento adecuado
         # Cuando se lee este registro se pone el flag de vblank a 0
         self._reg_status = nesutils.set_bit(r, 7, 0)
 
+        self._reg_vram_switch = 0
+
         return r
 
 
     def read_reg_2007(self):
-        data = self._memory.read_data(self._reg_vram_addr)
+        addr = self._reg_vram_addr % 0x4000
+
+        # Si la dirección es de la paleta se devuelve el valor inmediatamente, sino se retrasa a la siguiente lectura
+        if addr > 0x3F00:
+            data = self._memory.read_data(self._reg_vram_addr)
+            self._vram_buffer = data
+        else:
+            data = self._vram_buffer
+            self._vram_buffer = self._memory.read_data(self._reg_vram_addr)
+
         self._reg_vram_io = data
 
         if self.control_1_increment_bit_2() == 0:
