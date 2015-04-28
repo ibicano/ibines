@@ -22,6 +22,8 @@ class NES(object):
         self._rom = ROM(file_name)
 
         self._ppu = PPU(self._rom)
+        #self._ppu = FastPPU(self._rom)
+
         self._ppu.set_mirroring(self._rom.get_mirroring())    # Establece el modo mirroring especificado en la ROM
 
         self._memory = Memory(self._ppu, self._rom)

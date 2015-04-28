@@ -216,7 +216,7 @@ class FastPPU(PPU):
     # Variables de clase
     #######################################################################
     # Paleta de colores:
-    _COLOUR_PALETTE = [(0x75, 0x75, 0x75),    #0x00
+    _COLOR_PALETTE = [(0x75, 0x75, 0x75),    #0x00
                        (0x27, 0x1B, 0x8F),    #0x01
                        (0x00, 0x00, 0xAB),    #0x02
                        (0x47, 0x00, 0x9F),    #0x03

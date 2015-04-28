@@ -137,11 +137,13 @@ class PPU(object):
     # Según el documento SKINNY.TXT
     def read_reg_2002(self):
         self._reg_vram_switch = 0
+        r = self._reg_status
 
         # FIXME: repasar que este sea el comportamiento adecuado
         # Cuando se lee este registro se pone el flag de vblank a 0
-        self._reg_status = nesutils.set_bit(self._reg_status, 7, 0)
-        return self._reg_status
+        self._reg_status = nesutils.set_bit(r, 7, 0)
+
+        return r
 
 
     def read_reg_2007(self):
@@ -617,13 +619,16 @@ class PPU(object):
     def fetch_pattern_rgb(self, palette_addr):
         for x in range(8):
             for y in range(8):
-                #color_index = self._memory.read_data(palette_addr + self._pattern_palette[x][y])
-                #rgb = self._COLOUR_PALETTE[color_index]
-                #self._pattern_rgb[x][y] = rgb
+                try:
+                    color_index = self._memory.read_data(palette_addr + self._pattern_palette[x][y])
+                    rgb = self.get_color(color_index)
+                    self._pattern_rgb[x][y] = rgb
+                except:
+                    print "Paleta fuera de rango: " + str(palette_addr + self._pattern_palette[x][y]) + ":" + str(color_index)
 
                 # Esto es para pruebas
-                if self._pattern_palette[x][y]:
-                    self._pattern_rgb[x][y] = ((255, 255, 255))
+                #if self._pattern_palette[x][y]:
+                #    self._pattern_rgb[x][y] = ((255, 255, 255))
 
         return self._pattern_rgb
 
@@ -653,12 +658,15 @@ class PPU(object):
         self._reg_mirroring = m
 
 
+    def get_color(self, index):
+        return PPU._COLOR_PALETTE[index & 0x3F]
+
 
     #######################################################################
     # Variables de clase
     #######################################################################
     # Paleta de colores:
-    _COLOUR_PALETTE = [(0x75, 0x75, 0x75),    #0x00
+    _COLOR_PALETTE = [(0x75, 0x75, 0x75),    #0x00
                        (0x27, 0x1B, 0x8F),    #0x01
                        (0x00, 0x00, 0xAB),    #0x02
                        (0x47, 0x00, 0x9F),    #0x03

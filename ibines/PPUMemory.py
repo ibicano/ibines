@@ -47,72 +47,73 @@ class PPUMemory(object):
         a = addr & 0xFFFF
         d = 0x00
 
-        # Si es la zona de Mirrors
-        if a >= 0x4000:
-            d = self.read_data((a - 0x4000) % 0x4000)
-        else:
-            d = self._memory[a]
+        d = self._memory[a]
 
         return d
 
 
+    # TODO: implementar los mirrors a partir de la 0x4000
     # Escribe un dato en la memoria de la PPU
     def write_data(self, data, addr):
         a = addr & 0xFFFF
         d = data & 0xFF
 
         # Name tables y attribute tables:
-        if a >= 0x2000 and a < 0x2400:
-            if self._mirror_mode == 0:
-                self._memory[a + 0x0400] = d
-                self._memory[a + 0x1400] = d
-            elif self._mirror_mode == 1:
-                self._memory[a + 0x0800] = d
-                self._memory[a + 0x1800] = d
-        elif a >= 0x2400 and a < 0x2800:
-            if self._mirror_mode == 0:
-                self._memory[a - 0x0400] = d
-                self._memory[a - 0x1400] = d
-            elif self._mirror_mode == 1:
-                self._memory[a + 0x0800] = d
-                self._memory[a + 0x1800] = d
-        elif a >= 0x2800 and a < 0x2C00:
-            if self._mirror_mode == 0:
-                self._memory[a + 0x0400] = d
-                self._memory[a + 0x1400] = d
-            elif self._mirror_mode == 1:
-                self._memory[a - 0x0800] = d
-                self._memory[a - 0x1800] = d
-        elif a >= 0x2C00 and a < 0x3000:
-            if self._mirror_mode == 0:
-                self._memory[a - 0x0400] = d
-                if a < 0x2F00: self._memory[a - 0x1400] = d
-            elif self._mirror_mode == 1:
-                self._memory[a - 0x0800] = d
-                if a < 0x2F00: self._memory[a - 0x1800] = d
-        # Mirrors Name Tables y Attr Tables
-        elif a >= 0x3000 and a < 0x3F00:
-            self.write_data(d, a - 0x1000)
-        # Paletas
-        elif a >= 0x3F00 and a < 0x3F20:
-            for x in range(a, 0x4000, 0x20):
+        if a < 0x4000:
+            if a >= 0x2000 and a < 0x2400:
+                if self._mirror_mode == 0:
+                    self._set_memory(d, a + 0x0400)
+                    self._set_memory(d, a + 0x1400)
+                elif self._mirror_mode == 1:
+                    self._set_memory(d, a + 0x0800)
+                    self._set_memory(d, a + 0x1800)
+            elif a >= 0x2400 and a < 0x2800:
+                if self._mirror_mode == 0:
+                    self._set_memory(d, a - 0x0400)
+                    self._set_memory(d, a - 0x1400)
+                elif self._mirror_mode == 1:
+                    self._set_memory(d, a + 0x0800)
+                    self._set_memory(d, a + 0x1800)
+            elif a >= 0x2800 and a < 0x2C00:
+                if self._mirror_mode == 0:
+                    self._set_memory(d, a + 0x0400)
+                    self._set_memory(d, a + 0x1400)
+                elif self._mirror_mode == 1:
+                    self._set_memory(d, a - 0x0800)
+                    self._set_memory(d, a - 0x1800)
+            elif a >= 0x2C00 and a < 0x3000:
+                if self._mirror_mode == 0:
+                    self._set_memory(d, a - 0x0400)
+                    if a < 0x2F00: self._set_memory(d, a - 0x1400)
+                elif self._mirror_mode == 1:
+                    self._set_memory(d, a - 0x0800)
+                    if a < 0x2F00: self._set_memory(d, a - 0x1800)
+            # Mirrors Name Tables y Attr Tables
+            elif a >= 0x3000 and a < 0x3F00:
                 self.write_data(d, a - 0x1000)
-            # El elemento inicial de la paleta se repite cada 4
-            if (a - 0x3F00) % 4 == 0:
-                self._memory[0x3F00] = d
-                self._memory[0x3F04] = d
-                self._memory[0x3F08] = d
-                self._memory[0x3F0C] = d
-                self._memory[0x3F10] = d
-                self._memory[0x3F14] = d
-                self._memory[0x3F18] = d
-                self._memory[0x3F1C] = d
-        # Mirrors paletas
-        elif a >= 0x3F20 and a < 0x4000:
-            self.write_data(d, ((a - 0x3F20) % 0x0020) + 0x3F00)
+            # Paletas
+            elif a >= 0x3F00 and a < 0x3F20:
+                # El elemento inicial de la paleta se repite cada 4, por lo que se duplica si una posición es 0 modulo 4
+                if (a - 0x3F00) % 4 == 0:
+                    for x in range(0x3F00, 0x4000, 0x04):
+                        self._set_memory(d, x)
+                # Escribe en mirrors
+                self._set_memory(d, a + 0x0020)
+                self._set_memory(d, a + 0x0040)
+                self._set_memory(d, a + 0x0060)
+                self._set_memory(d, a + 0x0080)
+                self._set_memory(d, a + 0x00A0)
+                self._set_memory(d, a + 0x00C0)
+                self._set_memory(d, a + 0x00E0)
+            # Mirrors paletas
+            elif a >= 0x3F20 and a < 0x4000:
+                self.write_data(d, ((a - 0x3F20) % 0x0020) + 0x3F00)
 
-        # Escribimos en la posición indicada
-        self._memory[a] = d
+            # Escribimos en la posición indicada
+            self._set_memory(d, a)
+        # Mirrors generales
+        elif a >= 0x4000:
+            self.write_data(d, (a - 0x4000) % 0x4000)
 
 
     # Funciones de ayuda
@@ -128,4 +129,12 @@ class PPUMemory(object):
 
         return pattern
 
+
+    # Establece el valor de una posición de memoria con los mirrors
+    def _set_memory(self, d, addr):
+        a = addr % 0x4000
+        self._memory[a] = d
+        self._memory[a + 0x4000] = d
+        self._memory[a + 0x8000] = d
+        self._memory[a + 0xC000] = d
 
