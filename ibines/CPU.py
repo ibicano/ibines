@@ -124,7 +124,6 @@ class CPU(object):
         self._reg_pc = (self._reg_pc + n) & 0xFFFF
 
 
-    # TODO: optimizar esta función
     # Devuelve la instrucción a ejecutar
     def fetch_inst(self):
         opcode = self._mem.read_data(self._reg_pc)

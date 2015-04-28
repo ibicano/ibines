@@ -137,12 +137,22 @@ class PPU(object):
     # Según el documento SKINNY.TXT
     def read_reg_2002(self):
         self._reg_vram_switch = 0
+
+        # FIXME: repasar que este sea el comportamiento adecuado
+        # Cuando se lee este registro se pone el flag de vblank a 0
+        self._reg_status = nesutils.set_bit(self._reg_status, 7, 0)
         return self._reg_status
 
 
     def read_reg_2007(self):
         data = self._memory.read_data(self._reg_vram_addr)
         self._reg_vram_io = data
+
+        if self.control_1_increment_bit_2() == 0:
+            self._reg_vram_addr += 1
+        else:
+            self._reg_vram_addr += 32
+
         return data
 
 
@@ -257,6 +267,12 @@ class PPU(object):
         a = self._reg_vram_addr
         self._reg_vram_io = d
         self._memory.write_data(d, a)
+
+        if self.control_1_increment_bit_2() == 0:
+            self._reg_vram_addr += 1
+        else:
+            self._reg_vram_addr += 32
+
 
 
     # Escribe el registro y hace una transferencia dma
@@ -480,7 +496,6 @@ class PPU(object):
 
             attr_color = self.calc_attr_color(name_table_addr)
 
-            # TODO: cambiar el color para los patrones calculando el color adecuado de la tabla de atributos
             self._pattern_palette = self.fetch_pattern_palette(pattern_table_number, pattern_index, attr_color)
 
             self._pattern_rgb = self.fetch_pattern_rgb(PPUMemory.ADDR_IMAGE_PALETTE)
