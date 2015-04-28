@@ -22,8 +22,8 @@ class ROM(object):
         self._pgr_1 = [0x00] * 0x4000
         self._pgr_2 = [0x00] * 0x4000
 
-        self._chr_1 = [0x00] * 0x1000
-        self._chr_2 = [0x00] * 0x1000
+        self._chr_1 = [0x00] * 0x2000
+        self._chr_2 = [0x00] * 0x2000
 
         # Guarda si la ROM ha cargado correctamente
         self._load_ok = False
