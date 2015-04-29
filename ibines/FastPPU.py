@@ -27,67 +27,13 @@ class FastPPU(PPU):
     FRAME_HEIGHT = 240
 
     def __init__(self, rom):
-        #######################################################################
-        # Variables de instancia
-        #######################################################################
-        # Memoria de la PPU
-        self._memory = PPUMemory(self, rom)
-        self._sprite_memory = SpriteMemory()
-
-        # Motor gráfico del emulador
-        self._gfx = GFX_PySdl2()
-
-        # Ciclos restantes hasta próximo evento
-        self._cycles_frame = self.FRAME_CYCLES - 1
-        self._cycles_scanline = self.SCANLINE_CYCLES - 1
-
-        # Indica si hemos terminado con algo de lo indicado
-        self._end_frame = False
-        self._end_scanline = False
-
-        # Indica si tenemos que ller otro "pattern" de memoria o usamos el actual
-        self._fetch_pattern = True
-
-        # Scanline actual
-        self._scanline_number = 0
-
-        # Interrupciones
-        self._int_vblank = 0
-
-        # Variables que almacenan el patrón que se está procesando
-        self._pattern_palette = [None] * 8
-        for x in range(8):
-            self._pattern_palette[x] = [0] * 8
-
-        self._pattern_rgb = [None] * 8
-        for x in range(8):
-            self._pattern_rgb[x] = [(0, 0, 0)] * 8
+        super(FastPPU, self).__init__(rom)
 
         # Matriz de tiles:
         self._tiles_array = [None] * 960
         for x in range(960):
             self._tiles_array[x] = (0, 0, 0)
 
-        # Registros
-
-        # Registros I/O
-        self._reg_control_1 = 0x00            # Dirección 0x2000 - write
-        self._reg_control_2 = 0x00            # Dirección 0x2001 - write
-        self._reg_status = 0x00               # Dirección 0x2002 - read
-        self._reg_spr_addr = 0x00             # Dirección 0x2003 - write
-        self._reg_spr_io = 0x00               # Dirección 0x2004 - write
-        self._reg_vram_tmp = 0x00             # Dirección 0x2005 y 0x2006 - write (16-bit)
-        self._reg_vram_addr = 0x00            # Dirección 0x2006 - write (16-bit)
-        self._reg_vram_io = 0x00              # Dirección 0x2007 - read/write
-        self._reg_sprite_dma = 0x00           # Dirección 0x4014 - write
-
-        # Registros estado
-        self._reg_x_offset = 0x0             # Scroll patrón (3-bit)
-        self._reg_vram_switch = 0            # Indica si estamos en la 1ª(0) o 2ª(1) escritura de los registros vram
-        self._reg_mirroring = 0x0            # 0x0: horizontal; 0x1: vertical: 0x2: single; 0x3: 4-screen
-
-        #######################################################################
-        #######################################################################
 
 
     # TODO: toda la chicha

@@ -36,9 +36,8 @@ class PPU(object):
         # Motor gráfico del emulador
         self._gfx = GFX_PySdl2()
 
-        # Ciclos restantes hasta próximo evento
+        # Ciclos restantes hasta próximo frame
         self._cycles_frame = self.FRAME_CYCLES - 1
-        self._cycles_scanline = self.SCANLINE_CYCLES - 1
 
         # Indica si hemos terminado con algo de lo indicado
         self._end_frame = False
@@ -49,6 +48,9 @@ class PPU(object):
 
         # Scanline actual
         self._scanline_number = 0
+
+        # Número de scanlines pendientes
+        self._scanlines_pending = 0
 
         # Interrupciones
         self._int_vblank = 0
@@ -92,36 +94,30 @@ class PPU(object):
     # activación de cosas en función del ciclo del frame en el que nos
     # encontremos
     def exec_cycle(self, cycles):
-        # Decrementamos el contador de ciclos
+
         if self._cycles_frame < cycles:
-            self._cycles_frame = (self._cycles_frame - cycles) % PPU.FRAME_CYCLES
             self._end_frame = True
+            self._cycles_frame = (self._cycles_frame  - cycles) % PPU.FRAME_CYCLES
         else:
-            self._cycles_frame -= cycles
+            self._cycles_frame = self._cycles_frame  - cycles
 
 
-        if self._cycles_scanline < cycles:
-            self._cycles_scanline = (self._cycles_scanline - cycles) % PPU.SCANLINE_CYCLES
-            self._end_scanline = True
-        else:
-            self._cycles_scanline -= cycles
+        scanlines_cycles = self._scanline_number * PPU.SCANLINE_CYCLES
 
+        pending_scanlines = (((PPU.FRAME_CYCLES - scanlines_cycles) - self._cycles_frame) % PPU.FRAME_CYCLES) / PPU.SCANLINE_CYCLES
 
-        if not self._end_frame:     # En mitad del frame
-            # Procesamos scanline en el ciclo de reloj adecuado
-            if self._end_scanline:
-                self.draw_scanline()
-                #self._gfx.update()
-                self._scanline_number = (self._scanline_number + 1) % PPU.FRAME_SCANLINES
-                self._end_scanline = False
+        while pending_scanlines > 0:
+            self.draw_scanline()
+            self._scanline_number = (self._scanline_number + 1) % PPU.FRAME_SCANLINES
+            pending_scanlines -= 1
 
-            if self._cycles_frame < self.VBLANK_CYCLES and not self.is_vblank():     # Este es el ciclo en el que entramos en VBLANK
+        if self._cycles_frame < self.VBLANK_CYCLES and not self.is_vblank():     # Este es el ciclo en el que entramos en VBLANK
                 self.start_vblank()    # Activamos el período VBLANK al inicio del período
 
-        elif self._end_frame:     # Fin del Frame
+        if self._end_frame:
+            self._end_frame = False
             self.end_vblank() # Finalizamos el período VBLANK
             self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
-            self._end_frame = False
             self._gfx.update()
 
 

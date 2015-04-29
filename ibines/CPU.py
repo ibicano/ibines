@@ -30,6 +30,9 @@ class CPU(object):
     INT_ADDR_RESET = 0xFFFC
     INT_ADDR_IRQ = 0xFFFE
 
+    # Latencia de interrupción en ciclos
+    INT_LATENCY = 7
+
     ###########################################################################
     # Métodos públicos
     ###########################################################################

@@ -42,17 +42,20 @@ class NES(object):
         stats_total_time = 0
         #stats_counter = 0
 
+        cycles = 0
+
         while 1:
             # Si hay interrupciones y la CPU no está ocupada, las lanzamos
             if self._ppu.get_int_vblank():
                 self._cpu.interrupt_vblank()        # Procesamos VBLANK
+                cycles += self._cpu.INT_LATENCY
 
             # Fetch y Exec siguiente instrucción (si hemos ejecutado una
             # interrupción en el paso anterior será su rutina de interrupción)
             #try:
             inst = self._cpu.fetch_inst()
                 # if NES.DEBUG: debug_file.write(str(counter) + ": " + hex(self._cpu._reg_pc) + ": " + hex(inst.OPCODE) + str(inst.__class__) + "\n")
-            inst.execute()
+            cycles += inst.execute()
             #except OpcodeError as e:
                 # if NES.DEBUG:
                 #     debug_file.write(str(e) + "\n")
@@ -62,10 +65,10 @@ class NES(object):
 
             # Restamos un ciclo de ejecución a la instrucción actual y la PPU
 
-            self._ppu.exec_cycle(inst.CYCLES)
+            self._ppu.exec_cycle(cycles)
 
             #stats_counter += inst.CYCLES
-            stats_cycles += inst.CYCLES
+            stats_cycles += cycles
 
             if stats_cycles % 5000 == 0:
                 stats_clock = time.clock()
@@ -77,6 +80,8 @@ class NES(object):
 
             # Emula la velocidad de la NES
             #time.sleep(0.0000006)
+
+            cycles = 0
 
 
 ###############################################################################

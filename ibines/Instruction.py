@@ -17,9 +17,9 @@ class Instruction(object):
         self._cpu = cpu
 
 
-    # Ejecuta la instrucción e incrementa el registro PC de la CPU
+    # Ejecuta la instrucción e incrementa el registro PC de la CPU y devuelve el número de ciclos que ha tardado en ejecutar
     def execute(self):
-        pass
+        return self.CYCLES
 
 
     # Calculan y devuelven el valor del operando y su posición de memoria
@@ -78,6 +78,11 @@ class Instruction(object):
         return (addr, data)
 
 
+    # Devuelve el número de ciclos que tarda en ejecutarse la instrucción
+    def get_cycles(self):
+        return self.CYCLES
+
+
     ###########################################################################
     # Variables de clase
     ###########################################################################
@@ -120,6 +125,8 @@ class ADC(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
 
 class ADC_inmediate(ADC):
 
@@ -129,7 +136,7 @@ class ADC_inmediate(ADC):
 
     def execute(self):
         op = self.fetch_inmediate_addrmode()
-        super(ADC_inmediate, self).execute(op)
+        return super(ADC_inmediate, self).execute(op)
 
 
     # Variables privadas
@@ -146,7 +153,7 @@ class ADC_zero(ADC):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(ADC_zero, self).execute(op)
+        return super(ADC_zero, self).execute(op)
 
 
     # Variables privadas
@@ -162,7 +169,7 @@ class ADC_zerox(ADC):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(ADC_zerox, self).execute(op)
+        return super(ADC_zerox, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x75
@@ -177,7 +184,7 @@ class ADC_abs(ADC):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(ADC_abs, self).execute(op)
+        return super(ADC_abs, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x6D
@@ -192,7 +199,7 @@ class ADC_absx(ADC):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(ADC_absx, self).execute(op)
+        return super(ADC_absx, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x7D
@@ -207,7 +214,7 @@ class ADC_absy(ADC):
 
     def execute(self):
         op = self.fetch_indexed_y_addrmode()[1]
-        super(ADC_absy, self).execute(op)
+        return super(ADC_absy, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x79
@@ -221,7 +228,7 @@ class ADC_preindexi(ADC):
 
     def execute(self):
         op = self.fetch_preindexed_addrmode()[1]
-        super(ADC_preindexi, self).execute(op)
+        return super(ADC_preindexi, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x61
@@ -236,7 +243,7 @@ class ADC_postindexi(ADC):
 
     def execute(self):
         op = self.fetch_postindexed_addrmode()[1]
-        super(ADC_postindexi, self).execute(op)
+        return super(ADC_postindexi, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x71
@@ -264,6 +271,8 @@ class AND(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
 
 class AND_inmediate(AND):
 
@@ -272,7 +281,7 @@ class AND_inmediate(AND):
 
     def execute(self):
         op = self.fetch_inmediate_addrmode()
-        super(AND_inmediate, self).execute(op)
+        return super(AND_inmediate, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x29
@@ -286,7 +295,7 @@ class AND_zero(AND):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(AND_zero, self).execute(op)
+        return super(AND_zero, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x25
@@ -301,7 +310,7 @@ class AND_zerox(AND):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(AND_zerox, self).execute(op)
+        return super(AND_zerox, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x35
@@ -316,7 +325,7 @@ class AND_abs(AND):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(AND_abs, self).execute(op)
+        return super(AND_abs, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x2D
@@ -331,7 +340,7 @@ class AND_absx(AND):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(AND_absx, self).execute(op)
+        return super(AND_absx, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x3D
@@ -346,7 +355,7 @@ class AND_absy(AND):
 
     def execute(self):
         op = self.fetch_indexed_y_addrmode()[1]
-        super(AND_absy, self).execute(op)
+        return super(AND_absy, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x39
@@ -360,7 +369,7 @@ class AND_preindexi(AND):
 
     def execute(self):
         op = self.fetch_preindexed_addrmode()[1]
-        super(AND_preindexi, self).execute(op)
+        return super(AND_preindexi, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x21
@@ -375,7 +384,7 @@ class AND_postindexi(AND):
 
     def execute(self):
         op = self.fetch_postindexed_addrmode()[1]
-        super(AND_postindexi, self).execute(op)
+        return super(AND_postindexi, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x31
@@ -414,6 +423,8 @@ class ASL_accumulator(ASL):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
     # Variables privadas
     OPCODE = 0x0A
     BYTES = 1
@@ -431,6 +442,8 @@ class ASL_zero(ASL):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
 
     # Variables privadas
     OPCODE = 0x06
@@ -451,6 +464,8 @@ class ASL_zerox(ASL):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
     # Variables privadas
     OPCODE = 0x16
     BYTES = 2
@@ -470,6 +485,8 @@ class ASL_abs(ASL):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
     # Variables privadas
     OPCODE = 0x0E
     BYTES = 3
@@ -488,6 +505,8 @@ class ASL_absx(ASL):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
 
     # Variables privadas
     OPCODE = 0x1E
@@ -510,6 +529,8 @@ class BCC(Instruction):
         if not self._cpu.get_reg_p_c_bit():
             self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
 
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x90
@@ -530,6 +551,8 @@ class BCS(Instruction):
 
         if self._cpu.get_reg_p_c_bit():
             self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
+
+        return self.CYCLES
 
 
     # Variables privadas
@@ -552,6 +575,8 @@ class BEQ(Instruction):
 
         if self._cpu.get_reg_p_z_bit():
             self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
+
+        return self.CYCLES
 
 
     # Variables privadas
@@ -592,11 +617,13 @@ class BIT(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
 
 class BIT_zero(BIT):
 
     def __init__(self, operand, cpu):
-        super(BIT_zero, self).__init__(operand, cpu)
+        return super(BIT_zero, self).__init__(operand, cpu)
 
     # Variables privadas
     OPCODE = 0x24
@@ -607,7 +634,7 @@ class BIT_zero(BIT):
 class BIT_abs(BIT):
 
     def __init__(self, operand, cpu):
-        super(BIT_abs, self).__init__(operand, cpu)
+        return super(BIT_abs, self).__init__(operand, cpu)
 
     # Variables privadas
     OPCODE = 0x2C
@@ -629,6 +656,8 @@ class BMI(Instruction):
 
         if self._cpu.get_reg_p_s_bit():
             self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
+
+        return self.CYCLES
 
 
     # Variables privadas
@@ -652,6 +681,8 @@ class BNE(Instruction):
         if not self._cpu.get_reg_p_z_bit():
             self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
 
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0xD0
@@ -673,6 +704,8 @@ class BPL(Instruction):
 
         if not self._cpu.get_reg_p_s_bit():
             self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
+
+        return self.CYCLES
 
     # Variables privadas
     OPCODE = 0x10
@@ -700,6 +733,8 @@ class BRK(Instruction):
         pc = pc | (self._cpu.get_mem().read_data(0xFFFF) << 8)
         self._cpu.set_reg_pc(pc)
 
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x00
@@ -721,6 +756,8 @@ class BVC(Instruction):
 
         if not self._cpu.get_reg_p_v_bit():
             self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
+
+        return self.CYCLES
 
 
     # Variables privadas
@@ -744,6 +781,8 @@ class BVS(Instruction):
         if self._cpu.get_reg_p_v_bit():
             self._cpu.set_reg_pc(self._cpu.get_reg_pc() + nesutils.c2_to_int(self._operand))
 
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x70
@@ -765,6 +804,9 @@ class CLC(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x18
     BYTES = 1
@@ -784,6 +826,9 @@ class CLD(Instruction):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0xD8
@@ -805,6 +850,9 @@ class CLI(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x58
     BYTES = 1
@@ -824,6 +872,9 @@ class CLV(Instruction):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0xB8
@@ -854,6 +905,8 @@ class CMP(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
 
 class CMP_inmediate(CMP):
 
@@ -862,7 +915,7 @@ class CMP_inmediate(CMP):
 
     def execute(self):
         op = self.fetch_inmediate_addrmode()
-        super(CMP_inmediate, self).execute(op)
+        return super(CMP_inmediate, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xC9
@@ -877,7 +930,7 @@ class CMP_zero(CMP):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(CMP_zero, self).execute(op)
+        return super(CMP_zero, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xC5
@@ -892,7 +945,7 @@ class CMP_zerox(CMP):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(CMP_zerox, self).execute(op)
+        return super(CMP_zerox, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xD5
@@ -907,7 +960,7 @@ class CMP_abs(CMP):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(CMP_abs, self).execute(op)
+        return super(CMP_abs, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xCD
@@ -922,7 +975,7 @@ class CMP_absx(CMP):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(CMP_absx, self).execute(op)
+        return super(CMP_absx, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xDD
@@ -937,7 +990,7 @@ class CMP_absy(CMP):
 
     def execute(self):
         op = self.fetch_indexed_y_addrmode()[1]
-        super(CMP_absy, self).execute(op)
+        return super(CMP_absy, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xD9
@@ -952,7 +1005,7 @@ class CMP_preindexi(CMP):
 
     def execute(self):
         op = self.fetch_preindexed_addrmode()[1]
-        super(CMP_preindexi, self).execute(op)
+        return super(CMP_preindexi, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xC1
@@ -967,7 +1020,7 @@ class CMP_postindexi(CMP):
 
     def execute(self):
         op = self.fetch_postindexed_addrmode()[1]
-        super(CMP_postindexi, self).execute(op)
+        return super(CMP_postindexi, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xD1
@@ -998,6 +1051,8 @@ class CPX(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
 
 class CPX_inmediate(CPX):
 
@@ -1006,7 +1061,7 @@ class CPX_inmediate(CPX):
 
     def execute(self):
         op = self.fetch_inmediate_addrmode()
-        super(CPX_inmediate, self).execute(op)
+        return super(CPX_inmediate, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xE0
@@ -1021,7 +1076,7 @@ class CPX_zero(CPX):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(CPX_zero, self).execute(op)
+        return super(CPX_zero, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xE4
@@ -1036,7 +1091,7 @@ class CPX_abs(CPX):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(CPX_abs, self).execute(op)
+        return super(CPX_abs, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xEC
@@ -1067,6 +1122,8 @@ class CPY(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
 
 class CPY_inmediate(CPY):
 
@@ -1075,7 +1132,7 @@ class CPY_inmediate(CPY):
 
     def execute(self):
         op = self.fetch_inmediate_addrmode()
-        super(CPY_inmediate, self).execute(op)
+        return super(CPY_inmediate, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xC0
@@ -1090,7 +1147,7 @@ class CPY_zero(CPY):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(CPY_zero, self).execute(op)
+        return super(CPY_zero, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xC4
@@ -1105,7 +1162,7 @@ class CPY_abs(CPY):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(CPY_abs, self).execute(op)
+        return super(CPY_abs, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xCC
@@ -1143,6 +1200,9 @@ class DEC_zero(DEC):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0xC6
     BYTES = 2
@@ -1161,6 +1221,9 @@ class DEC_zerox(DEC):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0xD6
@@ -1181,6 +1244,9 @@ class DEC_abs(DEC):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0xCE
     BYTES = 3
@@ -1199,6 +1265,9 @@ class DEC_absx(DEC):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0xDE
@@ -1225,6 +1294,9 @@ class DEX(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0xCA
     BYTES = 1
@@ -1249,6 +1321,9 @@ class DEY(Instruction):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x88
@@ -1276,6 +1351,8 @@ class EOR(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
 
 class EOR_inmediate(EOR):
 
@@ -1284,7 +1361,7 @@ class EOR_inmediate(EOR):
 
     def execute(self):
         op = self.fetch_inmediate_addrmode()
-        super(EOR_inmediate, self).execute(op)
+        return super(EOR_inmediate, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x49
@@ -1299,7 +1376,7 @@ class EOR_zero(EOR):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(EOR_zero, self).execute(op)
+        return super(EOR_zero, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x45
@@ -1314,7 +1391,7 @@ class EOR_zerox(EOR):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(EOR_zerox, self).execute(op)
+        return super(EOR_zerox, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x55
@@ -1329,7 +1406,7 @@ class EOR_abs(EOR):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(EOR_abs, self).execute(op)
+        return super(EOR_abs, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x4D
@@ -1344,7 +1421,7 @@ class EOR_absx(EOR):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(EOR_absx, self).execute(op)
+        return super(EOR_absx, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x5D
@@ -1359,7 +1436,7 @@ class EOR_absy(EOR):
 
     def execute(self):
         op = self.fetch_indexed_y_addrmode()[1]
-        super(EOR_absy, self).execute(op)
+        return super(EOR_absy, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x59
@@ -1374,7 +1451,7 @@ class EOR_preindexi(EOR):
 
     def execute(self):
         op = self.fetch_preindexed_addrmode()[1]
-        super(EOR_preindexi, self).execute(op)
+        return super(EOR_preindexi, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x41
@@ -1389,7 +1466,7 @@ class EOR_postindexi(EOR):
 
     def execute(self):
         op = self.fetch_postindexed_addrmode()[1]
-        super(EOR_postindexi, self).execute(op)
+        return super(EOR_postindexi, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x51
@@ -1427,6 +1504,9 @@ class INC_zero(INC):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0xE6
     BYTES = 2
@@ -1445,6 +1525,9 @@ class INC_zerox(INC):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0xF6
@@ -1465,6 +1548,9 @@ class INC_abs(INC):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0xEE
     BYTES = 3
@@ -1483,6 +1569,9 @@ class INC_absx(INC):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0xFE
@@ -1509,6 +1598,9 @@ class INX(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0xE8
     BYTES = 1
@@ -1534,6 +1626,9 @@ class INY(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0xC8
     BYTES = 1
@@ -1550,6 +1645,7 @@ class JMP(Instruction):
 
     def execute(self, op):
         self._cpu.set_reg_pc(op)
+        return self.CYCLES
 
 
 class JMP_abs(JMP):
@@ -1559,7 +1655,7 @@ class JMP_abs(JMP):
 
     def execute(self):
         addr = self.fetch_absolute_addrmode()[0]
-        super(JMP_abs, self).execute(addr)
+        return super(JMP_abs, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x4C
@@ -1577,7 +1673,7 @@ class JMP_indirect(JMP):
         addr = mem.read_data(self._operand)
         addr = addr | (mem.read_data(self._operand + 1) << 8)
 
-        super(JMP_indirect, self).execute(addr)
+        return super(JMP_indirect, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x6C
@@ -1599,6 +1695,9 @@ class JSR(Instruction):
         self._cpu.push_stack(pc & 0xFF)
 
         self._cpu.set_reg_pc(self._operand)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x20
@@ -1625,6 +1724,8 @@ class LDA(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
 
 class LDA_inmediate(LDA):
 
@@ -1633,7 +1734,7 @@ class LDA_inmediate(LDA):
 
     def execute(self):
         op = self.fetch_inmediate_addrmode()
-        super(LDA_inmediate, self).execute(op)
+        return super(LDA_inmediate, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xA9
@@ -1648,7 +1749,7 @@ class LDA_zero(LDA):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(LDA_zero, self).execute(op)
+        return super(LDA_zero, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xA5
@@ -1663,7 +1764,7 @@ class LDA_zerox(LDA):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(LDA_zerox, self).execute(op)
+        return super(LDA_zerox, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xB5
@@ -1678,7 +1779,7 @@ class LDA_abs(LDA):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(LDA_abs, self).execute(op)
+        return super(LDA_abs, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xAD
@@ -1693,7 +1794,7 @@ class LDA_absx(LDA):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(LDA_absx, self).execute(op)
+        return super(LDA_absx, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xBD
@@ -1708,7 +1809,7 @@ class LDA_absy(LDA):
 
     def execute(self):
         op = self.fetch_indexed_y_addrmode()[1]
-        super(LDA_absy, self).execute(op)
+        return super(LDA_absy, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xB9
@@ -1723,7 +1824,7 @@ class LDA_preindexi(LDA):
 
     def execute(self):
         op = self.fetch_preindexed_addrmode()[1]
-        super(LDA_preindexi, self).execute(op)
+        return super(LDA_preindexi, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xA1
@@ -1738,7 +1839,7 @@ class LDA_postindexi(LDA):
 
     def execute(self):
         op = self.fetch_postindexed_addrmode()[1]
-        super(LDA_postindexi, self).execute(op)
+        return super(LDA_postindexi, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xB1
@@ -1765,6 +1866,8 @@ class LDX(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
 
 class LDX_inmediate(LDX):
 
@@ -1773,7 +1876,7 @@ class LDX_inmediate(LDX):
 
     def execute(self):
         op = self.fetch_inmediate_addrmode()
-        super(LDX_inmediate, self).execute(op)
+        return super(LDX_inmediate, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xA2
@@ -1788,7 +1891,7 @@ class LDX_zero(LDX):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(LDX_zero, self).execute(op)
+        return super(LDX_zero, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xA6
@@ -1803,7 +1906,7 @@ class LDX_zeroy(LDX):
 
     def execute(self):
         op = self.fetch_indexed_y_addrmode()[1]
-        super(LDX_zeroy, self).execute(op)
+        return super(LDX_zeroy, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xB6
@@ -1818,7 +1921,7 @@ class LDX_abs(LDX):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(LDX_abs, self).execute(op)
+        return super(LDX_abs, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xAE
@@ -1833,7 +1936,7 @@ class LDX_absy(LDX):
 
     def execute(self):
         op = self.fetch_indexed_y_addrmode()[1]
-        super(LDX_absy, self).execute(op)
+        return super(LDX_absy, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xBE
@@ -1860,6 +1963,8 @@ class LDY(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
 
 class LDY_inmediate(LDY):
 
@@ -1868,7 +1973,7 @@ class LDY_inmediate(LDY):
 
     def execute(self):
         op = self.fetch_inmediate_addrmode()
-        super(LDY_inmediate, self).execute(op)
+        return super(LDY_inmediate, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xA0
@@ -1883,7 +1988,7 @@ class LDY_zero(LDY):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(LDY_zero, self).execute(op)
+        return super(LDY_zero, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xA4
@@ -1898,7 +2003,7 @@ class LDY_zerox(LDY):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(LDY_zerox, self).execute(op)
+        return super(LDY_zerox, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xB4
@@ -1913,7 +2018,7 @@ class LDY_abs(LDY):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(LDY_abs, self).execute(op)
+        return super(LDY_abs, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xAC
@@ -1928,7 +2033,7 @@ class LDY_absx(LDY):
 
     def execute(self):
         op = self.fetch_indexed_y_addrmode()[1]
-        super(LDY_absx, self).execute(op)
+        return super(LDY_absx, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xBC
@@ -1967,6 +2072,9 @@ class LSR_accumulator(LSR):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x4A
     BYTES = 1
@@ -1985,6 +2093,9 @@ class LSR_zero(LSR):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x46
@@ -2005,6 +2116,9 @@ class LSR_zerox(LSR):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x56
     BYTES = 2
@@ -2023,6 +2137,9 @@ class LSR_abs(LSR):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x4E
@@ -2043,6 +2160,9 @@ class LSR_absx(LSR):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x5E
     BYTES = 3
@@ -2060,6 +2180,9 @@ class NOP(Instruction):
     def execute(self):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0xEA
@@ -2087,6 +2210,8 @@ class ORA(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
 
 class ORA_inmediate(ORA):
 
@@ -2095,7 +2220,7 @@ class ORA_inmediate(ORA):
 
     def execute(self):
         op = self.fetch_inmediate_addrmode()
-        super(ORA_inmediate, self).execute(op)
+        return super(ORA_inmediate, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x09
@@ -2110,7 +2235,7 @@ class ORA_zero(ORA):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(ORA_zero, self).execute(op)
+        return super(ORA_zero, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x05
@@ -2125,7 +2250,7 @@ class ORA_zerox(ORA):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(ORA_zerox, self).execute(op)
+        return super(ORA_zerox, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x15
@@ -2140,7 +2265,7 @@ class ORA_abs(ORA):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(ORA_abs, self).execute(op)
+        return super(ORA_abs, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x0D
@@ -2155,7 +2280,7 @@ class ORA_absx(ORA):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(ORA_absx, self).execute(op)
+        return super(ORA_absx, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x1D
@@ -2170,7 +2295,7 @@ class ORA_absy(ORA):
 
     def execute(self):
         op = self.fetch_indexed_y_addrmode()[1]
-        super(ORA_absy, self).execute(op)
+        return super(ORA_absy, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x19
@@ -2185,7 +2310,7 @@ class ORA_preindexi(ORA):
 
     def execute(self):
         op = self.fetch_preindexed_addrmode()[1]
-        super(ORA_preindexi, self).execute(op)
+        return super(ORA_preindexi, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x01
@@ -2200,7 +2325,7 @@ class ORA_postindexi(ORA):
 
     def execute(self):
         op = self.fetch_postindexed_addrmode()[1]
-        super(ORA_postindexi, self).execute(op)
+        return super(ORA_postindexi, self).execute(op)
 
     # Variables privadas
     OPCODE = 0x11
@@ -2222,6 +2347,9 @@ class PHA(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x48
     BYTES = 1
@@ -2241,6 +2369,9 @@ class PHP(Instruction):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x08
@@ -2262,6 +2393,9 @@ class PLA(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x68
     BYTES = 1
@@ -2281,6 +2415,9 @@ class PLP(Instruction):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x28
@@ -2321,6 +2458,9 @@ class ROL_accumulator(ROL):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x2A
     BYTES = 1
@@ -2339,6 +2479,9 @@ class ROL_zero(ROL):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x26
@@ -2359,6 +2502,9 @@ class ROL_zerox(ROL):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x36
     BYTES = 2
@@ -2378,6 +2524,9 @@ class ROL_abs(ROL):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x2E
     BYTES = 3
@@ -2396,6 +2545,9 @@ class ROL_absx(ROL):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x3E
@@ -2437,6 +2589,9 @@ class ROR_accumulator(ROR):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x6A
     BYTES = 1
@@ -2455,6 +2610,9 @@ class ROR_zero(ROR):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x66
@@ -2475,6 +2633,9 @@ class ROR_zerox(ROR):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x76
     BYTES = 2
@@ -2494,6 +2655,9 @@ class ROR_abs(ROR):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x6E
     BYTES = 3
@@ -2512,6 +2676,9 @@ class ROR_absx(ROR):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x7E
@@ -2534,6 +2701,9 @@ class RTI(Instruction):
         pc = pc | (self._cpu.pull_stack() << 8)
         self._cpu.set_reg_pc(pc)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x40
     BYTES = 1
@@ -2553,6 +2723,9 @@ class RTS(Instruction):
         pc = pc | (self._cpu.pull_stack() << 8)
         pc = pc + 1
         self._cpu.set_reg_pc(pc)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x60
@@ -2592,6 +2765,8 @@ class SBC(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
 
 class SBC_inmediate(SBC):
 
@@ -2600,7 +2775,7 @@ class SBC_inmediate(SBC):
 
     def execute(self):
         op = self.fetch_inmediate_addrmode()
-        super(SBC_inmediate, self).execute(op)
+        return super(SBC_inmediate, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xE9
@@ -2615,7 +2790,7 @@ class SBC_zero(SBC):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(SBC_zero, self).execute(op)
+        return super(SBC_zero, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xE5
@@ -2630,7 +2805,7 @@ class SBC_zerox(SBC):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(SBC_zerox, self).execute(op)
+        return super(SBC_zerox, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xF5
@@ -2645,7 +2820,7 @@ class SBC_abs(SBC):
 
     def execute(self):
         op = self.fetch_absolute_addrmode()[1]
-        super(SBC_abs, self).execute(op)
+        return super(SBC_abs, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xED
@@ -2660,7 +2835,7 @@ class SBC_absx(SBC):
 
     def execute(self):
         op = self.fetch_indexed_x_addrmode()[1]
-        super(SBC_absx, self).execute(op)
+        return super(SBC_absx, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xFD
@@ -2675,7 +2850,7 @@ class SBC_absy(SBC):
 
     def execute(self):
         op = self.fetch_indexed_y_addrmode()[1]
-        super(SBC_absy, self).execute(op)
+        return super(SBC_absy, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xF9
@@ -2690,7 +2865,7 @@ class SBC_preindexi(SBC):
 
     def execute(self):
         op = self.fetch_preindexed_addrmode()[1]
-        super(SBC_preindexi, self).execute(op)
+        return super(SBC_preindexi, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xE1
@@ -2705,7 +2880,7 @@ class SBC_postindexi(SBC):
 
     def execute(self):
         op = self.fetch_postindexed_addrmode()[1]
-        super(SBC_postindexi, self).execute(op)
+        return super(SBC_postindexi, self).execute(op)
 
     # Variables privadas
     OPCODE = 0xF1
@@ -2727,6 +2902,9 @@ class SEC(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x38
     BYTES = 1
@@ -2747,6 +2925,9 @@ class SED(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0xF8
     BYTES = 1
@@ -2766,6 +2947,9 @@ class SEI(Instruction):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x78
@@ -2788,6 +2972,11 @@ class STA(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        if addr != 0x4014:
+            return self.CYCLES
+        else:
+            return self.CYCLES + 512
+
 
 class STA_zero(STA):
 
@@ -2796,7 +2985,7 @@ class STA_zero(STA):
 
     def execute(self):
         addr = self.fetch_absolute_addrmode()[0]
-        super(STA_zero, self).execute(addr)
+        return super(STA_zero, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x85
@@ -2811,7 +3000,7 @@ class STA_zerox(STA):
 
     def execute(self):
         addr = self.fetch_indexed_x_addrmode()[0]
-        super(STA_zerox, self).execute(addr)
+        return super(STA_zerox, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x95
@@ -2826,7 +3015,7 @@ class STA_abs(STA):
 
     def execute(self):
         addr = self.fetch_absolute_addrmode()[0]
-        super(STA_abs, self).execute(addr)
+        return super(STA_abs, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x8D
@@ -2841,7 +3030,7 @@ class STA_absx(STA):
 
     def execute(self):
         addr = self.fetch_indexed_x_addrmode()[0]
-        super(STA_absx, self).execute(addr)
+        return super(STA_absx, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x9D
@@ -2856,7 +3045,7 @@ class STA_absy(STA):
 
     def execute(self):
         addr = self.fetch_indexed_y_addrmode()[0]
-        super(STA_absy, self).execute(addr)
+        return super(STA_absy, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x99
@@ -2870,7 +3059,7 @@ class STA_preindexi(STA):
 
     def execute(self):
         addr = self.fetch_preindexed_addrmode()[0]
-        super(STA_preindexi, self).execute(addr)
+        return super(STA_preindexi, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x81
@@ -2885,7 +3074,7 @@ class STA_postindexi(STA):
 
     def execute(self):
         addr = self.fetch_postindexed_addrmode()[0]
-        super(STA_postindexi, self).execute(addr)
+        return super(STA_postindexi, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x91
@@ -2908,6 +3097,11 @@ class STX(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        if addr != 0x4014:
+            return self.CYCLES
+        else:
+            return self.CYCLES + 512
+
 
 class STX_zero(STX):
 
@@ -2916,7 +3110,7 @@ class STX_zero(STX):
 
     def execute(self):
         addr = self.fetch_absolute_addrmode()[0]
-        super(STX_zero, self).execute(addr)
+        return super(STX_zero, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x86
@@ -2931,7 +3125,7 @@ class STX_zeroy(STX):
 
     def execute(self):
         addr = self.fetch_indexed_y_addrmode()[0]
-        super(STX_zeroy, self).execute(addr)
+        return super(STX_zeroy, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x96
@@ -2946,7 +3140,7 @@ class STX_abs(STX):
 
     def execute(self):
         addr = self.fetch_absolute_addrmode()[0]
-        super(STX_abs, self).execute(addr)
+        return super(STX_abs, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x8E
@@ -2969,6 +3163,11 @@ class STY(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        if addr != 0x4014:
+            return self.CYCLES
+        else:
+            return self.CYCLES + 512
+
 
 class STY_zero(STY):
 
@@ -2977,7 +3176,7 @@ class STY_zero(STY):
 
     def execute(self):
         addr = self.fetch_absolute_addrmode()[0]
-        super(STY_zero, self).execute(addr)
+        return super(STY_zero, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x84
@@ -2992,7 +3191,7 @@ class STY_zerox(STY):
 
     def execute(self):
         addr = self.fetch_indexed_x_addrmode()[0]
-        super(STY_zerox, self).execute(addr)
+        return super(STY_zerox, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x94
@@ -3007,7 +3206,7 @@ class STY_abs(STY):
 
     def execute(self):
         addr = self.fetch_absolute_addrmode()[0]
-        super(STY_abs, self).execute(addr)
+        return super(STY_abs, self).execute(addr)
 
     # Variables privadas
     OPCODE = 0x8C
@@ -3034,6 +3233,9 @@ class TAX(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0xAA
     BYTES = 1
@@ -3058,6 +3260,9 @@ class TAY(Instruction):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0xA8
@@ -3084,6 +3289,9 @@ class TSX(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0xBA
     BYTES = 1
@@ -3109,6 +3317,9 @@ class TXA(Instruction):
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
 
+        return self.CYCLES
+
+
     # Variables privadas
     OPCODE = 0x8A
     BYTES = 1
@@ -3130,6 +3341,9 @@ class TXS(Instruction):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x9A
@@ -3155,6 +3369,9 @@ class TYA(Instruction):
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
+
+        return self.CYCLES
+
 
     # Variables privadas
     OPCODE = 0x98
