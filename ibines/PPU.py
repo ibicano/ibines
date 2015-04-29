@@ -52,6 +52,9 @@ class PPU(object):
         # Número de scanlines pendientes
         self._scanlines_pending = 0
 
+        # Lista de sprites a dibujar en el scanline actual
+        self.sprites_scanline = []
+
         # Interrupciones
         self._int_vblank = 0
 
@@ -484,6 +487,24 @@ class PPU(object):
 
             self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 10, tmp & 0x0400)
 
+
+            # Preparamos la lista de sprites del scanline
+            sprites_list = self.get_sprites_list()
+            i = 0
+            n = 0
+            self._sprites_scanline = []
+            while i < 64 and n < 8:
+                sprite = sprites_list[i]
+                if sprite.is_in_scanline(self._scanline_number):
+                    self.sprites_scanline.append(sprite)
+                    n += 1
+                i += 1
+
+            # Si hay 8 pixels en el scanline activamos el flag corespondiente del registro $2002
+            if n == 8:
+                self._reg_status = nesutils.set_bit(self._reg_status, 5, 1)
+
+            # Pintamos el pixel
             for x in range(PPU.FRAME_WIDTH):
                 self.draw_pixel(x, self._scanline_number - 1)
                 self.incr_xscroll()
@@ -529,15 +550,18 @@ class PPU(object):
         self._gfx.draw_pixel(x, y, self._pattern_rgb[pattern_pixel_x][pattern_pixel_y])
 
         # FIXME: comentado para depuración
-        # Dibuja los sprites
-        sprites_list = self.get_sprites_list()
-        for i in range(64):
-            s = sprites_list[i]
-            if s.is_in(x, y):
-                transparent_pixel = self.draw_sprite_pixel(s, x, y)
+        # Dibuja los sprites que estén en el pixel
+        n = len(self._sprites_scanline)
+        while n > 0:
+            n -= 1
+            sprite = self._sprites_scanline[n]
 
-                if i == 0 and not transparent_pixel:
-                    self.set_sprite_hit(is_background)
+            if sprite.is_in(x, y):
+                transparent_pixel = self.draw_sprite_pixel(sprite, x, y)
+
+                if sprite._sprite_zero and not transparent_pixel:
+                    self.set_sprite_hit(not is_background)
+
 
     # TODO: Acabar la implementación de los sprites
     def draw_sprite_pixel(self, sprite, x, y):
@@ -746,14 +770,20 @@ class Sprite(object):
         self._index = 0x00
         self._attributes = 0x00
         self._offset_x = 0x00
+        self._sprite_zero = False
         #######################################################################
 
 
     def load_by_addr(self, sprite_memory, sprite_addr):
         self._offset_y = sprite_memory.read_data(sprite_addr)
-        self._index = sprite_memory.read_data(sprite_addr)
-        self._attributes = sprite_memory.read_data(sprite_addr)
-        self._offset_x = sprite_memory.read_data(sprite_addr)
+        self._index = sprite_memory.read_data(sprite_addr + 1)
+        self._attributes = sprite_memory.read_data(sprite_addr + 2)
+        self._offset_x = sprite_memory.read_data(sprite_addr + 3)
+
+        if sprite_addr == 0x00:
+            self._sprite_zero = True
+        else:
+            self._sprite_zero = False
 
 
     def load_by_number(self, sprite_memory, sprite_number):
@@ -777,6 +807,16 @@ class Sprite(object):
         if x >= self._offset_x and x < self._offset_x + 8:
             if y >= self._offset_y and y < self._offset_y + 8:
                 return True
+
+
+    def is_in_scanline(self, scanline):
+        is_in = False
+        if 1 <= scanline <= 240:
+            y = scanline - 1
+            if y >= self._offset_y and y < self._offset_y + 8:
+                is_in = True
+
+        return is_in
 
 
     # Devuelve atributos:
