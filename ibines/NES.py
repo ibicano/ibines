@@ -67,6 +67,7 @@ class NES(object):
 
             self._ppu.exec_cycle(cycles)
 
+            # Estadísticas
             #stats_counter += inst.CYCLES
             stats_cycles += cycles
 
@@ -77,6 +78,7 @@ class NES(object):
                     print str(stats_cycles) + " ciclos por segundo"
                     stats_cycles = 0
                     stats_total_time = stats_clock
+
 
             # Emula la velocidad de la NES
             #time.sleep(0.0000006)

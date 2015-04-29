@@ -83,7 +83,7 @@ class PPU(object):
         # Registros estado
         self._reg_x_offset = 0x0             # Scroll patrón (3-bit)
         self._reg_vram_switch = 0            # Indica si estamos en la 1ª(0) o 2ª(1) escritura de los registros vram
-        self._reg_mirroring = 0x0            # 0x0: horizontal; 0x1: vertical: 0x2: single; 0x3: 4-screen
+        self._reg_mirroring = rom.get_control_1_mirroring_bit_0()   # 0x0: horizontal; 0x1: vertical: 0x2: single; 0x3: 4-screen
 
         #######################################################################
         #######################################################################
@@ -115,10 +115,11 @@ class PPU(object):
                 self.start_vblank()    # Activamos el período VBLANK al inicio del período
 
         if self._end_frame:
-            self._end_frame = False
-            self.end_vblank() # Finalizamos el período VBLANK
+            self._reg_status = 0
+            #self.end_vblank() # Finalizamos el período VBLANK
             self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
             self._gfx.update()
+            self._end_frame = False
 
 
     # Lee el registro indicado por su dirección en memoria
@@ -127,6 +128,8 @@ class PPU(object):
 
         if addr == 0x2002:
             d = self.read_reg_2002()
+        elif addr == 0x2004:
+            d = self.read_reg_2004()
         elif addr == 0x2007:
             d = self.read_reg_2007()
 
@@ -146,12 +149,19 @@ class PPU(object):
         return r
 
 
+    def read_reg_2004(self):
+        addr = self._reg_spr_addr
+        self._reg_spr_io = self._sprite_memory.read_data(addr)
+
+        return self._reg_spr_io
+
+
     def read_reg_2007(self):
         addr = self._reg_vram_addr % 0x4000
 
         # Si la dirección es de la paleta se devuelve el valor inmediatamente, sino se retrasa a la siguiente lectura
         if addr > 0x3F00:
-            data = self._memory.read_data(self._reg_vram_addr)
+            data = self._memory.read_data(self._reg_vram_addr - 0x1000)
             self._vram_buffer = data
         else:
             data = self._vram_buffer
@@ -498,7 +508,7 @@ class PPU(object):
         pattern_pixel_y = self.get_y_offset()
 
         # Calcula la dirección en la Name Table activa
-        name_table_addr = 0x2000 + (self._reg_vram_addr & 0x0FFF)
+        name_table_addr = 0x2000 | (self._reg_vram_addr & 0x0FFF)
 
         is_background = False
 
@@ -508,9 +518,7 @@ class PPU(object):
 
             attr_color = self.calc_attr_color(name_table_addr)
 
-            self._pattern_palette = self.fetch_pattern_palette(pattern_table_number, pattern_index, attr_color)
-
-            self._pattern_rgb = self.fetch_pattern_rgb(PPUMemory.ADDR_IMAGE_PALETTE)
+            self.fetch_pattern(pattern_table_number, pattern_index, attr_color, PPUMemory.ADDR_IMAGE_PALETTE)
 
             self._fetch_pattern = False
 
@@ -522,32 +530,30 @@ class PPU(object):
 
         # FIXME: comentado para depuración
         # Dibuja los sprites
-        '''
         sprites_list = self.get_sprites_list()
-        for s in sprites_list:
-           if y >= s.get_offset_y()  and y < (s.get_offset_y() + 8):
-                self.draw_sprite_pixel(s, x, y, is_background)
-        '''
+        for i in range(64):
+            s = sprites_list[i]
+            if s.is_in(x, y):
+                transparent_pixel = self.draw_sprite_pixel(s, x, y)
 
+                if i == 0 and not transparent_pixel:
+                    self.set_sprite_hit(is_background)
 
-
-    def draw_sprite_pixel(self, sprite, x, y, is_background):
+    # TODO: Acabar la implementación de los sprites
+    def draw_sprite_pixel(self, sprite, x, y):
         off_x = sprite.get_offset_x()
         off_y = sprite.get_offset_y()
 
-        if x >= off_x and x < off_x + 8:
-            if y >= off_y and y < off_y + 8:
-                pixel_x = x - off_x
-                pixel_y = y - off_y
+        pixel_x = x - off_x
+        pixel_y = y - off_y
 
-                pattern_table = self.control_1_sprites_pattern_bit_3()
-                self._pattern_palette = self.fetch_pattern_palette(pattern_table, sprite.get_index(), sprite.get_attr_color())
+        pattern_table = self.control_1_sprites_pattern_bit_3()
+        self.fetch_pattern(pattern_table, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
 
-                if is_background & (self._pattern_palette[pixel_x][pixel_y] % 4 != 0):
-                    self.set_sprite_hit(1)
+        self._gfx.draw_pixel(x, y, self._pattern_rgb[pixel_x][pixel_y])
 
-                self._pattern_rgb = self.fetch_pattern_rgb(PPUMemory.ADDR_SPRITE_PALETTE)
-                self._gfx.draw_pixel(x, y, self._pattern_rgb[pixel_x][pixel_y])
+        # Devuelve True si el pixel es transparente
+        return not self._pattern_palette[pixel_x][pixel_y] & 0x03
 
 
     # Devuelve una lista de objetos de clase Sprite con los sprites de la memoria de sprites
@@ -605,11 +611,10 @@ class PPU(object):
         return color
 
 
-    # Lee de la memoria de patrones un patrón especificado por su índice y lo
-    # devuelve como una lista 8x8 en la que cada posición es una tupla
-    # (R,G,B) con el color calculado de cada pixel
-    # TODO: adaptar la paleta a si se está trabajando en fondo o sprites
-    def fetch_pattern_palette(self, pattern_table, pattern_index, attr_color):
+    # Lee el patrón "pattern_index" de la tabla de patrones "pattern_table" con el color "attr_color" y la paleta
+    # de colores ubicada en la dirección de memoria "palette_addr" y lo coloca en las variables "pattern_palette" y
+    # "pattern_rgb"
+    def fetch_pattern(self, pattern_table, pattern_index, attr_color, palette_addr):
         pattern = self.fetch_pattern_mem(pattern_table, pattern_index)
 
         # Procesa los bytes del patrón para formatearlos en el valor de retorno
@@ -624,24 +629,10 @@ class PPU(object):
                 # Asigna el índice de la paleta a la posición correspondiente:
                 self._pattern_palette[7 - x][7 - y] = palette_index
 
-        return self._pattern_palette
+                color_index = self._memory.read_data(palette_addr + palette_index)
+                rgb = self.get_color(color_index)
+                self._pattern_rgb[7 - x][7 - y] = rgb
 
-
-    def fetch_pattern_rgb(self, palette_addr):
-        for x in range(8):
-            for y in range(8):
-                try:
-                    color_index = self._memory.read_data(palette_addr + self._pattern_palette[x][y])
-                    rgb = self.get_color(color_index)
-                    self._pattern_rgb[x][y] = rgb
-                except:
-                    print "Paleta fuera de rango: " + str(palette_addr + self._pattern_palette[x][y]) + ":" + str(color_index)
-
-                # Esto es para pruebas
-                #if self._pattern_palette[x][y]:
-                #    self._pattern_rgb[x][y] = ((255, 255, 255))
-
-        return self._pattern_rgb
 
 
     # Devuelve los 16 bytes del patrón indicado tal como se almacenan en la tabla de patrones especificada
@@ -780,6 +771,12 @@ class Sprite(object):
 
     def get_index(self):
         return self._index
+
+    # Indica si el sprite aparece en el pixel de pantalla indicado
+    def is_in(self, x, y):
+        if x >= self._offset_x and x < self._offset_x + 8:
+            if y >= self._offset_y and y < self._offset_y + 8:
+                return True
 
 
     # Devuelve atributos:
