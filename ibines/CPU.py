@@ -132,25 +132,25 @@ class CPU(object):
         opcode = self._mem.read_data(self._reg_pc)
 
         # Los comentarios de a continuación son por rendimiento
-        #if opcode in Instruction.Instruction.OPCODE_INDEX.keys():
-        inst_class = Instruction.Instruction.OPCODE_INDEX[opcode]
-        #else:
-        #    raise OpcodeError(self._reg_pc, opcode)
+        if opcode in Instruction.Instruction.OPCODE_INDEX.keys():
+            inst_class = Instruction.Instruction.OPCODE_INDEX[opcode]
+        else:
+            raise OpcodeError(self._reg_pc, opcode)
 
         inst = None
 
-        #try:
-        if inst_class.BYTES == 1:                    # Instrucciones sin operando
-            inst = inst_class(self)
-        elif inst_class.BYTES == 2:                  # Instrucciones con operando de 1 byte
-            operand = self._mem.read_data(self._reg_pc + 1)
-            inst = inst_class(operand, self)
-        elif inst_class.BYTES == 3:                  # Instrucciones con operando de 2 bytes
-            operand = self._mem.read_data(self._reg_pc + 1)
-            operand = operand | (self._mem.read_data(self._reg_pc + 2) << 8)
-            inst = inst_class(operand, self)
-        #except:
-        #    print "Error al hacer fetch de instrucción " + str(inst_class.__name__) + " de " + str(inst_class.BYTES) + " bytes"
+        try:
+            if inst_class.BYTES == 1:                    # Instrucciones sin operando
+                inst = inst_class(self)
+            elif inst_class.BYTES == 2:                  # Instrucciones con operando de 1 byte
+                operand = self._mem.read_data(self._reg_pc + 1)
+                inst = inst_class(operand, self)
+            elif inst_class.BYTES == 3:                  # Instrucciones con operando de 2 bytes
+                operand = self._mem.read_data(self._reg_pc + 1)
+                operand = operand | (self._mem.read_data(self._reg_pc + 2) << 8)
+                inst = inst_class(operand, self)
+        except:
+            print "Error al hacer fetch de instrucción " + str(inst_class.__name__) + " de " + str(inst_class.BYTES) + " bytes"
 
         return inst
 

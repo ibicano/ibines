@@ -13,7 +13,7 @@ from Instruction import *
 
 class NES(object):
 
-    DEBUG = False
+    DEBUG = True
 
     def __init__(self, file_name):
         #######################################################################
@@ -36,11 +36,11 @@ class NES(object):
     # Aquí se implementa el bucle principal de la NES. Cada iteración equivale a un
     # ciclo de reloj, para más precisión y exactitud conceptual
     def run(self):
-        #if NES.DEBUG: debug_file = open("/home/ibon/tmp/ibines.log", "w")
+        if NES.DEBUG: debug_file = open("/home/ibon/tmp/ibines.log", "w")
 
         stats_cycles = 0
         stats_total_time = 0
-        #stats_counter = 0
+        stats_counter = 0
 
         cycles = 0
 
@@ -52,23 +52,22 @@ class NES(object):
 
             # Fetch y Exec siguiente instrucción (si hemos ejecutado una
             # interrupción en el paso anterior será su rutina de interrupción)
-            #try:
-            inst = self._cpu.fetch_inst()
-                # if NES.DEBUG: debug_file.write(str(counter) + ": " + hex(self._cpu._reg_pc) + ": " + hex(inst.OPCODE) + str(inst.__class__) + "\n")
-            cycles += inst.execute()
-            #except OpcodeError as e:
-                # if NES.DEBUG:
-                #     debug_file.write(str(e) + "\n")
-                #     debug_file.close()
-            #    print "Error: Opcode inválido"
-            #    print e
+            try:
+                inst = self._cpu.fetch_inst()
+                if NES.DEBUG: debug_file.write(str(stats_counter) + ": " + hex(self._cpu._reg_pc) + ": " + hex(inst.OPCODE) + str(inst.__class__) + "\n")
+                cycles += inst.execute()
+            except OpcodeError as e:
+                if NES.DEBUG:
+                    debug_file.close()
+                print "Error: Opcode inválido"
+                print e
 
             # Restamos un ciclo de ejecución a la instrucción actual y la PPU
 
             self._ppu.exec_cycle(cycles)
 
             # Estadísticas
-            #stats_counter += inst.CYCLES
+            stats_counter += 1
             stats_cycles += cycles
 
             if stats_cycles % 5000 == 0:

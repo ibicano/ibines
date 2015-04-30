@@ -22,33 +22,19 @@ class Instruction(object):
         return self.CYCLES
 
 
-    # Calculan y devuelven el valor del operando y su posición de memoria
-    # (cuando proceda) en forma de tupla (addr, data). Cuando el operando
-    # operando no se ubica en una posición de memoria se devuelve sólo su valor
-    def fetch_inmediate_addrmode(self):
-        return self._operand
-
-
-    def fetch_accumulator_addrmode(self):
-        return self._cpu.get_reg_a()
-
-
     def fetch_absolute_addrmode(self):
         addr = self._operand
-        data = self._cpu.get_mem().read_data(addr)
-        return (addr, data)
+        return addr
 
 
     def fetch_indexed_x_addrmode(self):
         addr = self._operand + self._cpu.get_reg_x()
-        data = self._cpu.get_mem().read_data(addr)
-        return (addr, data)
+        return addr
 
 
     def fetch_indexed_y_addrmode(self):
         addr = self._operand + self._cpu.get_reg_y()
-        data = self._cpu.get_mem().read_data(addr)
-        return (addr, data)
+        return addr
 
 
     def fetch_preindexed_addrmode(self):
@@ -60,9 +46,7 @@ class Instruction(object):
         addr = self._cpu.get_mem().read_data(index)
         addr = addr | (self._cpu.get_mem().read_data(index + 1) << 8)
 
-        data = self._cpu.get_mem().read_data(addr)
-
-        return (addr, data)
+        return addr
 
 
     def fetch_postindexed_addrmode(self):
@@ -73,9 +57,7 @@ class Instruction(object):
 
         addr = base_addr + self._cpu.get_reg_y()
 
-        data = self._cpu.get_mem().read_data(addr)
-
-        return (addr, data)
+        return addr
 
 
     # Devuelve el número de ciclos que tarda en ejecutarse la instrucción
@@ -139,8 +121,7 @@ class ADC_inmediate(ADC):
 
 
     def execute(self):
-        op = self.fetch_inmediate_addrmode()
-        return super(ADC_inmediate, self).execute(op)
+        return super(ADC_inmediate, self).execute(self._operand)
 
 
     # Variables privadas
@@ -156,7 +137,8 @@ class ADC_zero(ADC):
 
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(ADC_zero, self).execute(op)
 
 
@@ -172,7 +154,8 @@ class ADC_zerox(ADC):
         super(ADC_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(ADC_zerox, self).execute(op)
 
     # Variables privadas
@@ -187,7 +170,8 @@ class ADC_abs(ADC):
         super(ADC_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(ADC_abs, self).execute(op)
 
     # Variables privadas
@@ -202,7 +186,8 @@ class ADC_absx(ADC):
         super(ADC_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(ADC_absx, self).execute(op)
 
     # Variables privadas
@@ -217,7 +202,8 @@ class ADC_absy(ADC):
         super(ADC_absy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()[1]
+        addr = self.fetch_indexed_y_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(ADC_absy, self).execute(op)
 
     # Variables privadas
@@ -231,7 +217,8 @@ class ADC_preindexi(ADC):
         super(ADC_preindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_preindexed_addrmode()[1]
+        addr = self.fetch_preindexed_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(ADC_preindexi, self).execute(op)
 
     # Variables privadas
@@ -246,7 +233,8 @@ class ADC_postindexi(ADC):
         super(ADC_postindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_postindexed_addrmode()[1]
+        addr = self.fetch_postindexed_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(ADC_postindexi, self).execute(op)
 
     # Variables privadas
@@ -284,8 +272,7 @@ class AND_inmediate(AND):
         super(AND_inmediate, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_inmediate_addrmode()
-        return super(AND_inmediate, self).execute(op)
+        return super(AND_inmediate, self).execute(self._operand)
 
     # Variables privadas
     OPCODE = 0x29
@@ -298,7 +285,8 @@ class AND_zero(AND):
         super(AND_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(AND_zero, self).execute(op)
 
     # Variables privadas
@@ -313,7 +301,8 @@ class AND_zerox(AND):
         super(AND_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(AND_zerox, self).execute(op)
 
     # Variables privadas
@@ -328,7 +317,8 @@ class AND_abs(AND):
         super(AND_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(AND_abs, self).execute(op)
 
     # Variables privadas
@@ -343,7 +333,8 @@ class AND_absx(AND):
         super(AND_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(AND_absx, self).execute(op)
 
     # Variables privadas
@@ -358,7 +349,8 @@ class AND_absy(AND):
         super(AND_absy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()[1]
+        addr = self.fetch_indexed_y_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(AND_absy, self).execute(op)
 
     # Variables privadas
@@ -372,7 +364,8 @@ class AND_preindexi(AND):
         super(AND_preindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_preindexed_addrmode()[1]
+        addr = self.fetch_preindexed_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(AND_preindexi, self).execute(op)
 
     # Variables privadas
@@ -387,7 +380,8 @@ class AND_postindexi(AND):
         super(AND_postindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_postindexed_addrmode()[1]
+        addr = self.fetch_postindexed_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(AND_postindexi, self).execute(op)
 
     # Variables privadas
@@ -420,8 +414,7 @@ class ASL_accumulator(ASL):
         super(ASL_accumulator, self).__init__(None, cpu)
 
     def execute(self):
-        op = self.fetch_accumulator_addrmode()
-        result = super(ASL_accumulator, self).execute(op)
+        result = super(ASL_accumulator, self).execute(self._cpu.get_reg_a())
         self._cpu.set_reg_a(result)
 
         # Incrementa el registro contador (PC) de la CPU
@@ -440,7 +433,8 @@ class ASL_zero(ASL):
         super(ASL_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(ASL_zero, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -461,7 +455,8 @@ class ASL_zerox(ASL):
         super(ASL_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_indexed_x_addrmode()
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(ASL_zerox, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -482,7 +477,8 @@ class ASL_abs(ASL):
         super(ASL_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(ASL_abs, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -503,7 +499,8 @@ class ASL_absx(ASL):
         super(ASL_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_indexed_x_addrmode()
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(ASL_absx, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -598,7 +595,8 @@ class BIT(Instruction):
         super(BIT, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
 
         # Transfiere el bit de Signo
         if op & 0x80:
@@ -918,8 +916,7 @@ class CMP_inmediate(CMP):
         super(CMP_inmediate, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_inmediate_addrmode()
-        return super(CMP_inmediate, self).execute(op)
+        return super(CMP_inmediate, self).execute(self._operand)
 
     # Variables privadas
     OPCODE = 0xC9
@@ -933,7 +930,8 @@ class CMP_zero(CMP):
         super(CMP_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(CMP_zero, self).execute(op)
 
     # Variables privadas
@@ -948,7 +946,8 @@ class CMP_zerox(CMP):
         super(CMP_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(CMP_zerox, self).execute(op)
 
     # Variables privadas
@@ -963,7 +962,8 @@ class CMP_abs(CMP):
         super(CMP_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(CMP_abs, self).execute(op)
 
     # Variables privadas
@@ -978,7 +978,8 @@ class CMP_absx(CMP):
         super(CMP_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(CMP_absx, self).execute(op)
 
     # Variables privadas
@@ -993,7 +994,8 @@ class CMP_absy(CMP):
         super(CMP_absy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()[1]
+        addr = self.fetch_indexed_y_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(CMP_absy, self).execute(op)
 
     # Variables privadas
@@ -1008,7 +1010,8 @@ class CMP_preindexi(CMP):
         super(CMP_preindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_preindexed_addrmode()[1]
+        addr = self.fetch_preindexed_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(CMP_preindexi, self).execute(op)
 
     # Variables privadas
@@ -1023,7 +1026,8 @@ class CMP_postindexi(CMP):
         super(CMP_postindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_postindexed_addrmode()[1]
+        addr = self.fetch_postindexed_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(CMP_postindexi, self).execute(op)
 
     # Variables privadas
@@ -1064,7 +1068,7 @@ class CPX_inmediate(CPX):
         super(CPX_inmediate, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_inmediate_addrmode()
+        op = self._cpu.get_mem().read_data(self._operand)
         return super(CPX_inmediate, self).execute(op)
 
     # Variables privadas
@@ -1079,7 +1083,8 @@ class CPX_zero(CPX):
         super(CPX_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(CPX_zero, self).execute(op)
 
     # Variables privadas
@@ -1094,7 +1099,8 @@ class CPX_abs(CPX):
         super(CPX_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(CPX_abs, self).execute(op)
 
     # Variables privadas
@@ -1135,8 +1141,7 @@ class CPY_inmediate(CPY):
         super(CPY_inmediate, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_inmediate_addrmode()
-        return super(CPY_inmediate, self).execute(op)
+        return super(CPY_inmediate, self).execute(self._operand)
 
     # Variables privadas
     OPCODE = 0xC0
@@ -1150,7 +1155,8 @@ class CPY_zero(CPY):
         super(CPY_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(CPY_zero, self).execute(op)
 
     # Variables privadas
@@ -1165,7 +1171,8 @@ class CPY_abs(CPY):
         super(CPY_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(CPY_abs, self).execute(op)
 
     # Variables privadas
@@ -1197,7 +1204,8 @@ class DEC_zero(DEC):
         super(DEC_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(DEC_zero, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -1219,7 +1227,8 @@ class DEC_zerox(DEC):
         super(DEC_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_indexed_x_addrmode()
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(DEC_zerox, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -1241,7 +1250,8 @@ class DEC_abs(DEC):
         super(DEC_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(DEC_abs, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -1263,7 +1273,8 @@ class DEC_absx(DEC):
         super(DEC_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_indexed_x_addrmode()
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(DEC_absx, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -1364,8 +1375,7 @@ class EOR_inmediate(EOR):
         super(EOR_inmediate, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_inmediate_addrmode()
-        return super(EOR_inmediate, self).execute(op)
+        return super(EOR_inmediate, self).execute(self._operand)
 
     # Variables privadas
     OPCODE = 0x49
@@ -1379,7 +1389,8 @@ class EOR_zero(EOR):
         super(EOR_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(EOR_zero, self).execute(op)
 
     # Variables privadas
@@ -1394,7 +1405,8 @@ class EOR_zerox(EOR):
         super(EOR_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(EOR_zerox, self).execute(op)
 
     # Variables privadas
@@ -1409,7 +1421,8 @@ class EOR_abs(EOR):
         super(EOR_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(EOR_abs, self).execute(op)
 
     # Variables privadas
@@ -1424,7 +1437,8 @@ class EOR_absx(EOR):
         super(EOR_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(EOR_absx, self).execute(op)
 
     # Variables privadas
@@ -1439,7 +1453,8 @@ class EOR_absy(EOR):
         super(EOR_absy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()[1]
+        addr = self.fetch_indexed_y_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(EOR_absy, self).execute(op)
 
     # Variables privadas
@@ -1454,7 +1469,8 @@ class EOR_preindexi(EOR):
         super(EOR_preindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_preindexed_addrmode()[1]
+        addr = self.fetch_preindexed_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(EOR_preindexi, self).execute(op)
 
     # Variables privadas
@@ -1469,7 +1485,8 @@ class EOR_postindexi(EOR):
         super(EOR_postindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_postindexed_addrmode()[1]
+        addr = self.fetch_postindexed_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(EOR_postindexi, self).execute(op)
 
     # Variables privadas
@@ -1501,7 +1518,8 @@ class INC_zero(INC):
         super(INC_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(INC_zero, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -1523,7 +1541,8 @@ class INC_zerox(INC):
         super(INC_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_indexed_x_addrmode()
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(INC_zerox, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -1545,7 +1564,8 @@ class INC_abs(INC):
         super(INC_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(INC_abs, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -1567,7 +1587,8 @@ class INC_absx(INC):
         super(INC_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_indexed_x_addrmode()
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(INC_absx, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -1658,7 +1679,7 @@ class JMP_abs(JMP):
         super(JMP_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_absolute_addrmode()[0]
+        addr = self.fetch_absolute_addrmode()
         return super(JMP_abs, self).execute(addr)
 
     # Variables privadas
@@ -1737,8 +1758,7 @@ class LDA_inmediate(LDA):
         super(LDA_inmediate, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_inmediate_addrmode()
-        return super(LDA_inmediate, self).execute(op)
+        return super(LDA_inmediate, self).execute(self._operand)
 
     # Variables privadas
     OPCODE = 0xA9
@@ -1752,7 +1772,8 @@ class LDA_zero(LDA):
         super(LDA_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDA_zero, self).execute(op)
 
     # Variables privadas
@@ -1767,7 +1788,8 @@ class LDA_zerox(LDA):
         super(LDA_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDA_zerox, self).execute(op)
 
     # Variables privadas
@@ -1782,7 +1804,8 @@ class LDA_abs(LDA):
         super(LDA_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDA_abs, self).execute(op)
 
     # Variables privadas
@@ -1797,7 +1820,8 @@ class LDA_absx(LDA):
         super(LDA_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDA_absx, self).execute(op)
 
     # Variables privadas
@@ -1812,7 +1836,8 @@ class LDA_absy(LDA):
         super(LDA_absy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()[1]
+        addr = self.fetch_indexed_y_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDA_absy, self).execute(op)
 
     # Variables privadas
@@ -1827,7 +1852,8 @@ class LDA_preindexi(LDA):
         super(LDA_preindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_preindexed_addrmode()[1]
+        addr = self.fetch_preindexed_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDA_preindexi, self).execute(op)
 
     # Variables privadas
@@ -1842,7 +1868,8 @@ class LDA_postindexi(LDA):
         super(LDA_postindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_postindexed_addrmode()[1]
+        addr = self.fetch_postindexed_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDA_postindexi, self).execute(op)
 
     # Variables privadas
@@ -1879,8 +1906,7 @@ class LDX_inmediate(LDX):
         super(LDX_inmediate, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_inmediate_addrmode()
-        return super(LDX_inmediate, self).execute(op)
+        return super(LDX_inmediate, self).execute(self._operand)
 
     # Variables privadas
     OPCODE = 0xA2
@@ -1894,7 +1920,8 @@ class LDX_zero(LDX):
         super(LDX_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDX_zero, self).execute(op)
 
     # Variables privadas
@@ -1909,7 +1936,8 @@ class LDX_zeroy(LDX):
         super(LDX_zeroy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()[1]
+        addr = self.fetch_indexed_y_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDX_zeroy, self).execute(op)
 
     # Variables privadas
@@ -1924,7 +1952,8 @@ class LDX_abs(LDX):
         super(LDX_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDX_abs, self).execute(op)
 
     # Variables privadas
@@ -1939,7 +1968,8 @@ class LDX_absy(LDX):
         super(LDX_absy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()[1]
+        addr = self.fetch_indexed_y_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDX_absy, self).execute(op)
 
     # Variables privadas
@@ -1976,8 +2006,7 @@ class LDY_inmediate(LDY):
         super(LDY_inmediate, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_inmediate_addrmode()
-        return super(LDY_inmediate, self).execute(op)
+        return super(LDY_inmediate, self).execute(self._operand)
 
     # Variables privadas
     OPCODE = 0xA0
@@ -1991,7 +2020,8 @@ class LDY_zero(LDY):
         super(LDY_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDY_zero, self).execute(op)
 
     # Variables privadas
@@ -2006,7 +2036,8 @@ class LDY_zerox(LDY):
         super(LDY_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDY_zerox, self).execute(op)
 
     # Variables privadas
@@ -2021,7 +2052,8 @@ class LDY_abs(LDY):
         super(LDY_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDY_abs, self).execute(op)
 
     # Variables privadas
@@ -2036,7 +2068,8 @@ class LDY_absx(LDY):
         super(LDY_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()[1]
+        addr = self.fetch_indexed_y_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(LDY_absx, self).execute(op)
 
     # Variables privadas
@@ -2069,8 +2102,7 @@ class LSR_accumulator(LSR):
         super(LSR_accumulator, self).__init__(None, cpu)
 
     def execute(self):
-        op = self.fetch_accumulator_addrmode()
-        result = super(LSR_accumulator, self).execute(op)
+        result = super(LSR_accumulator, self).execute(self._cpu.get_reg_a())
         self._cpu.set_reg_a(result)
 
         # Incrementa el registro contador (PC) de la CPU
@@ -2091,7 +2123,8 @@ class LSR_zero(LSR):
         super(LSR_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(LSR_zero, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2113,7 +2146,8 @@ class LSR_zerox(LSR):
         super(LSR_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_indexed_x_addrmode()
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(LSR_zerox, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2135,7 +2169,8 @@ class LSR_abs(LSR):
         super(LSR_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(LSR_abs, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2157,7 +2192,8 @@ class LSR_absx(LSR):
         super(LSR_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_indexed_x_addrmode()
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(LSR_absx, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2223,8 +2259,7 @@ class ORA_inmediate(ORA):
         super(ORA_inmediate, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_inmediate_addrmode()
-        return super(ORA_inmediate, self).execute(op)
+        return super(ORA_inmediate, self).execute(self._operand)
 
     # Variables privadas
     OPCODE = 0x09
@@ -2238,7 +2273,8 @@ class ORA_zero(ORA):
         super(ORA_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(ORA_zero, self).execute(op)
 
     # Variables privadas
@@ -2253,7 +2289,8 @@ class ORA_zerox(ORA):
         super(ORA_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(ORA_zerox, self).execute(op)
 
     # Variables privadas
@@ -2268,7 +2305,8 @@ class ORA_abs(ORA):
         super(ORA_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(ORA_abs, self).execute(op)
 
     # Variables privadas
@@ -2283,7 +2321,8 @@ class ORA_absx(ORA):
         super(ORA_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(ORA_absx, self).execute(op)
 
     # Variables privadas
@@ -2298,7 +2337,8 @@ class ORA_absy(ORA):
         super(ORA_absy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()[1]
+        addr = self.fetch_indexed_y_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(ORA_absy, self).execute(op)
 
     # Variables privadas
@@ -2313,7 +2353,8 @@ class ORA_preindexi(ORA):
         super(ORA_preindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_preindexed_addrmode()[1]
+        addr = self.fetch_preindexed_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(ORA_preindexi, self).execute(op)
 
     # Variables privadas
@@ -2328,7 +2369,8 @@ class ORA_postindexi(ORA):
         super(ORA_postindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_postindexed_addrmode()[1]
+        addr = self.fetch_postindexed_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(ORA_postindexi, self).execute(op)
 
     # Variables privadas
@@ -2455,8 +2497,7 @@ class ROL_accumulator(ROL):
         super(ROL_accumulator, self).__init__(None, cpu)
 
     def execute(self):
-        op = self.fetch_accumulator_addrmode()
-        result = super(ROL_accumulator, self).execute(op)
+        result = super(ROL_accumulator, self).execute(self._cpu.get_reg_a())
         self._cpu.set_reg_a(result)
 
         # Incrementa el registro contador (PC) de la CPU
@@ -2477,7 +2518,8 @@ class ROL_zero(ROL):
         super(ROL_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(ROL_zero, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2499,7 +2541,8 @@ class ROL_zerox(ROL):
         super(ROL_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_indexed_x_addrmode()
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(ROL_zerox, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2521,7 +2564,8 @@ class ROL_abs(ROL):
         super(ROL_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(ROL_abs, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2543,7 +2587,8 @@ class ROL_absx(ROL):
         super(ROL_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_indexed_x_addrmode()
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(ROL_absx, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2586,8 +2631,7 @@ class ROR_accumulator(ROR):
         super(ROR_accumulator, self).__init__(None, cpu)
 
     def execute(self):
-        op = self.fetch_accumulator_addrmode()
-        result = super(ROR_accumulator, self).execute(op)
+        result = super(ROR_accumulator, self).execute(self._cpu.get_reg_a())
         self._cpu.set_reg_a(result)
 
         # Incrementa el registro contador (PC) de la CPU
@@ -2608,7 +2652,8 @@ class ROR_zero(ROR):
         super(ROR_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(ROR_zero, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2630,7 +2675,8 @@ class ROR_zerox(ROR):
         super(ROR_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_indexed_x_addrmode()
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(ROR_zerox, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2652,7 +2698,8 @@ class ROR_abs(ROR):
         super(ROR_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_absolute_addrmode()
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(ROR_abs, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2674,7 +2721,8 @@ class ROR_absx(ROR):
         super(ROR_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        addr, op = self.fetch_indexed_x_addrmode()
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         result = super(ROR_absx, self).execute(op)
         self._cpu.get_mem().write_data(result, addr)
 
@@ -2784,8 +2832,7 @@ class SBC_inmediate(SBC):
         super(SBC_inmediate, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_inmediate_addrmode()
-        return super(SBC_inmediate, self).execute(op)
+        return super(SBC_inmediate, self).execute(self._operand)
 
     # Variables privadas
     OPCODE = 0xE9
@@ -2799,7 +2846,8 @@ class SBC_zero(SBC):
         super(SBC_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(SBC_zero, self).execute(op)
 
     # Variables privadas
@@ -2814,7 +2862,8 @@ class SBC_zerox(SBC):
         super(SBC_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(SBC_zerox, self).execute(op)
 
     # Variables privadas
@@ -2829,7 +2878,8 @@ class SBC_abs(SBC):
         super(SBC_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_absolute_addrmode()[1]
+        addr = self.fetch_absolute_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(SBC_abs, self).execute(op)
 
     # Variables privadas
@@ -2844,7 +2894,8 @@ class SBC_absx(SBC):
         super(SBC_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_x_addrmode()[1]
+        addr = self.fetch_indexed_x_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(SBC_absx, self).execute(op)
 
     # Variables privadas
@@ -2859,7 +2910,8 @@ class SBC_absy(SBC):
         super(SBC_absy, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_indexed_y_addrmode()[1]
+        addr = self.fetch_indexed_y_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(SBC_absy, self).execute(op)
 
     # Variables privadas
@@ -2874,7 +2926,8 @@ class SBC_preindexi(SBC):
         super(SBC_preindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_preindexed_addrmode()[1]
+        addr = self.fetch_preindexed_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(SBC_preindexi, self).execute(op)
 
     # Variables privadas
@@ -2889,7 +2942,8 @@ class SBC_postindexi(SBC):
         super(SBC_postindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self.fetch_postindexed_addrmode()[1]
+        addr = self.fetch_postindexed_addrmode()
+        op = self._cpu.get_mem().read_data(addr)
         return super(SBC_postindexi, self).execute(op)
 
     # Variables privadas
@@ -2994,7 +3048,7 @@ class STA_zero(STA):
         super(STA_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_absolute_addrmode()[0]
+        addr = self.fetch_absolute_addrmode()
         return super(STA_zero, self).execute(addr)
 
     # Variables privadas
@@ -3009,7 +3063,7 @@ class STA_zerox(STA):
         super(STA_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_indexed_x_addrmode()[0]
+        addr = self.fetch_indexed_x_addrmode()
         return super(STA_zerox, self).execute(addr)
 
     # Variables privadas
@@ -3024,7 +3078,7 @@ class STA_abs(STA):
         super(STA_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_absolute_addrmode()[0]
+        addr = self.fetch_absolute_addrmode()
         return super(STA_abs, self).execute(addr)
 
     # Variables privadas
@@ -3039,7 +3093,7 @@ class STA_absx(STA):
         super(STA_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_indexed_x_addrmode()[0]
+        addr = self.fetch_indexed_x_addrmode()
         return super(STA_absx, self).execute(addr)
 
     # Variables privadas
@@ -3054,7 +3108,7 @@ class STA_absy(STA):
         super(STA_absy, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_indexed_y_addrmode()[0]
+        addr = self.fetch_indexed_y_addrmode()
         return super(STA_absy, self).execute(addr)
 
     # Variables privadas
@@ -3068,7 +3122,7 @@ class STA_preindexi(STA):
         super(STA_preindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_preindexed_addrmode()[0]
+        addr = self.fetch_preindexed_addrmode()
         return super(STA_preindexi, self).execute(addr)
 
     # Variables privadas
@@ -3083,7 +3137,7 @@ class STA_postindexi(STA):
         super(STA_postindexi, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_postindexed_addrmode()[0]
+        addr = self.fetch_postindexed_addrmode()
         return super(STA_postindexi, self).execute(addr)
 
     # Variables privadas
@@ -3119,7 +3173,7 @@ class STX_zero(STX):
         super(STX_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_absolute_addrmode()[0]
+        addr = self.fetch_absolute_addrmode()
         return super(STX_zero, self).execute(addr)
 
     # Variables privadas
@@ -3134,7 +3188,7 @@ class STX_zeroy(STX):
         super(STX_zeroy, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_indexed_y_addrmode()[0]
+        addr = self.fetch_indexed_y_addrmode()
         return super(STX_zeroy, self).execute(addr)
 
     # Variables privadas
@@ -3149,7 +3203,7 @@ class STX_abs(STX):
         super(STX_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_absolute_addrmode()[0]
+        addr = self.fetch_absolute_addrmode()
         return super(STX_abs, self).execute(addr)
 
     # Variables privadas
@@ -3185,7 +3239,7 @@ class STY_zero(STY):
         super(STY_zero, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_absolute_addrmode()[0]
+        addr = self.fetch_absolute_addrmode()
         return super(STY_zero, self).execute(addr)
 
     # Variables privadas
@@ -3200,7 +3254,7 @@ class STY_zerox(STY):
         super(STY_zerox, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_indexed_x_addrmode()[0]
+        addr = self.fetch_indexed_x_addrmode()
         return super(STY_zerox, self).execute(addr)
 
     # Variables privadas
@@ -3215,7 +3269,7 @@ class STY_abs(STY):
         super(STY_abs, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_absolute_addrmode()[0]
+        addr = self.fetch_absolute_addrmode()
         return super(STY_abs, self).execute(addr)
 
     # Variables privadas
