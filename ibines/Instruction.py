@@ -106,7 +106,8 @@ class ADC(Instruction):
         ac = self._cpu.get_reg_a()
         carry = self._cpu.get_reg_p_c_bit()
 
-        rst = ac + op + carry
+        tmp = op + carry
+        rst = ac + tmp
 
         # Establece el bit CARRY del registro P
         self._cpu.set_carry_bit(rst)
@@ -115,7 +116,10 @@ class ADC(Instruction):
         self._cpu.set_zero_bit(rst)
 
         # Establece el bit OVERFLOW del registro P
-        self._cpu.set_overflow_bit(op, rst)
+        if ((not ((ac ^ tmp) & 0x80)) and ((ac ^ rst) & 0x80)):
+            self._cpu.set_reg_p_v_bit(1)
+        else:
+            self._cpu.set_reg_p_v_bit(0)
 
         # Establece el bit SIGN del registro P
         self._cpu.set_sign_bit(rst)
@@ -600,13 +604,13 @@ class BIT(Instruction):
         if op & 0x80:
             self._cpu.set_reg_p_s_bit(1)
         else:
-            self._cpu.set_reg_p_s_bit(1)
+            self._cpu.set_reg_p_s_bit(0)
 
         # Transfiere el bit de Overflow
         if op & 0x40:
             self._cpu.set_reg_p_v_bit(1)
         else:
-            self._cpu.set_reg_p_v_bit(1)
+            self._cpu.set_reg_p_v_bit(0)
 
         # Calcula el bit Zero
         if not(op & self._cpu.get_reg_a()):
@@ -894,7 +898,7 @@ class CMP(Instruction):
         ac = self._cpu.get_reg_a()
         result = ac - op
 
-        if result < 0x100:
+        if 0 <= result < 0x100:
             self._cpu.set_reg_p_c_bit(1)
         else:
             self._cpu.set_reg_p_c_bit(0)
@@ -1040,7 +1044,7 @@ class CPX(Instruction):
         reg_x = self._cpu.get_reg_x()
         result = reg_x - op
 
-        if result < 0x100:
+        if 0 <= result < 0x100:
             self._cpu.set_reg_p_c_bit(1)
         else:
             self._cpu.set_reg_p_c_bit(0)
@@ -1111,7 +1115,7 @@ class CPY(Instruction):
         reg_y = self._cpu.get_reg_y()
         result = reg_y - op
 
-        if result < 0x100:
+        if 0 <= result < 0x100:
             self._cpu.set_reg_p_c_bit(1)
         else:
             self._cpu.set_reg_p_c_bit(0)
@@ -2745,18 +2749,24 @@ class SBC(Instruction):
         ac = self._cpu.get_reg_a()
         carry = self._cpu.get_reg_p_c_bit()
 
-        rst = ac - op - carry
+        tmp = op - carry
+        rst = ac - tmp
 
         # Establece el bit CARRY del registro P
-        if rst < 0x100:
+        if 0 <= rst < 0x100:
             self._cpu.set_reg_p_c_bit(1)
         else:
             self._cpu.set_reg_p_c_bit(0)
 
         # Establece el bit ZERO del registro P
         self._cpu.set_zero_bit(rst)
+
         # Establece el bit OVERFLOW del registro P
-        self._cpu.set_overflow_bit(op, rst)
+        if (((ac ^ tmp) & 0x80) and ((ac ^ rst) & 0x80)):
+            self._cpu.set_reg_p_v_bit(1)
+        else:
+            self._cpu.set_reg_p_v_bit(0)
+
         # Establece el bit SIGN del registro P
         self._cpu.set_sign_bit(rst)
 

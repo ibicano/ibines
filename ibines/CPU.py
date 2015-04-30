@@ -202,12 +202,13 @@ class CPU(object):
     # Establece el valor de los bits del registro de estado en función
     # del resultado de una instrucción
     def set_carry_bit(self, inst_result):
-        if inst_result > 0xFF:
-            self.set_reg_p_c_bit(1)
-            return 1
-        else:
+        if 0 <= inst_result < 0x100:
             self.set_reg_p_c_bit(0)
             return 0
+        else:
+            self.set_reg_p_c_bit(1)
+            return 1
+
 
     def set_zero_bit(self, inst_result):
         rst = inst_result & 0xFF
@@ -225,15 +226,6 @@ class CPU(object):
             return 1
         else:
             self.set_reg_p_s_bit(0)
-            return 0
-
-    def set_overflow_bit(self, src_op, inst_result):
-        ac = self.get_reg_a()
-        if ((not ((ac ^ src_op) & 0x80)) and ((ac ^ inst_result) & 0x80)):
-            self.set_reg_p_v_bit(1)
-            return 1
-        else:
-            self.set_reg_p_v_bit(0)
             return 0
 
     # Funciones para meter y sacar datos de la Pila
