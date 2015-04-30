@@ -1068,8 +1068,7 @@ class CPX_inmediate(CPX):
         super(CPX_inmediate, self).__init__(operand, cpu)
 
     def execute(self):
-        op = self._cpu.get_mem().read_data(self._operand)
-        return super(CPX_inmediate, self).execute(op)
+        return super(CPX_inmediate, self).execute(self._operand)
 
     # Variables privadas
     OPCODE = 0xE0
