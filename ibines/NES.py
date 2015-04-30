@@ -39,7 +39,7 @@ class NES(object):
         if NES.DEBUG: debug_file = open("/home/ibon/tmp/ibines.log", "w")
 
         stats_cycles = 0
-        stats_total_time = 0
+        stats_total_time = time.time()
         stats_counter = 0
 
         cycles = 0
@@ -70,8 +70,8 @@ class NES(object):
             stats_counter += 1
             stats_cycles += cycles
 
-            if stats_cycles % 5000 == 0:
-                stats_clock = time.clock()
+            if stats_cycles > 5000:
+                stats_clock = time.time()
 
                 if stats_clock - stats_total_time >= 1:
                     print str(stats_cycles) + " ciclos por segundo"

@@ -655,7 +655,7 @@ class PPU(object):
 
                 color_index = self._memory.read_data(palette_addr + palette_index)
                 rgb = self.get_color(color_index)
-                self._pattern_rgb[7 - x][7 - y] = rgb
+                self._pattern_rgb[7 - x][y] = rgb
 
 
 
