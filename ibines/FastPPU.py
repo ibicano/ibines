@@ -29,6 +29,8 @@ class FastPPU(PPU):
     def __init__(self, rom):
         super(FastPPU, self).__init__(rom)
 
+        self._cycles_scanline = FastPPU.SCANLINE_CYCLES
+
         # Matriz de tiles:
         self._tiles_array = [None] * 960
         for x in range(960):

@@ -489,6 +489,7 @@ class PPU(object):
 
 
             # Preparamos la lista de sprites del scanline
+            '''
             sprites_list = self.get_sprites_list()
             i = 0
             n = 0
@@ -500,9 +501,10 @@ class PPU(object):
                     n += 1
                 i += 1
 
-            # Si hay 8 pixels en el scanline activamos el flag corespondiente del registro $2002
+            # Si hay 8 sprites en el scanline activamos el flag corespondiente del registro $2002
             if n == 8:
                 self._reg_status = nesutils.set_bit(self._reg_status, 5, 1)
+            '''
 
             # Pintamos el pixel
             for x in range(PPU.FRAME_WIDTH):
@@ -551,6 +553,7 @@ class PPU(object):
 
         # FIXME: comentado para depuración
         # Dibuja los sprites que estén en el pixel
+        '''
         n = len(self._sprites_scanline)
         while n > 0:
             n -= 1
@@ -561,6 +564,7 @@ class PPU(object):
 
                 if sprite._sprite_zero and not transparent_pixel:
                     self.set_sprite_hit(not is_background)
+        '''
 
 
     # TODO: Acabar la implementación de los sprites
