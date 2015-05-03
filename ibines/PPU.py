@@ -298,7 +298,6 @@ class PPU(object):
             self._reg_vram_addr += 32
 
 
-
     # Escribe el registro y hace una transferencia dma
     def write_sprite_dma(self, cpu_mem, src_addr):
         self._reg_sprite_dma = src_addr
