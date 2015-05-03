@@ -163,7 +163,7 @@ class PPU(object):
         addr = self._reg_vram_addr % 0x4000
 
         # Si la dirección es de la paleta se devuelve el valor inmediatamente, sino se retrasa a la siguiente lectura
-        if addr > 0x3F00:
+        if addr >= 0x3F00:
             data = self._memory.read_data(self._reg_vram_addr - 0x1000)
             self._vram_buffer = data
         else:
