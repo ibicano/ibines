@@ -89,5 +89,6 @@ class NES(object):
 # Inicio del programa
 ###############################################################################
 file_name = "../roms/Super Mario Bros. (E).nes"
+#file_name = "../roms/Donkey Kong Classics (USA, Europe).nes"
 nes = NES(file_name)
 nes.run()

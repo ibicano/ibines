@@ -110,7 +110,9 @@ class PPU(object):
         pending_scanlines = (((PPU.FRAME_CYCLES - scanlines_cycles) - self._cycles_frame) % PPU.FRAME_CYCLES) / PPU.SCANLINE_CYCLES
 
         while pending_scanlines > 0:
-            self.draw_scanline()
+            if self.control_2_background_bit_3() and self.control_2_sprites_bit_4():
+                self.draw_scanline()
+
             self._scanline_number = (self._scanline_number + 1) % PPU.FRAME_SCANLINES
             pending_scanlines -= 1
 
@@ -120,7 +122,8 @@ class PPU(object):
         if self._end_frame:
             self._reg_status = 0
             #self.end_vblank() # Finalizamos el período VBLANK
-            self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
+            if self.control_2_background_bit_3() and self.control_2_sprites_bit_4():
+                self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
             self._gfx.update()
             self._end_frame = False
 

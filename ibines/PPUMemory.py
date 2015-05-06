@@ -58,7 +58,7 @@ class PPUMemory(object):
         d = data & 0xFF
 
         # Name tables y attribute tables:
-        if a < 0x4000:
+        if 0x2000 <= a < 0x4000:
             # Name Table 0
             if a >= 0x2000 and a < 0x2400:
                 if self._mirror_mode == 0:
