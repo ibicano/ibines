@@ -39,7 +39,7 @@ class NES(object):
     def run(self):
         if NES.DEBUG: debug_file = open("/home/ibon/tmp/ibines.log", "w")
 
-        test = open("../tests/ibitest.log", "w")
+        #test = open("../tests/ibitest.log", "w")
 
         stats_cycles = 0
         stats_total_time = time.time()
@@ -60,7 +60,7 @@ class NES(object):
                     inst = self._cpu.fetch_inst()
 
                     # FIXME: código para depurar la salida de las instrucciones con nestest
-                    test.write(self._log_inst(inst))
+                    #test.write(self._log_inst(inst))
 
                     if NES.DEBUG: debug_file.write(str(stats_counter) + ": " + hex(self._cpu._reg_pc) + ": " + hex(inst.OPCODE) + str(inst.__class__) + "\n")
                     cycles += inst.execute()
@@ -69,6 +69,7 @@ class NES(object):
                         debug_file.close()
                     print "Error: Opcode inválido"
                     print e
+                    #test.close()
 
                 # Restamos un ciclo de ejecución a la instrucción actual y la PPU
 
@@ -93,10 +94,11 @@ class NES(object):
                 cycles = 0
         except Exception as e:
             print "Cerrando fichero test"
-            test.close()
+            #test.close()
             raise e
 
         test.close()
+
 
 
     def _log_inst(self, inst):
@@ -127,8 +129,8 @@ class NES(object):
 # Inicio del programa
 ###############################################################################
 
-#file_name = "../roms/Super Mario Bros. (E).nes"
+file_name = "../roms/Super Mario Bros. (E).nes"
 #file_name = "../roms/Donkey Kong Classics (USA, Europe).nes"
-file_name = "../tests/nestest.nes"
+#file_name = "../tests/nestest.nes"
 nes = NES(file_name)
 nes.run()

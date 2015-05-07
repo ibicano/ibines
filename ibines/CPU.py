@@ -48,12 +48,12 @@ class CPU(object):
         self._ppu = ppu
 
         # Registros
-        self._reg_pc = 0xC000        # Program Counter (16-bit)
-        self._reg_sp = 0xFD          # Stack Pointer (8-bit)
+        self._reg_pc = 0x8000        # Program Counter (16-bit)
+        self._reg_sp = 0xFF          # Stack Pointer (8-bit)
         self._reg_a = 0x00           # Accumulator (8-bit)
         self._reg_x = 0x00           # Index X (8-bit)
         self._reg_y = 0x00           # Index Y (8-bit)
-        self._reg_p = 0x24           # Processor Status (8-bit)
+        self._reg_p = 0x34           # Processor Status (8-bit)
 
         # Contadores de ciclos
         self._cycles_inst = 0

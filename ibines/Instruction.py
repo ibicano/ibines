@@ -28,12 +28,12 @@ class Instruction(object):
 
 
     def fetch_indexed_abs_x_addrmode(self):
-        addr = self._operand + self._cpu.get_reg_x()
+        addr = (self._operand + self._cpu.get_reg_x()) & 0xFFFF
         return addr
 
 
     def fetch_indexed_abs_y_addrmode(self):
-        addr = self._operand + self._cpu.get_reg_y()
+        addr = (self._operand + self._cpu.get_reg_y()) & 0xFFFF
         return addr
 
 
@@ -1707,8 +1707,13 @@ class JMP_indirect(JMP):
 
     def execute(self):
         mem = self._cpu.get_mem()
+
         addr = mem.read_data(self._operand)
-        addr = addr | (mem.read_data(self._operand + 1) << 8)
+
+        if self._operand & 0xFF == 0xFF:
+            addr = addr | (mem.read_data(self._operand & 0xFF00) << 8)
+        else:
+            addr = addr | (mem.read_data(self._operand + 1) << 8)
 
         return super(JMP_indirect, self).execute(addr)
 
@@ -2080,7 +2085,7 @@ class LDY_absx(LDY):
         super(LDY_absx, self).__init__(operand, cpu)
 
     def execute(self):
-        addr = self.fetch_indexed_abs_y_addrmode()
+        addr = self.fetch_indexed_abs_x_addrmode()
         op = self._cpu.get_mem().read_data(addr)
         return super(LDY_absx, self).execute(op)
 
@@ -2240,6 +2245,24 @@ class NOP(Instruction):
     OPCODE = 0xEA
     BYTES = 1
     CYCLES = 2
+
+
+class NOP_2(NOP):
+
+    def __init__(self, operand, cpu):
+        super(NOP_2, self).__init__(cpu)
+        self._operand = operand
+
+    BYTES = 2
+
+
+class NOP_3(NOP):
+
+    def __init__(self, operand, cpu):
+        super(NOP_3, self).__init__(cpu)
+        self._operand = operand
+
+    BYTES = 3
 
 
 ###############################################################################
@@ -3483,7 +3506,7 @@ Instruction.OPCODE_INDEX = {
         0x06: ASL_zero,
         0x16: ASL_zerox,
         0x0E: ASL_abs,
-        0x1E: AND_absx,
+        0x1E: ASL_absx,
         # BCC
         0x90: BCC,
         # BCS
@@ -3591,6 +3614,35 @@ Instruction.OPCODE_INDEX = {
         0x5E: LSR_absx,
         # NOP
         0xEA: NOP,
+        0x04: NOP_2,
+        0x0C: NOP_3,
+        0x14: NOP_2,
+        0x1A: NOP,
+        0x1C: NOP_3,
+        0x34: NOP_2,
+        0x3A: NOP,
+        0x3C: NOP_3,
+        0x44: NOP_2,
+        0x54: NOP_2,
+        0x5A: NOP,
+        0x5C: NOP_3,
+        0x64: NOP_2,
+        0x74: NOP_2,
+        0x7A: NOP,
+        0x7C: NOP_3,
+        0x80: NOP_2,
+        0x82: NOP_2,
+        0x89: NOP_2,
+        0xA3: NOP_2,
+        0xC2: NOP_2,
+        0xD4: NOP_2,
+        0xDA: NOP,
+        0xDC: NOP_3,
+        0xE2: NOP_2,
+        0xEA: NOP,
+        0xF4: NOP_2,
+        0xFA: NOP,
+        0xFC: NOP_3,
         # ORA
         0x09: ORA_inmediate,
         0x05: ORA_zero,
