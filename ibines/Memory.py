@@ -49,7 +49,7 @@ class Memory(object):
     def write_data(self, data, addr):
         d = data & 0xFF
 
-        if addr >= 0x0000 and addr <= 0x1FFF:
+        if addr >= 0x0000 and addr < 0x2000:
             n = addr % 0x800
             self._memory[n] = d
             self._memory[0x0800 + n] = d

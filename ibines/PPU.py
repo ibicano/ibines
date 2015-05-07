@@ -125,6 +125,8 @@ class PPU(object):
             if self.control_2_background_bit_3() and self.control_2_sprites_bit_4():
                 self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
             self._gfx.update()
+            # FIXME: limpia la pantalla por si acaso. Quitar más adelante.
+            self._gfx.fill((0, 0, 0))
             self._end_frame = False
 
 
@@ -176,9 +178,9 @@ class PPU(object):
         self._reg_vram_io = data
 
         if self.control_1_increment_bit_2() == 0:
-            self._reg_vram_addr += 1
+            self._reg_vram_addr = (self._reg_vram_addr + 1) & 0xFFFF
         else:
-            self._reg_vram_addr += 32
+            self._reg_vram_addr = (self._reg_vram_addr + 32) & 0xFFFF
 
         return data
 
@@ -239,6 +241,9 @@ class PPU(object):
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 3, d & 0x40)
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 4, d & 0x80)
 
+            # FIXME: según NinTech.txt. No aparece en SKINNY.TXT
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 15, 0)
+
             self._reg_x_offset = d & 0x07
             self._reg_vram_switch = 1
         # Segunda escritura en $2005
@@ -252,6 +257,9 @@ class PPU(object):
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 12, d & 0x01)
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 13, d & 0x02)
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 14, d & 0x04)
+
+            # FIXME: según NinTech.txt. No aparece en SKINNY.TXT
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 15, 0)
 
             self._reg_vram_switch = 0
 
@@ -284,6 +292,9 @@ class PPU(object):
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 6, d & 0x40)
             self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 7, d & 0x80)
 
+            # FIXME: según NinTech.txt. No aparece en SKINNY.TXT
+            self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 15, 0)
+
             self._reg_vram_addr = self._reg_vram_tmp
 
             self._reg_vram_switch = 0
@@ -296,9 +307,9 @@ class PPU(object):
         self._memory.write_data(d, a)
 
         if self.control_1_increment_bit_2() == 0:
-            self._reg_vram_addr += 1
+            self._reg_vram_addr = (self._reg_vram_addr + 1) & 0xFFFF
         else:
-            self._reg_vram_addr += 32
+            self._reg_vram_addr = (self._reg_vram_addr + 32) & 0xFFFF
 
 
     # Escribe el registro y hace una transferencia dma
@@ -491,7 +502,7 @@ class PPU(object):
 
 
             # Preparamos la lista de sprites del scanline
-            '''
+
             sprites_list = self.get_sprites_list()
             i = 0
             n = 0
@@ -506,7 +517,7 @@ class PPU(object):
             # Si hay 8 sprites en el scanline activamos el flag corespondiente del registro $2002
             if n == 8:
                 self._reg_status = nesutils.set_bit(self._reg_status, 5, 1)
-            '''
+
 
             # Pintamos el pixel
             for x in range(PPU.FRAME_WIDTH):
@@ -555,7 +566,7 @@ class PPU(object):
 
         # FIXME: comentado para depuración
         # Dibuja los sprites que estén en el pixel
-        '''
+
         n = len(self._sprites_scanline)
         while n > 0:
             n -= 1
@@ -566,7 +577,7 @@ class PPU(object):
 
                 if sprite._sprite_zero and not transparent_pixel:
                     self.set_sprite_hit(not is_background)
-        '''
+
 
 
     # TODO: Acabar la implementación de los sprites

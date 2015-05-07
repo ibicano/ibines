@@ -65,7 +65,7 @@ class Instruction(object):
         base_addr = self._cpu.get_mem().read_data(self._operand)
         base_addr = base_addr | (self._cpu.get_mem().read_data((self._operand + 1) & 0xFF) << 8)
 
-        addr = base_addr + self._cpu.get_reg_y()
+        addr = (base_addr + self._cpu.get_reg_y()) & 0xFFFF
 
         return addr
 
@@ -73,6 +73,9 @@ class Instruction(object):
     # Devuelve el número de ciclos que tarda en ejecutarse la instrucción
     def get_cycles(self):
         return self.CYCLES
+
+    def get_operand(self):
+        return self._operand
 
 
     ###########################################################################
@@ -98,8 +101,7 @@ class ADC(Instruction):
         ac = self._cpu.get_reg_a()
         carry = self._cpu.get_reg_p_c_bit()
 
-        tmp = op + carry
-        rst = ac + tmp
+        rst = ac + op + carry
 
         # Establece el bit CARRY del registro P
         self._cpu.set_carry_bit(rst)
@@ -108,7 +110,7 @@ class ADC(Instruction):
         self._cpu.set_zero_bit(rst)
 
         # Establece el bit OVERFLOW del registro P
-        if ((not ((ac ^ tmp) & 0x80)) and ((ac ^ rst) & 0x80)):
+        if ((not ((ac ^ op) & 0x80)) and ((ac ^ rst) & 0x80)):
             self._cpu.set_reg_p_v_bit(1)
         else:
             self._cpu.set_reg_p_v_bit(0)
@@ -2444,7 +2446,10 @@ class PLA(Instruction):
         super(PLA, self).__init__(None, cpu)
 
     def execute(self):
-        self._cpu.set_reg_a(self._cpu.pull_stack())
+        a = self._cpu.pull_stack()
+        self._cpu.set_reg_a(a)
+        self._cpu.set_sign_bit(a)
+        self._cpu.set_zero_bit(a)
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
@@ -2467,7 +2472,8 @@ class PLP(Instruction):
         super(PLP, self).__init__(None, cpu)
 
     def execute(self):
-        self._cpu.set_reg_p(self._cpu.pull_stack())
+        p = self._cpu.pull_stack() & 0xEF | 0x20
+        self._cpu.set_reg_p(p)
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
@@ -2629,7 +2635,7 @@ class ROR(Instruction):
             result = result | 0x80
 
         self._cpu.set_reg_p_c_bit(op & 0x01)
-        self._cpu.set_reg_p_s_bit(result)
+        self._cpu.set_sign_bit(result)
         self._cpu.set_zero_bit(result)
 
         return result
@@ -2757,7 +2763,8 @@ class RTI(Instruction):
         super(RTI, self).__init__(None, cpu)
 
     def execute(self):
-        self._cpu.set_reg_p(self._cpu.pull_stack())
+        p = self._cpu.pull_stack() & 0xEF | 0x20
+        self._cpu.set_reg_p(p)
 
         pc = self._cpu.pull_stack()
         pc = pc | (self._cpu.pull_stack() << 8)
@@ -2807,8 +2814,7 @@ class SBC(Instruction):
         ac = self._cpu.get_reg_a()
         carry = self._cpu.get_reg_p_c_bit()
 
-        tmp = op - carry
-        rst = ac - tmp
+        rst = ac - op - 1 + carry
 
         # Establece el bit CARRY del registro P
         if 0 <= rst < 0x100:
@@ -2820,7 +2826,7 @@ class SBC(Instruction):
         self._cpu.set_zero_bit(rst)
 
         # Establece el bit OVERFLOW del registro P
-        if (((ac ^ tmp) & 0x80) and ((ac ^ rst) & 0x80)):
+        if (((ac ^ op) & 0x80) and ((ac ^ rst) & 0x80)):
             self._cpu.set_reg_p_v_bit(1)
         else:
             self._cpu.set_reg_p_v_bit(0)
@@ -3299,7 +3305,7 @@ class TAX(Instruction):
     def execute(self):
         ac = self._cpu.get_reg_a()
 
-        self._cpu.set_carry_bit(ac)
+        self._cpu.set_zero_bit(ac)
         self._cpu.set_sign_bit(ac)
 
         self._cpu.set_reg_x(ac)
@@ -3327,7 +3333,7 @@ class TAY(Instruction):
     def execute(self):
         ac = self._cpu.get_reg_a()
 
-        self._cpu.set_carry_bit(ac)
+        self._cpu.set_zero_bit(ac)
         self._cpu.set_sign_bit(ac)
 
         self._cpu.set_reg_y(ac)
@@ -3355,7 +3361,7 @@ class TSX(Instruction):
     def execute(self):
         sp = self._cpu.get_reg_sp()
 
-        self._cpu.set_carry_bit(sp)
+        self._cpu.set_zero_bit(sp)
         self._cpu.set_sign_bit(sp)
 
         self._cpu.set_reg_x(sp)
@@ -3383,7 +3389,7 @@ class TXA(Instruction):
     def execute(self):
         reg_x = self._cpu.get_reg_x()
 
-        self._cpu.set_carry_bit(reg_x)
+        self._cpu.set_zero_bit(reg_x)
         self._cpu.set_sign_bit(reg_x)
 
         self._cpu.set_reg_a(reg_x)
@@ -3436,7 +3442,7 @@ class TYA(Instruction):
     def execute(self):
         reg_y = self._cpu.get_reg_y()
 
-        self._cpu.set_carry_bit(reg_y)
+        self._cpu.set_zero_bit(reg_y)
         self._cpu.set_sign_bit(reg_y)
 
         self._cpu.set_reg_a(reg_y)

@@ -45,7 +45,6 @@ class PPUMemory(object):
     #Lee un dato de la memoria de la PPU:
     def read_data(self, addr):
         a = addr & 0xFFFF
-        d = 0x00
 
         d = self._memory[a]
 
@@ -140,18 +139,6 @@ class PPUMemory(object):
 
 
     # Funciones de ayuda
-    # Devuelve un patrón de la pattern table
-    def read_pattern(self, table, pattern_number):
-        addr = pattern_number * 0x0010
-        pattern = []
-        if table == 0:
-            pattern = self._memory[addr:addr + 16]
-        elif table == 1:
-            addr = addr + 0x1000
-            pattern = self._memory[addr:addr + 16]
-
-        return pattern
-
 
     # Establece el valor de una posición de memoria con los mirrors
     def _set_memory(self, d, addr):
