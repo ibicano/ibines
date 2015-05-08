@@ -110,8 +110,8 @@ class PPU(object):
         pending_scanlines = (((PPU.FRAME_CYCLES - scanlines_cycles) - self._cycles_frame) % PPU.FRAME_CYCLES) / PPU.SCANLINE_CYCLES
 
         while pending_scanlines > 0:
-            if self.control_2_background_bit_3() and self.control_2_sprites_bit_4():
-                self.draw_scanline()
+            # Dibujamos el scanline
+            self.draw_scanline()
 
             self._scanline_number = (self._scanline_number + 1) % PPU.FRAME_SCANLINES
             pending_scanlines -= 1
@@ -122,7 +122,7 @@ class PPU(object):
         if self._end_frame:
             self._reg_status = 0
             #self.end_vblank() # Finalizamos el período VBLANK
-            if self.control_2_background_bit_3() and self.control_2_sprites_bit_4():
+            if self.control_2_background_bit_3():
                 self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
             self._gfx.update()
             # FIXME: limpia la pantalla por si acaso. Quitar más adelante.
@@ -489,27 +489,27 @@ class PPU(object):
     # FIXME: optimizar esta función que es la que se come toda la potencia (en draw_pixel())
     def draw_scanline(self):
         if 1 <= self._scanline_number <= 240:
-            # Copia el desplazamiento X del registro tmp al addr al principio del scanline
-            tmp = self._reg_vram_tmp
+            if self.control_2_background_bit_3():
+                # Copia el desplazamiento X del registro tmp al addr al principio del scanline
+                tmp = self._reg_vram_tmp
 
-            self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 0, tmp & 0x0001)
-            self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 1, tmp & 0x0002)
-            self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 2, tmp & 0x0004)
-            self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 3, tmp & 0x0008)
-            self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 4, tmp & 0x0010)
+                self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 0, tmp & 0x0001)
+                self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 1, tmp & 0x0002)
+                self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 2, tmp & 0x0004)
+                self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 3, tmp & 0x0008)
+                self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 4, tmp & 0x0010)
 
-            self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 10, tmp & 0x0400)
+                self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 10, tmp & 0x0400)
 
 
             # Preparamos la lista de sprites del scanline
-
             sprites_list = self.get_sprites_list()
             i = 0
             n = 0
             self._sprites_scanline = []
             while i < 64 and n < 8:
                 sprite = sprites_list[i]
-                if sprite.is_in_scanline(self._scanline_number):
+                if sprite.is_in_scanline(self._scanline_number, self.control_1_sprites_size_bit_5()):
                     self._sprites_scanline.append(sprite)
                     n += 1
                 i += 1
@@ -522,13 +522,18 @@ class PPU(object):
             # Pintamos el pixel
             for x in range(PPU.FRAME_WIDTH):
                 self.draw_pixel(x, self._scanline_number - 1)
-                self.incr_xscroll()
+
+                # Incrementamos el registro de dirección horizontalmente si estamos pintando el background
+                if self.control_2_background_bit_3():
+                    self.incr_xscroll()
 
                 # Si hemos dibujado el último pixel en anchura del "pattern", indicamos que hay que usar otro
                 if self._reg_x_offset == 0:
                     self._fetch_pattern = True
 
-            self.incr_yscroll()
+            # Incrementamos el registro de dirección verticalmente si estamos pintando el background
+            if self.control_2_background_bit_3():
+                self.incr_yscroll()
 
             # Cuando se termina de dibujar el scanline siempre hay que usar otro "pattern"
             if self._reg_x_offset == 0: self._fetch_pattern = True
@@ -539,49 +544,54 @@ class PPU(object):
         #sprites_pt = self.control_1_sprites_pattern_bit_3()
         #background_pt = self.control_1_background_pattern_bit_4()
         #sprite_size = self.control_1_sprites_size_bit_5()
-        # Dibuja el fondo
-        pattern_pixel_x = self.get_x_offset()
-        pattern_pixel_y = self.get_y_offset()
-
-        # Calcula la dirección en la Name Table activa
-        name_table_addr = 0x2000 | (self._reg_vram_addr & 0x0FFF)
 
         is_background = False
 
-        if self._fetch_pattern:
-            pattern_table_number = self.control_1_background_pattern_bit_4()
-            pattern_index = self._memory.read_data(name_table_addr)
+        if self.control_2_background_bit_3():
+            # Dibuja el fondo
+            pattern_pixel_x = self.get_x_offset()
+            pattern_pixel_y = self.get_y_offset()
 
-            attr_color = self.calc_attr_color(name_table_addr)
+            # Calcula la dirección en la Name Table activa
+            name_table_addr = 0x2000 | (self._reg_vram_addr & 0x0FFF)
 
-            self._pattern_palette, self._pattern_rgb = self.fetch_pattern(pattern_table_number, pattern_index, attr_color, PPUMemory.ADDR_IMAGE_PALETTE)
+            if self._fetch_pattern:
+                pattern_table_number = self.control_1_background_pattern_bit_4()
+                pattern_index = self._memory.read_data(name_table_addr)
 
-            self._fetch_pattern = False
+                attr_color = self.calc_attr_color(name_table_addr)
 
-        # Comprueba si el pixel actual es de background
-        if self._pattern_palette[pattern_pixel_x][pattern_pixel_y] == 0:
-            is_background = True
+                self._pattern_palette, self._pattern_rgb = self.fetch_pattern(pattern_table_number, pattern_index, attr_color, PPUMemory.ADDR_IMAGE_PALETTE)
 
-        self._gfx.draw_pixel(x, y, self._pattern_rgb[pattern_pixel_x][pattern_pixel_y])
+                self._fetch_pattern = False
 
-        # FIXME: comentado para depuración
+            # Comprueba si el pixel actual es de background
+            if self._pattern_palette[pattern_pixel_x][pattern_pixel_y] == 0:
+                is_background = True
+
+            self._gfx.draw_pixel(x, y, self._pattern_rgb[pattern_pixel_x][pattern_pixel_y])
+
+
         # Dibuja los sprites que estén en el pixel
+        if self.control_2_sprites_bit_4():
+            n = len(self._sprites_scanline)
+            while n > 0:
+                n -= 1
+                sprite = self._sprites_scanline[n]
 
-        n = len(self._sprites_scanline)
-        while n > 0:
-            n -= 1
-            sprite = self._sprites_scanline[n]
+                if sprite.is_in(x, y, self.control_1_sprites_size_bit_5()):
+                    transparent_pixel = self.draw_sprite_pixel(sprite, x, y, is_background)
 
-            if sprite.is_in(x, y):
-                transparent_pixel = self.draw_sprite_pixel(sprite, x, y)
-
-                if sprite._sprite_zero and not transparent_pixel:
-                    self.set_sprite_hit(not is_background)
+                    if sprite._sprite_zero and not transparent_pixel:
+                        self.set_sprite_hit(not is_background)
 
 
 
     # TODO: Acabar la implementación de los sprites
-    def draw_sprite_pixel(self, sprite, x, y):
+    def draw_sprite_pixel(self, sprite, x, y, is_background):
+        # Tamaño de los sprites
+        size_bit = self.control_1_sprites_size_bit_5()
+
         off_x = sprite.get_offset_x()
         off_y = sprite.get_offset_y()
 
@@ -589,11 +599,53 @@ class PPU(object):
         pixel_y = y - off_y
 
         pattern_table = self.control_1_sprites_pattern_bit_3()
-        pattern_palette, pattern_rgb = self.fetch_pattern(pattern_table, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
+
+
+        # Si los sprites son 8x8
+        if size_bit == 0:
+            # Obtenemos el tile
+            pattern_palette, pattern_rgb = self.fetch_pattern(pattern_table, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
+
+            # Si está activado el flag de invertir horizontalmente
+            if sprite.get_horizontal_flip():
+                pixel_x = 7 - pixel_x
+
+            # Si está activado el flag de invertir verticalmente
+            if sprite.get_vertical_flip():
+                pixel_y = 7 - pixel_y
+        # Si los sprites son 8x16
+        else:
+            # Obtenemos los tiles
+            pattern_palette_0, pattern_rgb_0 = self.fetch_pattern(pattern_table & 0x01, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
+            pattern_palette_1, pattern_rgb_1 = self.fetch_pattern(pattern_table & 0x01, sprite.get_index() + 1, sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
+
+            pattern_palette = [None] * 16
+            pattern_rgb = [None] * 16
+
+            for y in range(0, 8):
+                for x in range(8):
+                    pattern_palette[x][y] = pattern_palette_0[x][y]
+                    pattern_rgb[x][y] = pattern_rgb_0[x][y]
+
+            for y in range(8, 16):
+                for x in range(8):
+                    pattern_palette[x][y] = pattern_palette_1[x][y]
+                    pattern_rgb[x][y] = pattern_rgb_1[x][y]
+
+            # Si está activado el flag de invertir horizontalmente
+            if sprite.get_horizontal_flip():
+                pixel_x = 7 - pixel_x
+
+            # Si está activado el flag de invertir verticalmente
+            if sprite.get_vertical_flip():
+                pixel_y = 15 - pixel_y
+
 
         # Si el pixel del sprite no es vacío
         if pattern_palette[pixel_x][pixel_y] % 4 != 0:
-            self._gfx.draw_pixel(x, y, pattern_rgb[pixel_x][pixel_y])
+            # PInta el pixel si tiene prioridad sobre las nametables, o en caso contrario si el color de fondo es transparente
+            if sprite.get_priority() == 0 or is_background:
+                self._gfx.draw_pixel(x, y, pattern_rgb[pixel_x][pixel_y])
 
         # Devuelve True si el pixel es transparente
         return not pattern_palette[pixel_x][pixel_y] & 0x03
@@ -832,18 +884,29 @@ class Sprite(object):
         return self._index
 
     # Indica si el sprite aparece en el pixel de pantalla indicado
-    def is_in(self, x, y):
-        if (x >= self._offset_x and x < self._offset_x + 8) and (y >= self._offset_y and y < self._offset_y + 8):
+    def is_in(self, x, y, size_bit):
+        if size_bit == 0:
+            size_y = 8
+        else:
+            size_y = 16
+
+        if (x >= self._offset_x and x < self._offset_x + 8) and (y >= self._offset_y and y < self._offset_y + size_y):
             return True
         else:
             return False
 
 
-    def is_in_scanline(self, scanline):
+    def is_in_scanline(self, scanline, size_bit):
         is_in = False
+
+        if size_bit == 0:
+            size_y = 8
+        else:
+            size_y = 16
+
         if 1 <= scanline <= 240:
             y = scanline - 1
-            if y >= self._offset_y and y < self._offset_y + 8:
+            if y >= self._offset_y and y < self._offset_y + size_y:
                 is_in = True
 
         return is_in
