@@ -2,6 +2,7 @@
 
 
 import time
+import traceback
 from ROM import ROM
 from PPU import *
 from FastPPU import FastPPU
@@ -69,6 +70,7 @@ class NES(object):
                         debug_file.close()
                     print "Error: Opcode inválido"
                     print e
+                    raise
                     #test.close()
 
                 # Restamos un ciclo de ejecución a la instrucción actual y la PPU
@@ -95,9 +97,10 @@ class NES(object):
         except Exception as e:
             print "Cerrando fichero test"
             #test.close()
+            traceback.print_exc()
             raise e
 
-        test.close()
+        #test.close()
 
 
 

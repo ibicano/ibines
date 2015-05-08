@@ -510,7 +510,7 @@ class PPU(object):
             while i < 64 and n < 8:
                 sprite = sprites_list[i]
                 if sprite.is_in_scanline(self._scanline_number):
-                    self.sprites_scanline.append(sprite)
+                    self._sprites_scanline.append(sprite)
                     n += 1
                 i += 1
 
@@ -554,7 +554,7 @@ class PPU(object):
 
             attr_color = self.calc_attr_color(name_table_addr)
 
-            self.fetch_pattern(pattern_table_number, pattern_index, attr_color, PPUMemory.ADDR_IMAGE_PALETTE)
+            self._pattern_palette, self._pattern_rgb = self.fetch_pattern(pattern_table_number, pattern_index, attr_color, PPUMemory.ADDR_IMAGE_PALETTE)
 
             self._fetch_pattern = False
 
@@ -589,12 +589,14 @@ class PPU(object):
         pixel_y = y - off_y
 
         pattern_table = self.control_1_sprites_pattern_bit_3()
-        self.fetch_pattern(pattern_table, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
+        pattern_palette, pattern_rgb = self.fetch_pattern(pattern_table, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
 
-        self._gfx.draw_pixel(x, y, self._pattern_rgb[pixel_x][pixel_y])
+        # Si el pixel del sprite no es vacío
+        if pattern_palette[pixel_x][pixel_y] % 4 != 0:
+            self._gfx.draw_pixel(x, y, pattern_rgb[pixel_x][pixel_y])
 
         # Devuelve True si el pixel es transparente
-        return not self._pattern_palette[pixel_x][pixel_y] & 0x03
+        return not pattern_palette[pixel_x][pixel_y] & 0x03
 
 
     # Devuelve una lista de objetos de clase Sprite con los sprites de la memoria de sprites
@@ -656,6 +658,14 @@ class PPU(object):
     # de colores ubicada en la dirección de memoria "palette_addr" y lo coloca en las variables "pattern_palette" y
     # "pattern_rgb"
     def fetch_pattern(self, pattern_table, pattern_index, attr_color, palette_addr):
+        pattern_palette = [None] * 8
+        for x in range(8):
+            pattern_palette[x] = [0] * 8
+
+        pattern_rgb = [None] * 8
+        for x in range(8):
+            pattern_rgb[x] = [0] * 8
+
         pattern = self.fetch_pattern_mem(pattern_table, pattern_index)
 
         # Procesa los bytes del patrón para formatearlos en el valor de retorno
@@ -668,11 +678,13 @@ class PPU(object):
                 palette_index = (0x00 | ((byte_1 & (0x01 << x)) >> x) | (((byte_2 & (0x01 << x)) >> x) << 1) | ((attr_color & 0x03) << 2))
 
                 # Asigna el índice de la paleta a la posición correspondiente:
-                self._pattern_palette[7 - x][7 - y] = palette_index
+                pattern_palette[7 - x][7 - y] = palette_index
 
                 color_index = self._memory.read_data(palette_addr + palette_index)
                 rgb = self.get_color(color_index)
-                self._pattern_rgb[7 - x][y] = rgb
+                pattern_rgb[7 - x][y] = rgb
+
+        return (pattern_palette, pattern_rgb)
 
 
 
@@ -813,7 +825,7 @@ class Sprite(object):
 
 
     def get_offset_y(self):
-        return self._offset_x
+        return self._offset_y
 
 
     def get_index(self):
@@ -821,9 +833,10 @@ class Sprite(object):
 
     # Indica si el sprite aparece en el pixel de pantalla indicado
     def is_in(self, x, y):
-        if x >= self._offset_x and x < self._offset_x + 8:
-            if y >= self._offset_y and y < self._offset_y + 8:
-                return True
+        if (x >= self._offset_x and x < self._offset_x + 8) and (y >= self._offset_y and y < self._offset_y + 8):
+            return True
+        else:
+            return False
 
 
     def is_in_scanline(self, scanline):
