@@ -28,9 +28,13 @@ class NES(object):
 
         self._ppu.set_mirroring(self._rom.get_mirroring())    # Establece el modo mirroring especificado en la ROM
 
-        self._memory = Memory(self._ppu, self._rom)
+        self._memory = Memory(self, self._ppu, self._rom)
 
         self._cpu = CPU(self._memory, self._ppu)
+
+        # Registros I/O del  JoyPad
+        self._reg_joypad_1 = 0x00       # Dirección 0x4016 - read/write
+        self._reg_joypad_2 = 0x00       # Dirección 0x4017 - read/write
         #######################################################################
         #######################################################################
 
@@ -102,6 +106,21 @@ class NES(object):
 
         #test.close()
 
+
+    def read_reg_4016(self):
+        return self._reg_joypad_1
+
+
+    def read_reg_4017(self):
+        return self._reg_joypad_2
+
+
+    def write_reg_4016(self, data):
+        self._reg_joypad_1 = nesutils.set_bit(self._reg_joypad_1, 0, data & 0x01)
+
+
+    def write_reg_4017(self, data):
+        self._reg_joypad_2 = nesutils.set_bit(self._reg_joypad_2, 0, data & 0x01)
 
 
     def _log_inst(self, inst):

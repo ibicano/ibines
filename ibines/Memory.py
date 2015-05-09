@@ -11,13 +11,14 @@ class Memory(object):
 
     # Constructor
     # Se le pasa una instancia de la PPU y otra de la ROM para el mapeo en memoria de ambos
-    def __init__(self, ppu, rom):
+    def __init__(self, nes, ppu, rom):
         #######################################################################
         # Variables de instancia
         #######################################################################
 
         # Array para almacenar el contenido de la memoria
         self._memory = [0x00] * Memory.SIZE
+        self._nes = nes
         self._ppu = ppu
         self._rom = rom
 
@@ -37,6 +38,11 @@ class Memory(object):
             d = self._memory[addr]
         elif addr >= 0x2000 and addr < 0x4000:     # Direcciones de los registros PPU
             d = self._ppu.read_reg(0x2000 + (addr & 0x07))
+        elif addr >= 0x4000 and addr < 0x4020:
+            if addr == 0x4016:
+                d = self._nes.read_reg_4016();
+            elif addr == 0x4017:
+                d = self._nes.read_reg_4017();
 
         return d
 
@@ -61,3 +67,7 @@ class Memory(object):
         elif addr >= 0x4000 and addr <= 0x401F: # Más registros I/O
             if addr == 0x4014:
                 self._ppu.write_sprite_dma(self, d)
+            elif addr == 0x4016:
+                self._nes.write_reg_4016(d)
+            elif addr == 0x4017:
+                self._nes.write_reg_4017(d)
