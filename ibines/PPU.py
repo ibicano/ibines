@@ -545,7 +545,7 @@ class PPU(object):
         #background_pt = self.control_1_background_pattern_bit_4()
         #sprite_size = self.control_1_sprites_size_bit_5()
 
-        is_background = False
+        is_background = True
 
         if self.control_2_background_bit_3():
             # Dibuja el fondo
@@ -566,8 +566,10 @@ class PPU(object):
                 self._fetch_pattern = False
 
             # Comprueba si el pixel actual es de background
-            if self._pattern_palette[pattern_pixel_x][pattern_pixel_y] == 0:
+            if self._pattern_palette[pattern_pixel_x][pattern_pixel_y] & 0x03 == 0:
                 is_background = True
+            else:
+                is_background = False
 
             self._gfx.draw_pixel(x, y, self._pattern_rgb[pattern_pixel_x][pattern_pixel_y])
 

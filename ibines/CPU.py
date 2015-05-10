@@ -48,7 +48,10 @@ class CPU(object):
         self._ppu = ppu
 
         # Registros
-        self._reg_pc = 0x8000        # Program Counter (16-bit)
+        self._reg_pc = 0x0000        # Program Counter (16-bit). Inicializa a la dirección de Reset
+        self._reg_pc = self._mem.read_data(CPU.INT_ADDR_RESET)
+        self._reg_pc = self._reg_pc | (self._mem.read_data(CPU.INT_ADDR_RESET + 1) << 8)
+
         self._reg_sp = 0xFF          # Stack Pointer (8-bit)
         self._reg_a = 0x00           # Accumulator (8-bit)
         self._reg_x = 0x00           # Index X (8-bit)
