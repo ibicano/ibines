@@ -13,7 +13,7 @@ class Memory(object):
 
     # Constructor
     # Se le pasa una instancia de la PPU y otra de la ROM para el mapeo en memoria de ambos
-    def __init__(self, nes, ppu, rom):
+    def __init__(self, nes, ppu, mapper):
         #######################################################################
         # Variables de instancia
         #######################################################################
@@ -22,10 +22,7 @@ class Memory(object):
         self._memory = [0x00] * Memory.SIZE
         self._nes = nes
         self._ppu = ppu
-        self._rom = rom
-
-        # Instancia del Mapper
-        self._mapper = Mapper.Mapper.instance_mapper(self._rom.get_mapper_code(), self._rom)
+        self._mapper = mapper
 
         #######################################################################
         #######################################################################

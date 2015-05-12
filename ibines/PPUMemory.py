@@ -23,7 +23,7 @@ class PPUMemory(object):
     ADDR_SPRITE_PALETTE = 0x3F10
 
 
-    def __init__(self, ppu, rom):
+    def __init__(self, ppu, mapper):
         #######################################################################
         # Variables de instancia
         #######################################################################
@@ -32,12 +32,7 @@ class PPUMemory(object):
         # Referencia a la PPU
         self._ppu = ppu
 
-        # Referencia a la ROM
-        self._rom = rom
-        if self._rom.get_chr_count() == 1:
-            self._memory[0x0000:0x2000] = self._rom.get_chr(0)
-
-        self._mirror_mode = rom.get_mirroring()        # Modo de mirror de los "name tables" (sacado de la ROM). 0: horizontal, 1: vertical
+        self._mapper = mapper
         #######################################################################
         #######################################################################
 
@@ -45,8 +40,12 @@ class PPUMemory(object):
     #Lee un dato de la memoria de la PPU:
     def read_data(self, addr):
         a = addr & 0xFFFF
+        d = 0x00
 
-        d = self._memory[a]
+        if (a < 0x2000) and (self._mapper.get_chr_count() > 0):
+            d = self._mapper.read(a)
+        else:
+            d = self._memory[a]
 
         return d
 
@@ -60,24 +59,24 @@ class PPUMemory(object):
         if 0x2000 <= a < 0x4000:
             # Name Table 0
             if a >= 0x2000 and a < 0x2400:
-                if self._mirror_mode == 0:
+                if self._mapper.mirror_mode() == 0:
                     self._set_memory(d, a + 0x0400)
                     # Mirrors
                     self._set_memory(d, a + 0x1000)
                     self._set_memory(d, a + 0x1400)
-                elif self._mirror_mode == 1:
+                elif self._mapper.mirror_mode() == 1:
                     self._set_memory(d, a + 0x0800)
                     # Mirrors
                     self._set_memory(d, a + 0x1000)
                     self._set_memory(d, a + 0x1800)
             # Name Table 1
             elif a >= 0x2400 and a < 0x2800:
-                if self._mirror_mode == 0:
+                if self._mapper.mirror_mode() == 0:
                     self._set_memory(d, a - 0x0400)
                     # Mirrors
                     self._set_memory(d, a + 0x1000)
                     self._set_memory(d, a + 0x0C00)
-                elif self._mirror_mode == 1:
+                elif self._mapper.mirror_mode() == 1:
                     self._set_memory(d, a + 0x0800)
                     # Mirrors
                     self._set_memory(d, a + 0x1000)
@@ -85,26 +84,26 @@ class PPUMemory(object):
                         self._set_memory(d, a + 0x1800)
             # Name Table 2
             elif a >= 0x2800 and a < 0x2C00:
-                if self._mirror_mode == 0:
+                if self._mapper.mirror_mode() == 0:
                     self._set_memory(d, a + 0x0400)
                     # Mirrors
                     self._set_memory(d, a + 0x1000)
                     if a < 0x2B00:
                         self._set_memory(d, a + 0x1400)
-                elif self._mirror_mode == 1:
+                elif self._mapper.mirror_mode() == 1:
                     self._set_memory(d, a - 0x0800)
                     # Mirrors
                     self._set_memory(d, a + 0x1000)
                     self._set_memory(d, a + 0x0800)
             # Name Table 3
             elif a >= 0x2C00 and a < 0x3000:
-                if self._mirror_mode == 0:
+                if self._mapper.mirror_mode() == 0:
                     self._set_memory(d, a - 0x0400)
                     # Mirrors
                     if a < 0x2F00:
                         self._set_memory(d, a + 0x1000)
                     self._set_memory(d, a + 0x0C00)
-                elif self._mirror_mode == 1:
+                elif self._mapper.mirror_mode() == 1:
                     self._set_memory(d, a - 0x0800)
                     # Mirrors
                     if a < 0x2F00:

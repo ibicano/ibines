@@ -25,12 +25,12 @@ class PPU(object):
     FRAME_WIDTH = 256
     FRAME_HEIGHT = 240
 
-    def __init__(self, rom):
+    def __init__(self, mapper):
         #######################################################################
         # Variables de instancia
         #######################################################################
         # Memoria de la PPU
-        self._memory = PPUMemory(self, rom)
+        self._memory = PPUMemory(self, mapper)
         self._sprite_memory = SpriteMemory()
 
         # Motor gráfico del emulador
@@ -86,7 +86,6 @@ class PPU(object):
         # Registros estado
         self._reg_x_offset = 0x0             # Scroll patrón (3-bit)
         self._reg_vram_switch = 0            # Indica si estamos en la 1ª(0) o 2ª(1) escritura de los registros vram
-        self._reg_mirroring = rom.get_control_1_mirroring_bit_0()   # 0x0: horizontal; 0x1: vertical: 0x2: single; 0x3: 4-screen
 
         #######################################################################
         #######################################################################
@@ -757,14 +756,6 @@ class PPU(object):
             pattern.append(self._memory.read_data(a))
 
         return pattern
-
-
-    # Devuelve y establece el valor del mirroring
-    def get_mirroring(self):
-        return self._reg_mirroring
-
-    def set_mirroring(self, m):
-        self._reg_mirroring = m
 
 
     def get_color(self, index):

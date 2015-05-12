@@ -4,8 +4,8 @@
 import time
 import traceback
 from ROM import ROM
+from Mapper import Mapper
 from PPU import *
-from FastPPU import FastPPU
 from CPU import *
 from Memory import Memory
 from Instruction import *
@@ -22,15 +22,14 @@ class NES(object):
         # Variables de instancia
         #######################################################################
         self._rom = ROM(file_name)
+        self._mapper = Mapper.instance_mapper(self._rom.get_mapper_code(), self._rom)
 
-        self._ppu = PPU(self._rom)
-        #self._ppu = FastPPU(self._rom)
+        self._ppu = PPU(self._mapper)
 
-        self._ppu.set_mirroring(self._rom.get_mirroring())    # Establece el modo mirroring especificado en la ROM
-
-        self._memory = Memory(self, self._ppu, self._rom)
+        self._memory = Memory(self, self._ppu, self._mapper)
 
         self._cpu = CPU(self._memory, self._ppu)
+
 
         # Registros I/O del  JoyPad
         self._reg_joypad_1 = 0x00       # Dirección 0x4016 - read/write

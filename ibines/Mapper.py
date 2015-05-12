@@ -15,6 +15,19 @@ class Mapper(object):
         pass
 
 
+    # 0x0: horizontal; 0x1: vertical: 0x2: single; 0x3: 4-screen
+    def mirror_mode(self):
+        pass
+
+
+    def get_prg_count(self):
+        pass
+
+
+    def get_chr_count(self):
+        pass
+
+
     # Método de clase que devuelve un objeto del mapper indicado
     @classmethod
     def instance_mapper(cls, mapper_code, rom):
@@ -52,18 +65,33 @@ class NROM(Mapper):
 
 
     def read(self,addr):
-        a = (addr - 0x8000) % 0x4000
         d = 0x00
 
+        if 0x0000 <= addr < 0x2000:
+            d = self._chr_rom_0[addr]
         if 0x8000 <= addr < 0xC000:
+            a = (addr - 0x8000) % 0x4000
             d = self._pgr_rom_0[a]
         elif 0xC000 <= addr < 0x10000:
+            a = (addr - 0x8000) % 0x4000
             if self._rom.get_pgr_count() == 1:
                 d = self._pgr_rom_0[a]
             elif self._rom.get_pgr_count() == 2:
                 d = self._pgr_rom_1[a]
 
         return d
+
+
+    def mirror_mode(self):
+        return self._rom.get_mirroring()
+
+
+    def get_prg_count(self):
+        return self._rom.get_pgr_count()
+
+
+    def get_chr_count(self):
+        return self._rom.get_chr_count()
 
 
 class MMC1(Mapper):
