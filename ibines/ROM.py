@@ -12,12 +12,12 @@ class ROM(object):
         ###########################################################################
         self._rom = None            # Los bytes de la ROM en forma de lista
 
-        self._pgr_rom_banks = 0
-        self._chr_rom_banks = 0
+        self._pgr_count = 0
+        self._chr_count = 0
         self._rom_control_1 = 0x00
         self._rom_control_2 = 0x00
-        self._ram_banks = 0
-        self._reserved = 0
+        self._ram_count = 0
+        self._reserved = [0x00] * 7
 
         self._pgr_1 = [0x00] * 0x4000
         self._pgr_2 = [0x00] * 0x4000
@@ -41,34 +41,35 @@ class ROM(object):
         # Comprueba que el formato de la cabecera sea corrector
         if (str(self._rom[0:3]) == "NES") and self._rom[3] == 0x1A:
             # Carga la cabecera
-            self._pgr_rom_banks = self._rom[4]
-            self._chr_rom_banks = self._rom[5]
+            self._pgr_count = self._rom[4]
+            self._chr_count = self._rom[5]
             self._rom_control_1 = self._rom[6]
             self._rom_control_2 = self._rom[7]
-            self._ram_banks = self._rom[8]
+            self._ram_count = self._rom[8]
             self._reserved = self._rom[9:16]
 
-            # Ahora carga la info
-            i = 16
+            # Reserva la memoria para almacenar los bancos en función del número de estos
+            self._pgr_banks = [None] * self._pgr_count
+            self._chr_banks = [None] * self._chr_count
+            self._ram_banks = [None] * self._ram_count
+
+
+            # Ahora carga la info. La variable i es el índice de lectura de la posición de la ROM
+            i = 16      # Empezamos después de la cabecera
+
             # Si hay un trainer lo carga primero
             if self.get_control_1_trainer_bit_2():
                 self._trainer = self._rom[i:i + 512]
                 i += 512
 
-            self._pgr_1 = self._rom[i:i + 16384]
-            i += 16384
-
-            # Si hay un segundo banco PGR lo carga
-            if self._pgr_rom_banks == 2:
-                self._pgr_2 = self._rom[i:i + 16384]
+            # Carga los bancos PGR
+            for n in range(self._pgr_count):
+                self._pgr_banks[n] = self._rom[i:i + 16384]
                 i += 16384
 
-            self._chr_1 = self._rom[i:i + 8192]
-            i += 8192
-
-            # Si hay un segundo banco CHR lo carga
-            if self._chr_rom_banks == 2:
-                self._chr_2 = self._rom[i:i + 8192]
+            # Carga los bancos CHR
+            for n in range(self._chr_count):
+                self._chr_banks[n] = self._rom[i:i + 8192]
                 i += 8192
 
             self._load_ok = True
@@ -96,6 +97,14 @@ class ROM(object):
         return m
 
 
+    # Devuelve el número de mapper
+    def get_mapper_code(self):
+        mapper_code = self._rom_control_1 >> 4
+        mapper_code = mapper_code | (self._rom_control_2 & 0xF0)
+
+        return mapper_code
+
+
     def get_control_1_mirroring_bit_0(self):
         return self._rom_control_1 & 0x01
 
@@ -110,29 +119,22 @@ class ROM(object):
 
     # Devuelve el número de bancos de 16KB de memoria de programa disponibles
     def get_pgr_count(self):
-        return self._pgr_rom_banks
+        return self._pgr_count
 
 
     # Devuelve el número de bancos de 16KB de memoria de patrones gráficos disponibles
     def get_chr_count(self):
-        return self._chr_rom_banks
+        return self._chr_count
 
 
-    def get_pgr(self):
-        pgr = []
-        if self._pgr_rom_banks == 1:
-            pgr = self._pgr_1 + self._pgr_1
-        elif self._pgr_rom_banks == 2:
-            pgr = self._pgr_1 + self._pgr_2
-
-        return pgr
+    # Devuelve el banco PGR especificado por n
+    def get_pgr(self, n):
+        return self._pgr_banks[n]
 
 
-    def get_chr(self):
-        if self._chr_rom_banks == 1:
-            return self._chr_1
-        elif self._chr_rom_banks == 2:
-            return self._chr_1 + self._chr_2
+    # Devuelve el banco CHR especificado por n
+    def get_chr(self, n):
+        return self._chr_banks[n]
 
 
     def read_pgr_data(self, addr):

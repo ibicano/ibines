@@ -35,7 +35,7 @@ class PPUMemory(object):
         # Referencia a la ROM
         self._rom = rom
         if self._rom.get_chr_count() == 1:
-            self._memory[0x0000:0x2000] = self._rom.get_chr()
+            self._memory[0x0000:0x2000] = self._rom.get_chr(0)
 
         self._mirror_mode = rom.get_mirroring()        # Modo de mirror de los "name tables" (sacado de la ROM). 0: horizontal, 1: vertical
         #######################################################################

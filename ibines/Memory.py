@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import Mapper
+
 """
 Memory
 
@@ -22,8 +24,8 @@ class Memory(object):
         self._ppu = ppu
         self._rom = rom
 
-        # Cargamos la ROM en la memoria
-        self._memory[0x8000:0x10000] = self._rom.get_pgr()
+        # Instancia del Mapper
+        self._mapper = Mapper.Mapper.instance_mapper(self._rom.get_mapper_code(), self._rom)
 
         #######################################################################
         #######################################################################
@@ -32,8 +34,8 @@ class Memory(object):
     # Devuelve el contenido de una posición de memoria
     def read_data(self, addr):
         d = 0x00
-        if addr >= 0x6000:    # Lee la ROM
-            d = self._memory[addr]
+        if addr >= 0x6000:    # Lee del mapper de la ROM
+            d = self._mapper.read(addr)
         elif addr >= 0x0000 and addr < 0x2000:
             d = self._memory[addr]
         elif addr >= 0x2000 and addr < 0x4000:     # Direcciones de los registros PPU
@@ -71,3 +73,5 @@ class Memory(object):
                 self._nes.write_reg_4016(d)
             elif addr == 0x4017:
                 self._nes.write_reg_4017(d)
+        elif addr >= 0x6000:
+            self._mapper.write(d, addr)
