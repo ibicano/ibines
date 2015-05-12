@@ -113,8 +113,20 @@ class MMC1(Mapper):
         self._addr_13_14 = 0x0000
         self._counter = 0
 
-
         # Bancos de memoria
+
+        # Bancos de CHR de 8K
+        self._chr = [0x00] * 8192
+
+        # Bancos de PGR de 16K
+        self._pgr_0 = [0x00] * 16384
+        self._pgr_1 = [0x00] * 16384
+
+
+    def read(self, addr):
+        if 0x0000 <= addr <= 0x1FFF:
+
+
 
 
     # Escribe en los registros (1 bit cada vez, ya que es una línea serie)
@@ -144,8 +156,35 @@ class MMC1(Mapper):
                 elif self._addr_13_14 == 0x6000:
                     self._reg3 = self._shift_reg
 
+                # TODO: actualizamos los bancos con los cambios de los registros
+                chr_size = (self._reg_0 & 0x10) >> 4
+                bank_0000 = self._reg_1 & 0x0F
+                bank_1000 = self._reg_2 & 0x0F
+
+                # TODO: terminar todo esto a la de YA
+                if chr_size == 0:
+                    self._chr = self._rom.get_chr(bank_0000)
+                elif chr_size == 1:
+                    chr_0 = self._rom.get_chr(bank_0000 / 2)
+                    chr_1 = self._rom.get_chr(bank_0001 / 2)
+
+                    if bank_0000 % 2 == 0:
+                        self._chr[0x0000:0x1000] = chr_0[0x0000:0x1000]
+                    elif bank_0000 % 2 == 1:
+                        self._chr[0x0000:0x1000] = chr_0[0x1000:0x2000]
+
+                    if bank_0001 % 2 == 0:
+                        self._chr[0x1000:0x2000] = chr_1[0x0000:0x1000]
+                    elif bank_0001 % 2 == 1:
+                        self._chr[0x1000:0x2000] = chr_1[0x1000:0x2000]
+
+
                 self._shift_reg = 0x00
                 self._counter = 0
+
+
+    def mirror_mode(self):
+        return self._reg0 & 0x01
 
 
     def get_reg0(self):
@@ -160,3 +199,4 @@ class MMC1(Mapper):
 
     def get_reg3(self):
         return self._reg3
+
