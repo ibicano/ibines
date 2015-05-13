@@ -45,14 +45,14 @@ class NROM(Mapper):
         super(NROM, self).__init__(rom)
 
         #Carga los bancos
-        self._pgr_rom_0 = [0x00] * 16384
-        self._pgr_rom_1 = [0x00] * 16384
+        self._prg_rom_0 = [0x00] * 16384
+        self._prg_rom_1 = [0x00] * 16384
 
         if self._rom.get_pgr_count() == 1:
-            self._pgr_rom_0 = self._rom.get_pgr(0)
+            self._prg_rom_0 = self._rom.get_prg(0)
         elif self._rom.get_pgr_count() == 2:
-            self._pgr_rom_0 = self._rom.get_pgr(0)
-            self._pgr_rom_1 = self._rom.get_pgr(1)
+            self._prg_rom_0 = self._rom.get_prg(0)
+            self._prg_rom_1 = self._rom.get_prg(1)
 
         self._chr_rom_0 = [0x00] * 8192
         self._chr_rom_1 = [0x00] * 8192
@@ -71,13 +71,13 @@ class NROM(Mapper):
             d = self._chr_rom_0[addr]
         if 0x8000 <= addr < 0xC000:
             a = (addr - 0x8000) % 0x4000
-            d = self._pgr_rom_0[a]
+            d = self._prg_rom_0[a]
         elif 0xC000 <= addr < 0x10000:
             a = (addr - 0x8000) % 0x4000
             if self._rom.get_pgr_count() == 1:
-                d = self._pgr_rom_0[a]
+                d = self._prg_rom_0[a]
             elif self._rom.get_pgr_count() == 2:
-                d = self._pgr_rom_1[a]
+                d = self._prg_rom_1[a]
 
         return d
 
@@ -92,6 +92,7 @@ class NROM(Mapper):
 
     def get_chr_count(self):
         return self._rom.get_chr_count()
+
 
 
 class MMC1(Mapper):
@@ -115,23 +116,37 @@ class MMC1(Mapper):
 
         # Bancos de memoria
 
-        # Bancos de CHR de 8K
-        self._chr = [0x00] * 8192
+        # Bancos de CHR de 4K
+        self._chr_0 = [0x00] * 4096         # 0x0000
+        self._chr_1 = [0x00] * 4096         # 0x1000
 
         # Bancos de PGR de 16K
-        self._pgr_0 = [0x00] * 16384
-        self._pgr_1 = [0x00] * 16384
+        self._prg_0 = [0x00] * 16384        # 0x8000
+        self._prg_1 = [0x00] * 16384        # 0xC000
+
+        # Se carga el estado inicial
+        self._prg_0 = self._rom.get_prg(0)
+        self._prg_1 = self._rom.get_prg(self._rom.get_pgr_count() - 1)
 
 
     def read(self, addr):
-        if 0x0000 <= addr <= 0x1FFF:
+        d = 0x00
+
+        if 0x0000 <= addr <= 0x0FFF:
+            d = self._chr_0[addr]
+        elif 0x1000 <= addr <= 0x1FFF:
+            d = self._chr_1[addr - 0x1000]
+        elif 0x8000 <= addr <= 0xBFFF:
+            d = self._prg_0[addr - 0x8000]
+        elif 0xC000 <= addr <= 0xFFFF:
+            d = self._prg_1[addr - 0xC000]
+
+        return d
 
 
-
-
-    # Escribe en los registros (1 bit cada vez, ya que es una línea serie)
+    # Escribe en los registros. 1 bit cada vez ya que es una linea serie
     def write(self, data, addr):
-        d = 0xFF
+        d = data & 0xFF
 
         # Si estamos en el primer ciclo copiamos los bits 13 y 14 de la dirección al registro de dirección
         if self._counter == 0:
@@ -144,7 +159,6 @@ class MMC1(Mapper):
         else:
             self._shift_reg = self._shift_reg | (d & 0x01)
             self._shift_reg <<= 1
-            self._counter += 1
 
             if self._counter == 4:
                 if self._addr_13_14 == 0x0000:
@@ -156,35 +170,20 @@ class MMC1(Mapper):
                 elif self._addr_13_14 == 0x6000:
                     self._reg3 = self._shift_reg
 
-                # TODO: actualizamos los bancos con los cambios de los registros
-                chr_size = (self._reg_0 & 0x10) >> 4
-                bank_0000 = self._reg_1 & 0x0F
-                bank_1000 = self._reg_2 & 0x0F
-
-                # TODO: terminar todo esto a la de YA
-                if chr_size == 0:
-                    self._chr = self._rom.get_chr(bank_0000)
-                elif chr_size == 1:
-                    chr_0 = self._rom.get_chr(bank_0000 / 2)
-                    chr_1 = self._rom.get_chr(bank_0001 / 2)
-
-                    if bank_0000 % 2 == 0:
-                        self._chr[0x0000:0x1000] = chr_0[0x0000:0x1000]
-                    elif bank_0000 % 2 == 1:
-                        self._chr[0x0000:0x1000] = chr_0[0x1000:0x2000]
-
-                    if bank_0001 % 2 == 0:
-                        self._chr[0x1000:0x2000] = chr_1[0x0000:0x1000]
-                    elif bank_0001 % 2 == 1:
-                        self._chr[0x1000:0x2000] = chr_1[0x1000:0x2000]
-
+                self._swap_banks()
 
                 self._shift_reg = 0x00
                 self._counter = 0
+            else:
+                self._counter += 1
 
 
     def mirror_mode(self):
-        return self._reg0 & 0x01
+        # Si el bit 2 del registro 0 es 0 se activa single mirroring (valor 2)
+        if self._reg0 & 0x02 == 0:
+            return 2
+        else:
+            return self._reg0 & 0x01
 
 
     def get_reg0(self):
@@ -199,4 +198,49 @@ class MMC1(Mapper):
 
     def get_reg3(self):
         return self._reg3
+
+
+    # Intercambia los bancos de memoria en función del valor de los registros
+    def _swap_banks(self):
+        # Intercambio de bancos CHR
+        if self._rom.get_chr_count() > 0:
+            chr_size = (self._reg0 & 0x10) >> 4         # 0: bancos de 8k; 1: bancos de 4k
+            bank_number_0000 = self._reg1 & 0x0F               # Número de banco para cargar en 0x0000
+            bank_number_1000 = self._reg2 & 0x0F               # Número de banco para cargar en 0x1000 (Si son de 4k)
+
+            # Bancos de 8k
+            if chr_size == 0:
+                self._chr_0 = self._rom.get_chr(bank_number_0000 >> 1)[0x0000:0x1000]
+                self._chr_1 = self._rom.get_chr(bank_number_0000 >> 1)[0x1000:0x2000]
+            # Bancos de 8k
+            elif chr_size == 1:
+                self._chr_0 = self._rom.get_chr_4k(bank_number_0000)
+                self._chr_1 = self._rom.get_chr_4k(bank_number_1000)
+
+        # Intercambio de bancos PRG
+        prg_swap = (self._reg0 & 0x04) >> 2         # Dirección que cargar (sólo para bancos de 16k); 0: 0xC000; 1: 0x8000
+        prg_size = (self._reg0 & 0x08) >> 3         # 0: bancos de 32k; 1: bancos de 16k
+        bank_number = (self._reg3 & 0x0F)           # Número del banco a cargar
+
+        # Si el tamaño del banco es de 32k
+        if prg_size == 0:
+            bank_number_16k_0 = bank_number >> 1
+            bank_number_16k_1 = (bank_number >> 1) + 1
+
+            self._prg_0 = self._rom.get_prg(bank_number_16k_0)
+            self._prg_1 = self._rom.get_prg(bank_number_16k_1)
+        # Si el tamaño del banco es de 16k
+        elif prg_size == 1:
+            # Se intercambia el banco 0xC000
+            if prg_swap == 0:
+                self._prg_1 = self._rom.get_prg(bank_number)
+            # Se intercambia el banco 0x8000
+            elif prg_swap == 0:
+                self._prg_0 = self._rom.get_prg(bank_number)
+
+
+
+
+
+
 

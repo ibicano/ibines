@@ -12,18 +12,12 @@ class ROM(object):
         ###########################################################################
         self._rom = None            # Los bytes de la ROM en forma de lista
 
-        self._pgr_count = 0
+        self._prg_count = 0
         self._chr_count = 0
         self._rom_control_1 = 0x00
         self._rom_control_2 = 0x00
         self._ram_count = 0
         self._reserved = [0x00] * 7
-
-        self._pgr_1 = [0x00] * 0x4000
-        self._pgr_2 = [0x00] * 0x4000
-
-        self._chr_1 = [0x00] * 0x2000
-        self._chr_2 = [0x00] * 0x2000
 
         # Guarda si la ROM ha cargado correctamente
         self._load_ok = False
@@ -41,7 +35,7 @@ class ROM(object):
         # Comprueba que el formato de la cabecera sea corrector
         if (str(self._rom[0:3]) == "NES") and self._rom[3] == 0x1A:
             # Carga la cabecera
-            self._pgr_count = self._rom[4]
+            self._prg_count = self._rom[4]
             self._chr_count = self._rom[5]
             self._rom_control_1 = self._rom[6]
             self._rom_control_2 = self._rom[7]
@@ -49,7 +43,7 @@ class ROM(object):
             self._reserved = self._rom[9:16]
 
             # Reserva la memoria para almacenar los bancos en función del número de estos
-            self._pgr_banks = [None] * self._pgr_count
+            self._pgr_banks = [None] * self._prg_count
             self._chr_banks = [None] * self._chr_count
             self._ram_banks = [None] * self._ram_count
 
@@ -63,7 +57,7 @@ class ROM(object):
                 i += 512
 
             # Carga los bancos PGR
-            for n in range(self._pgr_count):
+            for n in range(self._prg_count):
                 self._pgr_banks[n] = self._rom[i:i + 16384]
                 i += 16384
 
@@ -119,7 +113,7 @@ class ROM(object):
 
     # Devuelve el número de bancos de 16KB de memoria de programa disponibles
     def get_pgr_count(self):
-        return self._pgr_count
+        return self._prg_count
 
 
     # Devuelve el número de bancos de 16KB de memoria de patrones gráficos disponibles
@@ -128,7 +122,7 @@ class ROM(object):
 
 
     # Devuelve el banco PGR especificado por n
-    def get_pgr(self, n):
+    def get_prg(self, n):
         return self._pgr_banks[n]
 
 
@@ -137,26 +131,16 @@ class ROM(object):
         return self._chr_banks[n]
 
 
-    def read_pgr_data(self, addr):
-        a = addr & 0xFFFF
-        d = 0x00
-        if a < 0x4000:
-            d = self._pgr_1[a]
-        elif a >= 0x4000 and a < 0x8000:
-            d = self._pgr_2[a % 0x4000]
+    def get_chr_4h(self, n):
+        bank_number = n / 2
 
-        return d
+        # Si es par es la primera mitad del banco de 8k
+        if n & 0x01 == 0:
+            return self._chr_banks[bank_number][0x0000:0x1000]
+        else:
+            return self._chr_banks[bank_number][0x1000:0x2000]
 
 
-    def read_chr_data(self, addr):
-        a = addr & 0xFFFF
-        d = 0x00
-        if a < 0x1000:
-            d = self._chr_1[a]
-        elif a >= 0x1000 and a < 0x2000:
-            d = self._chr_2[a % 0x1000]
-
-        return d
 
 
 
