@@ -21,11 +21,11 @@ class Mapper(object):
 
 
     def get_prg_count(self):
-        pass
+        return self._rom.get_pgr_count()
 
 
     def get_chr_count(self):
-        pass
+        return self._rom.get_chr_count()
 
 
     # Método de clase que devuelve un objeto del mapper indicado
@@ -84,15 +84,6 @@ class NROM(Mapper):
 
     def mirror_mode(self):
         return self._rom.get_mirroring()
-
-
-    def get_prg_count(self):
-        return self._rom.get_pgr_count()
-
-
-    def get_chr_count(self):
-        return self._rom.get_chr_count()
-
 
 
 class MMC1(Mapper):
@@ -158,7 +149,6 @@ class MMC1(Mapper):
             self._counter = 0
         else:
             self._shift_reg = self._shift_reg | (d & 0x01)
-            self._shift_reg <<= 1
 
             if self._counter == 4:
                 if self._addr_13_14 == 0x0000:
@@ -175,6 +165,7 @@ class MMC1(Mapper):
                 self._shift_reg = 0x00
                 self._counter = 0
             else:
+                self._shift_reg <<= 1
                 self._counter += 1
 
 
