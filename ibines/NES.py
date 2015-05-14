@@ -98,8 +98,9 @@ class NES(object):
 
                 cycles = 0
         except Exception as e:
-            print "Cerrando fichero test"
+            #print "Cerrando fichero test"
             #test.close()
+
             traceback.print_exc()
             raise e
 
@@ -155,5 +156,6 @@ class NES(object):
 #file_name = "../tests/nestest.nes"
 #file_name = "../tests/instr_test-v4/rom_singles/13-rts.nes"
 file_name = "../tests/instr_test-v4/official_only.nes"
+#file_name = "../tests/instr_test-v4/all_instrs.nes"
 nes = NES(file_name)
 nes.run()

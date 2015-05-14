@@ -31,7 +31,7 @@ class Memory(object):
     # Devuelve el contenido de una posición de memoria
     def read_data(self, addr):
         d = 0x00
-        if addr >= 0x6000:    # Lee del mapper de la ROM
+        if addr >= 0x8000:    # Lee del mapper de la ROM
             d = self._mapper.read(addr)
         elif addr >= 0x0000 and addr < 0x2000:
             d = self._memory[addr]
@@ -42,6 +42,8 @@ class Memory(object):
                 d = self._nes.read_reg_4016();
             elif addr == 0x4017:
                 d = self._nes.read_reg_4017();
+        elif 0x6000 <= addr <= 0x7FFF:
+            d = self._memory[addr]
 
         return d
 
@@ -70,5 +72,7 @@ class Memory(object):
                 self._nes.write_reg_4016(d)
             elif addr == 0x4017:
                 self._nes.write_reg_4017(d)
-        elif addr >= 0x6000:
+        elif 0x6000 <= addr <= 0x7FFF:
+            self._memory[addr] = d
+        elif addr >= 0x8000:
             self._mapper.write(d, addr)
