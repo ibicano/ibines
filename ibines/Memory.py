@@ -32,7 +32,7 @@ class Memory(object):
     def read_data(self, addr):
         d = 0x00
         if addr >= 0x8000:    # Lee del mapper de la ROM
-            d = self._mapper.read(addr)
+            d = self._mapper.read_prg(addr)
         elif addr >= 0x0000 and addr < 0x2000:
             d = self._memory[addr]
         elif addr >= 0x2000 and addr < 0x4000:     # Direcciones de los registros PPU
@@ -75,4 +75,4 @@ class Memory(object):
         elif 0x6000 <= addr <= 0x7FFF:
             self._memory[addr] = d
         elif addr >= 0x8000:
-            self._mapper.write(d, addr)
+            self._mapper.write_prg(d, addr)

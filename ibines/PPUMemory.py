@@ -42,8 +42,8 @@ class PPUMemory(object):
         a = addr & 0xFFFF
         d = 0x00
 
-        if (a < 0x2000) and (self._mapper.get_chr_count() > 0):
-            d = self._mapper.read(a)
+        if (a < 0x2000):
+            d = self._mapper.read_chr(a)
         else:
             d = self._memory[a]
 
@@ -57,7 +57,7 @@ class PPUMemory(object):
 
         # Pattern tables:
         if (0x0000 <= a <= 0x1FFF) and self._mapper.get_chr_count() == 0:
-            self._set_memory(d, a)
+            self._mapper.write_chr(d, a)
         # Name tables y attribute tables:
         elif 0x2000 <= a < 0x4000:
             # Name Table 0
