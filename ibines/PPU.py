@@ -125,7 +125,7 @@ class PPU(object):
                 self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
             self._gfx.update()
             # FIXME: limpia la pantalla por si acaso. Quitar más adelante.
-            self._gfx.fill((0, 0, 0))
+            #self._gfx.fill((0, 0, 0))
             self._end_frame = False
 
 

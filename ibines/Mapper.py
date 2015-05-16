@@ -125,12 +125,12 @@ class MMC1(Mapper):
         # Bancos de memoria
 
         # Bancos de CHR de 4K
-        self._chr_0 = [0x00] * 4096         # 0x0000
-        self._chr_1 = [0x00] * 4096         # 0x1000
+        self._chr_0 = None         # 0x0000
+        self._chr_1 = None         # 0x1000
 
         # Bancos de PGR de 16K
-        self._prg_0 = [0x00] * 16384        # 0x8000
-        self._prg_1 = [0x00] * 16384        # 0xC000
+        self._prg_0 = None        # 0x8000
+        self._prg_1 = None        # 0xC000
 
         # Se carga el estado inicial
         self._prg_0 = self._rom.get_prg(0)
@@ -184,7 +184,7 @@ class MMC1(Mapper):
             self._shift_reg = 0x00
             self._counter = 0
         else:
-            self._shift_reg = self._shift_reg | (d & 0x10)
+            self._shift_reg = self._shift_reg | ((d & 0x01) << 4)
 
             if self._counter == 4:
                 if self._addr_13_14 == 0x0000:
@@ -194,7 +194,12 @@ class MMC1(Mapper):
                 elif self._addr_13_14 == 0x4000:
                     self._reg2 = self._shift_reg
                 elif self._addr_13_14 == 0x6000:
-                    self._reg3 = self._shift_reg
+                    # Si el tamaño de página es de 16K
+                    if (self._reg0 & 0x08) >> 3:
+                        self._reg3 = self._shift_reg
+                    # Si el tamaño de página es de 32k hay que desplazar un bit a la izquierda, ya que el 0 se ignora
+                    else:
+                        self._reg3 = self._shift_reg << 1
 
                 self._swap_banks()
 
@@ -206,12 +211,12 @@ class MMC1(Mapper):
 
 
     def mirror_mode(self):
-        # Si el bit 2 del registro 0 es 0 se activa single mirroring (valor 2)
+        # Si el bit 1 del registro 0 es 0 se activa single mirroring (valor 2)
         if self._reg0 & 0x02 == 0:
             return 2
+        # Si el bit 1 es 1 el bit 0 indica el tipo. 0: vertical; 1: horizontal
         else:
-            return self._reg0 & 0x01
-
+            return (~self._reg0) & 0x01
 
     def get_reg0(self):
         return self._reg0
@@ -244,7 +249,7 @@ class MMC1(Mapper):
             else:
                 self._chr_0 = self._rom.get_chr(bank_number_0000 >> 1)[0x0000:0x1000]
                 self._chr_1 = self._rom.get_chr(bank_number_0000 >> 1)[0x1000:0x2000]
-        # Bancos de 8k
+        # Bancos de 4k
         elif chr_size == 1:
             # Si son bancos de RAM
             if self._rom.get_chr_count() == 0:
@@ -268,8 +273,8 @@ class MMC1(Mapper):
 
         # Si el tamaño del banco es de 32k
         if prg_size == 0:
-            bank_number_16k_0 = bank_number >> 1
-            bank_number_16k_1 = (bank_number >> 1) + 1
+            bank_number_16k_0 = bank_number
+            bank_number_16k_1 = bank_number + 1
 
             self._prg_0 = self._rom.get_prg(bank_number_16k_0)
             self._prg_1 = self._rom.get_prg(bank_number_16k_1)

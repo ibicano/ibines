@@ -50,11 +50,11 @@ class Instruction(object):
     def fetch_preindexed_addrmode(self):
         # Calcula el índice de la dirección donde se almacena la dirección
         # final del operando
-        index = (self._operand + self._cpu.get_reg_x()) & 0xFF
+        index = (self._operand + self._cpu.get_reg_x())
 
         # Calcula la dirección final del operando
-        addr = self._cpu.get_mem().read_data(index)
-        addr = addr | (self._cpu.get_mem().read_data(index + 1) << 8)
+        addr = self._cpu.get_mem().read_data(index & 0xFF)
+        addr = addr | (self._cpu.get_mem().read_data(((index + 1) & 0xFF) << 8))
 
         return addr
 
@@ -417,7 +417,7 @@ class ASL(Instruction):
         self._cpu.set_sign_bit(result)
         self._cpu.set_zero_bit(result)
 
-        return result
+        return result & 0xFF
 
 
 class ASL_accumulator(ASL):
@@ -740,7 +740,8 @@ class BRK(Instruction):
         self._cpu.push_stack((pc >> 8) & 0xFF)
         self._cpu.push_stack(pc & 0xFF)
         self._cpu.set_reg_p_b_bit(1)
-        self._cpu.push_stack(self._cpu.get_reg_p())
+        # Los bit 4 y 5 se ponen siempre a 1
+        self._cpu.push_stack(self._cpu.get_reg_p() | 0x30)
         self._cpu.set_reg_p_i_bit(1)
 
         pc = self._cpu.get_mem().read_data(0xFFFE)
@@ -2446,7 +2447,8 @@ class PHP(Instruction):
         super(PHP, self).__init__(None, cpu)
 
     def execute(self):
-        self._cpu.push_stack(self._cpu.get_reg_p())
+        # Los bit 4 y 5 se ponen siempre a 1
+        self._cpu.push_stack(self._cpu.get_reg_p() | 0x30)
 
         # Incrementa el registro contador (PC) de la CPU
         self._cpu.incr_pc(self.BYTES)
@@ -2495,7 +2497,7 @@ class PLP(Instruction):
         super(PLP, self).__init__(None, cpu)
 
     def execute(self):
-        p = self._cpu.pull_stack() & 0xEF | 0x20
+        p = self._cpu.pull_stack()
         self._cpu.set_reg_p(p)
 
         # Incrementa el registro contador (PC) de la CPU
@@ -2786,7 +2788,7 @@ class RTI(Instruction):
         super(RTI, self).__init__(None, cpu)
 
     def execute(self):
-        p = self._cpu.pull_stack() & 0xEF | 0x20
+        p = self._cpu.pull_stack()
         self._cpu.set_reg_p(p)
 
         pc = self._cpu.pull_stack()

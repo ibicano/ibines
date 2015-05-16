@@ -55,6 +55,7 @@ class Memory(object):
     # OPTIMIZE: Lo expuesto anteriormente
     def write_data(self, data, addr):
         d = data & 0xFF
+        addr = addr & 0xFFFF
 
         if addr >= 0x0000 and addr < 0x2000:
             n = addr % 0x800

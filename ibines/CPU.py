@@ -48,7 +48,7 @@ class CPU(object):
         self._ppu = ppu
 
         # Registros
-        self._reg_pc = 0x8000        # Program Counter (16-bit). Inicializa a la dirección de Reset
+        # Program Counter (16-bit). Inicializa a la dirección de Reset
         self._reg_pc = self._mem.read_data(CPU.INT_ADDR_RESET)
         self._reg_pc = self._reg_pc | (self._mem.read_data(CPU.INT_ADDR_RESET + 1) << 8)
 
@@ -68,7 +68,8 @@ class CPU(object):
     def interrupt(self, vector_addr):
         self.push_stack((self._reg_pc >> 8) & 0xFF)
         self.push_stack(self._reg_pc & 0xFF)
-        self.push_stack(self._reg_p)
+        # En las interrupciones el bit 4 se pone a 0 y el 5 a 1
+        self.push_stack(self._reg_p & 0xEF | 0x20)
         self.set_reg_p_i_bit(1)
         addr = self._mem.read_data(vector_addr) & 0xFF
         addr = addr | (self._mem.read_data(vector_addr + 1) << 8)
