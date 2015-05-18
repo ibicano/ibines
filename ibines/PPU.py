@@ -43,7 +43,7 @@ class PPU(object):
         self._end_frame = False
         self._end_scanline = False
 
-        # Indica si tenemos que ller otro "pattern" de memoria o usamos el actual
+        # Indica si tenemos que leer otro "pattern" de memoria o usamos el actual
         self._fetch_pattern = True
 
         # Scanline actual
@@ -57,6 +57,11 @@ class PPU(object):
 
         # Interrupciones
         self._int_vblank = 0
+
+        # Indica si ya se ha inicializado la vblank en este frame. Se resetea al finalizar el frame.
+        # Sirve para controlar si ya se ha procesado o no el período VBLANK cuando estamos dentro de
+        # él, ya que sólo debe procesarse una vez.
+        self._started_vblank = 0
 
         # Buffer de lectura de la VRAM (la lectura del registro $2007 se entrega retrasada)
         self._vram_buffer = 0x00
@@ -115,11 +120,12 @@ class PPU(object):
             self._scanline_number = (self._scanline_number + 1) % PPU.FRAME_SCANLINES
             pending_scanlines -= 1
 
-        if self._cycles_frame < self.VBLANK_CYCLES and not self.is_vblank():     # Este es el ciclo en el que entramos en VBLANK
+        if self._cycles_frame < self.VBLANK_CYCLES and not self._started_vblank:     # Este es el ciclo en el que entramos en VBLANK
                 self.start_vblank()    # Activamos el período VBLANK al inicio del período
 
         if self._end_frame:
             self._reg_status = 0
+            self._started_vblank = 0    # En el nuevo frame indicamos que no se ha procesado el período VBLANK aún
             #self.end_vblank() # Finalizamos el período VBLANK
             if self.control_2_background_bit_3():
                 self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
@@ -147,7 +153,6 @@ class PPU(object):
     def read_reg_2002(self):
         r = self._reg_status
 
-        # FIXME: repasar que este sea el comportamiento adecuado
         # Cuando se lee este registro se pone el flag de vblank a 0
         self._reg_status = nesutils.set_bit(r, 7, 0)
 
@@ -458,10 +463,15 @@ class PPU(object):
 
     # Inicia un período VBLANK
     def start_vblank(self):
+        # Ponemos el bit 7 del registro de Status a 1, que indica que estamos en el período VBLANK
         self._reg_status = nesutils.set_bit(self._reg_status, 7, 1)
 
+        # Activamos la interrupción si las NMI están activadas en el registro de control 1
         if self._reg_control_1 & 0x80:
             self._int_vblank = 1
+
+        # Indicamos que ya hemos procesado el período VBLANK
+        self._started_vblank = 1
 
 
     # Finaliza un período VBLANK
@@ -572,7 +582,6 @@ class PPU(object):
 
             self._gfx.draw_pixel(x, y, self._pattern_rgb[pattern_pixel_x][pattern_pixel_y])
 
-
         # Dibuja los sprites que estén en el pixel
         if self.control_2_sprites_bit_4():
             n = len(self._sprites_scanline)
@@ -585,7 +594,6 @@ class PPU(object):
 
                     if sprite._sprite_zero and not transparent_pixel:
                         self.set_sprite_hit(not is_background)
-
 
 
     # TODO: Acabar la implementación de los sprites

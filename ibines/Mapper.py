@@ -266,6 +266,7 @@ class MMC1(Mapper):
                 self._chr_0 = self._rom.get_chr_4k(bank_number_0000)
                 self._chr_1 = self._rom.get_chr_4k(bank_number_1000)
 
+
         # Intercambio de bancos PRG
         prg_swap = (self._reg0 & 0x04) >> 2         # Dirección que cargar (sólo para bancos de 16k); 0: 0xC000; 1: 0x8000
         prg_size = (self._reg0 & 0x08) >> 3         # 0: bancos de 32k; 1: bancos de 16k
