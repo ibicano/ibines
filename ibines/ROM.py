@@ -112,7 +112,7 @@ class ROM(object):
 
 
     # Devuelve el número de bancos de 16KB de memoria de programa disponibles
-    def get_pgr_count(self):
+    def get_prg_count(self):
         return self._prg_count
 
 

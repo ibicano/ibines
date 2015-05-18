@@ -79,6 +79,9 @@ class PPUMemory(object):
                     self._set_memory(d, a + 0x1000)
                     self._set_memory(d, a + 0x1400)
                     self._set_memory(d, a + 0x1800)
+
+                # Escribimos en la posición indicada
+                self._set_memory(d, a)
             # Name Table 1
             elif a >= 0x2400 and a < 0x2800:
                 if self._mapper.mirror_mode() == 0:
@@ -100,6 +103,9 @@ class PPUMemory(object):
                     self._set_memory(d, a + 0x0C00)
                     if a < 0x2700:
                         self._set_memory(d, a + 0x1800)
+
+                    # Escribimos en la posición indicada
+                    self._set_memory(d, a)
             # Name Table 2
             elif a >= 0x2800 and a < 0x2C00:
                 if self._mapper.mirror_mode() == 0:
@@ -121,6 +127,9 @@ class PPUMemory(object):
                     if a < 0x2B00:
                         self._set_memory(d, a + 0x1400)
                     self._set_memory(d, a + 0x0800)
+
+                # Escribimos en la posición indicada
+                self._set_memory(d, a)
             # Name Table 3
             elif a >= 0x2C00 and a < 0x3000:
                 if self._mapper.mirror_mode() == 0:
@@ -143,29 +152,36 @@ class PPUMemory(object):
                         self._set_memory(d, a + 0x1000)
                     self._set_memory(d, a + 0x0C00)
                     self._set_memory(d, a + 0x0800)
+
+                # Escribimos en la posición indicada
+                self._set_memory(d, a)
             # Mirrors Name Tables y Attr Tables
             elif a >= 0x3000 and a < 0x3F00:
                 self.write_data(d, a - 0x1000)
             # Paletas
             elif a >= 0x3F00 and a < 0x3F20:
-                # El elemento inicial de la paleta se repite cada 4, por lo que se duplica si una posición es 0 modulo 4
-                if (a - 0x3F00) % 4 == 0:
+                # Si se escribe en el elemento de background o su mirror se escribe el valor de background
+                # en todas las paletas mod 4 (pero no al contrario)
+                if a == 0x3F00 or a == 0x3F10:
                     for x in range(0x3F00, 0x4000, 0x04):
                         self._set_memory(d, x)
-                # Escribe en mirrors
-                self._set_memory(d, a + 0x0020)
-                self._set_memory(d, a + 0x0040)
-                self._set_memory(d, a + 0x0060)
-                self._set_memory(d, a + 0x0080)
-                self._set_memory(d, a + 0x00A0)
-                self._set_memory(d, a + 0x00C0)
-                self._set_memory(d, a + 0x00E0)
+                # Si no es un elemento de background escribimos normalmente la paleta
+                elif a & 0x03 != 0:
+                    # Escribe en mirrors
+                    self._set_memory(d, a + 0x0020)
+                    self._set_memory(d, a + 0x0040)
+                    self._set_memory(d, a + 0x0060)
+                    self._set_memory(d, a + 0x0080)
+                    self._set_memory(d, a + 0x00A0)
+                    self._set_memory(d, a + 0x00C0)
+                    self._set_memory(d, a + 0x00E0)
+
+                    # Escribimos en la posición indicada
+                    self._set_memory(d, a)
             # Mirrors paletas
             elif a >= 0x3F20 and a < 0x4000:
                 self.write_data(d, ((a - 0x3F20) % 0x0020) + 0x3F00)
 
-            # Escribimos en la posición indicada
-            self._set_memory(d, a)
         # Mirrors generales
         elif a >= 0x4000:
             self.write_data(d, a % 0x4000)

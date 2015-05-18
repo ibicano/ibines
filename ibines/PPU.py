@@ -516,7 +516,7 @@ class PPU(object):
             i = 0
             n = 0
             self._sprites_scanline = []
-            while i < 64 and n < 8:
+            while i < 64 and n < 9:
                 sprite = sprites_list[i]
                 if sprite.is_in_scanline(self._scanline_number, self.control_1_sprites_size_bit_5()):
                     self._sprites_scanline.append(sprite)
@@ -524,7 +524,7 @@ class PPU(object):
                 i += 1
 
             # Si hay 8 sprites en el scanline activamos el flag corespondiente del registro $2002
-            if n == 8:
+            if n == 9:
                 self._reg_status = nesutils.set_bit(self._reg_status, 5, 1)
 
 
@@ -562,7 +562,7 @@ class PPU(object):
             pattern_pixel_y = self.get_y_offset()
 
             # Calcula la dirección en la Name Table activa
-            name_table_addr = 0x2000 | (self._reg_vram_addr & 0x0FFF)
+            name_table_addr = 0x2000 + (self._reg_vram_addr & 0x0FFF)
 
             if self._fetch_pattern:
                 pattern_table_number = self.control_1_background_pattern_bit_4()
@@ -741,7 +741,7 @@ class PPU(object):
                 # Asigna el índice de la paleta a la posición correspondiente:
                 pattern_palette[7 - x][7 - y] = palette_index
 
-                color_index = self._memory.read_data(palette_addr + palette_index)
+                color_index = self._memory.read_data(palette_addr + palette_index) & 0x3F
                 rgb = self.get_color(color_index)
                 pattern_rgb[7 - x][y] = rgb
 
