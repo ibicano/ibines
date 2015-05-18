@@ -86,9 +86,8 @@ class GFX_PySdl2(GFX):
         self._pixels[y][x] = sdl2.ext.COLOR(color)
 
 
-    def fill(self, color=(0, 0, 0)):
-        pass
-        #sdl2.ext.fill(self._pixels, sdl2.ext.COLOR(color))
+    def fill(self, color):
+        sdl2.ext.fill(self._surface, sdl2.ext.COLOR(color))
 
 
     def update(self):

@@ -50,11 +50,11 @@ class Instruction(object):
     def fetch_preindexed_addrmode(self):
         # Calcula el índice de la dirección donde se almacena la dirección
         # final del operando
-        index = (self._operand + self._cpu.get_reg_x())
+        index = (self._operand + self._cpu.get_reg_x()) & 0xFF
 
         # Calcula la dirección final del operando
-        addr = self._cpu.get_mem().read_data(index & 0xFF)
-        addr = addr | (self._cpu.get_mem().read_data(((index + 1) & 0xFF) << 8))
+        addr = self._cpu.get_mem().read_data(index)
+        addr = addr | (self._cpu.get_mem().read_data(((index + 1) & 0xFF)) << 8)
 
         return addr
 
@@ -736,6 +736,7 @@ class BRK(Instruction):
         super(BRK, self).__init__(None, cpu)
 
     def execute(self):
+        self._cpu.incr_pc(self.BYTES)
         pc = self._cpu.get_reg_pc() + 1
         self._cpu.push_stack((pc >> 8) & 0xFF)
         self._cpu.push_stack(pc & 0xFF)
