@@ -42,10 +42,10 @@ class PPUMemory(object):
         a = addr & 0xFFFF
         d = 0x00
 
-        if (a % 0x4000 < 0x2000):
-            d = self._mapper.read_chr(a)
-        else:
+        if (a & 0x2000):
             d = self._memory[a]
+        else:
+            d = self._mapper.read_chr(a)
 
         return d
 
@@ -191,7 +191,7 @@ class PPUMemory(object):
 
     # Establece el valor de una posición de memoria con los mirrors
     def _set_memory(self, d, addr):
-        a = addr % 0x4000
+        a = addr & 0x3FFF
         self._memory[a] = d
         self._memory[a + 0x4000] = d
         self._memory[a + 0x8000] = d

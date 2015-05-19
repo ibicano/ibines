@@ -167,7 +167,7 @@ class PPU(object):
 
 
     def read_reg_2007(self):
-        addr = self._reg_vram_addr % 0x4000
+        addr = self._reg_vram_addr & 0x3FFF
 
         # Si la dirección es de la paleta se devuelve el valor inmediatamente, sino se retrasa a la siguiente lectura
         if addr >= 0x3F00:
