@@ -58,19 +58,10 @@ class NES(object):
 
                 # Fetch y Exec siguiente instrucción (si hemos ejecutado una
                 # interrupción en el paso anterior será su rutina de interrupción)
-                try:
-                    inst = self._cpu.fetch_inst()
-                    cycles += inst.execute()
-                except OpcodeError as e:
-                    if NES.DEBUG:
-                        debug_file.close()
-                    print "Error: Opcode inválido"
-                    print e
-                    raise
-                    #test.close()
+                inst = self._cpu.fetch_inst()
+                cycles += inst.execute()
 
-                # Restamos un ciclo de ejecución a la instrucción actual y la PPU
-
+                # Restamos los ciclos de ejecución a la PPU
                 self._ppu.exec_cycle(cycles)
 
                 # Estadísticas
