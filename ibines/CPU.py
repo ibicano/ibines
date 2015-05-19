@@ -136,10 +136,7 @@ class CPU(object):
         opcode = self._mem.read_data(self._reg_pc)
 
         # Los comentarios de a continuación son por rendimiento
-        if opcode in Instruction.Instruction.OPCODE_INDEX.keys():
-            inst_class = Instruction.Instruction.OPCODE_INDEX[opcode]
-        else:
-            raise OpcodeError(self._reg_pc, opcode)
+        inst_class = Instruction.Instruction.OPCODE_INDEX[opcode]
 
         inst = None
 
