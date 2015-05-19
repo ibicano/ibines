@@ -129,8 +129,6 @@ class PPU(object):
             #self.end_vblank() # Finalizamos el período VBLANK
             if self.control_2_background_bit_3():
                 self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
-                # FIXME: limpia la pantalla para depurar
-                #self._gfx.fill((0, 100, 0))
                 self._gfx.update()
             self._end_frame = False
 

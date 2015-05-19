@@ -15,3 +15,7 @@ restas y comparaciones, ya que cuando se resta se debe establecer al revés que 
 el resultado se encuentra entre 0x00 y 0xFF y a 0 en caso contrario).
 - Estudiar la librería Pyglet para los gráficos como alternativa para Pygame, que además puede usarse con el
 intérprete PyPy que es bastante más rápido que el oficial.
+
+10-05-2015:
+Instalar Numpy:
+pip install git+https://bitbucket.org/pypy/numpy.git

@@ -10,6 +10,8 @@ from CPU import *
 from Memory import Memory
 from Instruction import *
 import os
+import cProfile
+import pstats
 
 
 
@@ -41,10 +43,6 @@ class NES(object):
     # Aquí se implementa el bucle principal de la NES. Cada iteración equivale a un
     # ciclo de reloj, para más precisión y exactitud conceptual
     def run(self):
-        if NES.DEBUG: debug_file = open("/home/ibon/tmp/ibines.log", "w")
-
-        #test = open("../tests/ibitest.log", "w")
-
         stats_cycles = 0
         stats_total_time = time.time()
         stats_counter = 0
@@ -62,11 +60,6 @@ class NES(object):
                 # interrupción en el paso anterior será su rutina de interrupción)
                 try:
                     inst = self._cpu.fetch_inst()
-
-                    # FIXME: código para depurar la salida de las instrucciones con nestest
-                    #test.write(self._log_inst(inst))
-
-                    if NES.DEBUG: debug_file.write(str(stats_counter) + ": " + hex(self._cpu._reg_pc) + ": " + hex(inst.OPCODE) + str(inst.__class__) + "\n")
                     cycles += inst.execute()
                 except OpcodeError as e:
                     if NES.DEBUG:
@@ -97,12 +90,12 @@ class NES(object):
                 #time.sleep(0.0000006)
 
                 cycles = 0
-        except Exception as e:
+        except Exception as ex:
             #print "Cerrando fichero test"
             #test.close()
 
             traceback.print_exc()
-            raise e
+            raise ex
 
         #test.close()
 
@@ -158,4 +151,10 @@ file_name = "../roms/Super Mario Bros. (E).nes"
 #file_name = "../tests/instr_test-v4/official_only.nes"
 #file_name = "../tests/instr_test-v4/all_instrs.nes"
 nes = NES(file_name)
-nes.run()
+
+#nes.run()
+
+# Código de profiling
+#pr_file = open("profiling.log", "w")
+
+cProfile.run("nes.run()", "profiling.log")
