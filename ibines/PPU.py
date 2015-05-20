@@ -590,7 +590,7 @@ class PPU(object):
                 if sprite.is_in(x, y, self.control_1_sprites_size_bit_5()):
                     transparent_pixel = self.draw_sprite_pixel(sprite, x, y, is_background)
 
-                    if sprite._sprite_zero and not transparent_pixel:
+                    if sprite.sprite_zero and not transparent_pixel and x != 255:
                         self.set_sprite_hit(not is_background)
 
 
@@ -850,7 +850,7 @@ class Sprite(object):
         self._index = 0x00
         self._attributes = 0x00
         self._offset_x = 0x00
-        self._sprite_zero = False
+        self.sprite_zero = False
         #######################################################################
 
 
@@ -861,9 +861,9 @@ class Sprite(object):
         self._offset_x = sprite_memory.read_data(sprite_addr + 3)
 
         if sprite_addr == 0x00:
-            self._sprite_zero = True
+            self.sprite_zero = True
         else:
-            self._sprite_zero = False
+            self.sprite_zero = False
 
 
     def load_by_number(self, sprite_memory, sprite_number):
