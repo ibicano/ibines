@@ -47,6 +47,11 @@ class ROM(object):
             self._chr_banks = [None] * self._chr_count
             self._ram_banks = [None] * self._ram_count
 
+            # Mirroring
+            if self.get_control_1_mirroring_bit_3() == 0:
+                self._mirroring = self.get_control_1_mirroring_bit_0()
+            else:
+                self._mirroring = 0x03
 
             # Ahora carga la info. La variable i es el índice de lectura de la posición de la ROM
             i = 16      # Empezamos después de la cabecera
@@ -83,12 +88,7 @@ class ROM(object):
     # 0x02: single
     # 0x03: 4-screen
     def get_mirroring(self):
-        if self.get_control_1_mirroring_bit_3() == 0:
-            m = self.get_control_1_mirroring_bit_0()
-        else:
-            m = 0x03
-
-        return m
+        return self._mirroring
 
 
     # Devuelve el número de mapper

@@ -61,7 +61,7 @@ class PPUMemory(object):
         # Name tables y attribute tables:
         elif 0x2000 <= a < 0x4000:
             # Name Table 0
-            if a >= 0x2000 and a < 0x2400:
+            if 0x2000 <= a < 0x2400:
                 if self._mapper.mirror_mode() == 0:
                     self._set_memory(d, a + 0x0400)
                     # Mirrors
@@ -83,7 +83,7 @@ class PPUMemory(object):
                 # Escribimos en la posición indicada
                 self._set_memory(d, a)
             # Name Table 1
-            elif a >= 0x2400 and a < 0x2800:
+            elif 0x2400 <= a < 0x2800:
                 if self._mapper.mirror_mode() == 0:
                     self._set_memory(d, a - 0x0400)
                     # Mirrors
@@ -104,10 +104,10 @@ class PPUMemory(object):
                     if a < 0x2700:
                         self._set_memory(d, a + 0x1800)
 
-                    # Escribimos en la posición indicada
-                    self._set_memory(d, a)
+                # Escribimos en la posición indicada
+                self._set_memory(d, a)
             # Name Table 2
-            elif a >= 0x2800 and a < 0x2C00:
+            elif 0x2800 <= a < 0x2C00:
                 if self._mapper.mirror_mode() == 0:
                     self._set_memory(d, a + 0x0400)
                     # Mirrors
@@ -131,7 +131,7 @@ class PPUMemory(object):
                 # Escribimos en la posición indicada
                 self._set_memory(d, a)
             # Name Table 3
-            elif a >= 0x2C00 and a < 0x3000:
+            elif 0x2C00 <= a < 0x3000:
                 if self._mapper.mirror_mode() == 0:
                     self._set_memory(d, a - 0x0400)
                     # Mirrors
@@ -156,10 +156,10 @@ class PPUMemory(object):
                 # Escribimos en la posición indicada
                 self._set_memory(d, a)
             # Mirrors Name Tables y Attr Tables
-            elif a >= 0x3000 and a < 0x3F00:
+            elif 0x3000 <= a < 0x3F00:
                 self.write_data(d, a - 0x1000)
             # Paletas
-            elif a >= 0x3F00 and a < 0x3F20:
+            elif 0x3F00 <= a < 0x3F20:
                 # Si se escribe en el elemento de background o su mirror se escribe el valor de background
                 # en todas las paletas mod 4 (pero no al contrario)
                 if a == 0x3F00 or a == 0x3F10:
@@ -179,7 +179,7 @@ class PPUMemory(object):
                     # Escribimos en la posición indicada
                     self._set_memory(d, a)
             # Mirrors paletas
-            elif a >= 0x3F20 and a < 0x4000:
+            elif 0x3F20 <= a < 0x4000:
                 self.write_data(d, ((a - 0x3F20) % 0x0020) + 0x3F00)
 
         # Mirrors generales
