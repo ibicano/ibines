@@ -3,6 +3,7 @@
 #import pygame
 import sdl2.ext
 import time
+from sdl2 import *
 
 """
 GFX
@@ -19,6 +20,9 @@ class GFX(object):
         pass
 
     def fill(self, color=(0, 0, 0)):
+        pass
+
+    def clear(self):
         pass
 
     def update(self):
@@ -75,40 +79,25 @@ class GFX_Pygame(GFX):
 class GFX_PySdl2(GFX):
 
     def __init__(self):
-        self._window = sdl2.ext.Window("Ventana", size=(256, 240))
-        self._surface = self._window.get_surface()
-        self._pixels = sdl2.ext.PixelView(self._surface)
-        self.fill((0, 0, 0))
-        self._window.show()
+        self._window = SDL_CreateWindow("Ventana", 0, 0, 256, 240, 0)
+        self._renderer = SDL_CreateRenderer(self._window, -1, SDL_RENDERER_ACCELERATED)
+        #SDL_SetRenderDrawBlendMode(self._renderer, SDL_BLENDMODE_NONE)
 
-        # Buffer para mejorar el rendimiento.
-        # Los pixels se escriben a este buffer con un flag que indica si su valor
-        # ha cambiado respecto al valor anterior, de tal forma que se pintan cuando
-        # se ejecuta la función "update()" sólo si se han modificado.
-        self._buffer = [None] * 256
-        for x in range(256):
-            self._buffer[x] = [None] * 256
-
-        for x in range(256):
-            for y in range(240):
-                self._buffer[x][y] = {"color": (0, 0, 0), "modified": 0}
 
 
     def draw_pixel(self, x, y, color=(0, 0, 0)):
-        if self._buffer[x][y]["color"] != color:
-            self._buffer[x][y]["color"] = color
-            self._buffer[x][y]["modified"] = 1
-        else:
-            self._buffer[x][y]["modified"] = 0
+        SDL_SetRenderDrawColor(self._renderer, color[0], color[1], color[2], 1)
+        SDL_RenderDrawPoint(self._renderer, x, y)
 
 
     def fill(self, color):
-        sdl2.ext.fill(self._surface, sdl2.ext.COLOR(color))
+        pass
+
+
+    def clear(self):
+        SDL_RenderClear(self._renderer)
 
 
     def update(self):
-        for x in range(256):
-            for y in range(240):
-                if self._buffer[x][y]["modified"]:
-                    self._pixels[y][x] = sdl2.ext.COLOR(self._buffer[x][y]["color"])
-        self._window.refresh()
+        SDL_RenderPresent(self._renderer)
+        SDL_RenderClear(self._renderer)
