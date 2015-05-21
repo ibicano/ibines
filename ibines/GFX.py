@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-#import pygame
 import sdl2.ext
 import time
 from sdl2 import *
@@ -30,73 +29,45 @@ class GFX(object):
         pass
 
 
-class GFX_Pygame(GFX):
-
-    def __init__(self):
-        ###########################################################################
-        # Variables de instancia
-        ###########################################################################
-        self._screen = None
-        self._pixels = None
-        ###########################################################################
-        ###########################################################################
-
-        pygame.display.init()
-        self._screen = pygame.display.set_mode((256, 240))
-        self._screen.fill((0,0,0))
-        self._pixels = pygame.PixelArray(self._screen)
-
-
-    def draw_pixel(self, x, y, color=(0, 0, 0)):
-        self._pixels[x][y] = self._screen.map_rgb(color)
-
-
-    def fill(self, color=(0, 0, 0)):
-        self._screen.fill(color)
-
-
-    def update(self):
-        pygame.display.update()
-
-
-    def run(self):
-        while 1:
-            self._screen.fill((255,0,0))
-            #for x in range(len(self._pixels)):
-                #for y in range(len(self._pixels[x])):
-                    #if (x % 2) == 0:
-                        #if (y % 2) != 0:
-                            #self._pixels[x][y] = self._screen.map_rgb((0,0,255))
-                    #elif (x % 2) != 0:
-                        #if (y % 2) == 0:
-                            #self._pixels[x][y] = self._screen.map_rgb((0,0,255))
-
-            self._pixels[50:100,20:200] = self._screen.map_rgb((0,0,255))
-
-            pygame.display.update()
-            time.sleep(0.04)
-
-
 class GFX_PySdl2(GFX):
 
     def __init__(self):
+        # Objeto SDL de la ventana
         self._window = SDL_CreateWindow("Ventana", 0, 0, 256, 240, 0)
+
+        # Crea una superficie para inicializar la textura
         self._surface = SDL_CreateRGBSurface(0, 256, 240, 32, 0, 0, 0, 0)
+
+        # Formato del pixel tomado de la superficie inicializada automáticamente
         self._pixel_format = self._surface.contents.format
+
+        # Renderizador
         self._renderer = SDL_CreateRenderer(self._window, -1, SDL_RENDERER_ACCELERATED)
 
+        # Textura que almacenará la información de los pixels
         self._texture = SDL_CreateTextureFromSurface(self._renderer, self._surface)
 
+        # Información de los pixeles. Almacena los pixeles en un array líneal en el que cada
+        # posición es un píxel representado por un entero de 32 bits en formato ARGB
         self._pixels = (c_uint32 * 61440)()
 
+        # Actualiza la textura con el array de pixeles. El último parámetro es el número
+        # de bytes que tiene una lñínea hortizontal (256*4=1024)
         SDL_UpdateTexture(self._texture, None, self._pixels, 1024)
+
+        # Copia la textura al renderizador
         SDL_RenderCopy(self._renderer, self._texture, None, None)
+
+        # Renderiza la pantalla
         SDL_RenderPresent(self._renderer)
 
 
     def draw_pixel(self, x, y, color=(0, 0, 0)):
-        p = (y * 256) + x
-        self._pixels[p] = SDL_MapRGBA(self._pixel_format, color[0], color[1], color[2], 0)
+        # Calcula la posición x,y del pixel en el array lineal de pixeles
+        p = (y << 8) | x
+
+        # Asigna el valos del pixel como un entero de 32 bits con formato ARGB
+        self._pixels[p] = 0xFF000000 | color[0] << 16 | color[1] << 8 | color[2]
 
 
     def fill(self, color):
