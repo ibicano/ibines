@@ -590,8 +590,8 @@ class PPU(object):
                 if sprite.is_in(x, y, self.control_1_sprites_size_bit_5()):
                     transparent_pixel = self.draw_sprite_pixel(sprite, x, y, is_background)
 
-                    if sprite.sprite_zero and not transparent_pixel and x != 255:
-                        self.set_sprite_hit(not is_background)
+                    if sprite.sprite_zero and not transparent_pixel and not is_background and x != 255:
+                        self.set_sprite_hit(1)
 
 
     # TODO: Acabar la implementación de los sprites
@@ -649,8 +649,8 @@ class PPU(object):
 
 
         # Si el pixel del sprite no es vacío
-        if pattern_palette[pixel_x][pixel_y] % 4 != 0:
-            # PInta el pixel si tiene prioridad sobre las nametables, o en caso contrario si el color de fondo es transparente
+        if pattern_palette[pixel_x][pixel_y] & 0x03 != 0:
+            # Pinta el pixel si tiene prioridad sobre las nametables, o en caso contrario si el color de fondo es transparente
             if sprite.get_priority() == 0 or is_background:
                 self._gfx.draw_pixel(x, y, pattern_rgb[pixel_x][pixel_y])
 
@@ -737,7 +737,7 @@ class PPU(object):
                 palette_index = (0x00 | ((byte_1 & (0x01 << x)) >> x) | (((byte_2 & (0x01 << x)) >> x) << 1) | ((attr_color & 0x03) << 2))
 
                 # Asigna el índice de la paleta a la posición correspondiente:
-                pattern_palette[7 - x][7 - y] = palette_index
+                pattern_palette[7 - x][y] = palette_index
 
                 color_index = self._memory.read_data(palette_addr + palette_index) & 0x3F
                 rgb = self.get_color(color_index)
