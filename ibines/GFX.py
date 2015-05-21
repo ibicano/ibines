@@ -81,37 +81,22 @@ class GFX_PySdl2(GFX):
 
     def __init__(self):
         self._window = SDL_CreateWindow("Ventana", 0, 0, 256, 240, 0)
-        self._surface = SDL_GetWindowSurface(self._window)
+        self._surface = SDL_CreateRGBSurface(0, 256, 240, 32, 0, 0, 0, 0)
         self._pixel_format = self._surface.contents.format
         self._renderer = SDL_CreateRenderer(self._window, -1, SDL_RENDERER_ACCELERATED)
 
-
-
-        #self._texture = SDL_CreateTexture(self._renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, 256, 240)
         self._texture = SDL_CreateTextureFromSurface(self._renderer, self._surface)
 
-        '''
-        array_pixels = c_uint32 * 61440
-        self._pixels = array_pixels()
+        self._pixels = (c_uint32 * 61440)()
 
-        for x in range(61440):
-            p = SDL_MapRGBA(self._pixel_format, 0, 0, 0, 255)
-            self._pixels[x] = p
-        '''
-        self._pixels = ""
-        for x in range(61440):
-            self._pixels += 'd'
-            self._pixels += 'd'
-            self._pixels += 'd'
-            self._pixels += 'd'
-
-
-        SDL_UpdateTexture(self._texture, None, cast(c_char_p(self._pixels), c_void_p), c_int(0))
+        SDL_UpdateTexture(self._texture, None, self._pixels, 1024)
         SDL_RenderCopy(self._renderer, self._texture, None, None)
         SDL_RenderPresent(self._renderer)
 
+
     def draw_pixel(self, x, y, color=(0, 0, 0)):
-        pass
+        p = (y * 256) + x
+        self._pixels[p] = SDL_MapRGBA(self._pixel_format, color[0], color[1], color[2], 0)
 
 
     def fill(self, color):
@@ -123,9 +108,6 @@ class GFX_PySdl2(GFX):
 
 
     def update(self):
-        SDL_UpdateTexture(self._texture, None, cast(c_char_p(self._pixels), c_void_p), c_int(0))
-        #SDL_UnlockTexture(self._texture)
-
+        SDL_UpdateTexture(self._texture, None, self._pixels, 1024)
+        SDL_RenderCopy(self._renderer, self._texture, None, None)
         SDL_RenderPresent(self._renderer)
-        #SDL_RenderClear(self._renderer)
-        #SDL_LockTexture(self._texture, None, self._pixels, c_int(0))
