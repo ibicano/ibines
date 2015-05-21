@@ -14,7 +14,8 @@ implementación inicial utiliza SDL a través de PyGame.
 
 class GFX(object):
     def __init__(self):
-        pass
+        self._viewport_width = 512
+        self._viewport_height = 480
 
     def draw_pixel(self, x, y, color=(0, 0, 0)):
         pass
@@ -32,8 +33,10 @@ class GFX(object):
 class GFX_PySdl2(GFX):
 
     def __init__(self):
+        super(GFX_PySdl2, self).__init__()
+        
         # Objeto SDL de la ventana
-        self._window = SDL_CreateWindow("Ventana", 0, 0, 256, 240, 0)
+        self._window = SDL_CreateWindow("Ventana", 0, 0, self._viewport_width, self._viewport_height, 0)
 
         # Crea una superficie para inicializar la textura
         self._surface = SDL_CreateRGBSurface(0, 256, 240, 32, 0, 0, 0, 0)
