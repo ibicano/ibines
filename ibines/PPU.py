@@ -190,9 +190,9 @@ class PPU(object):
     # Escribe el registro indicado por su dirección en memoria
     def write_reg(self, data, addr):
         if addr == 0x2000:
-            self.write_reg_control_1(data)
+            self.write_reg_2000(data)
         elif addr == 0x2001:
-            self.write_reg_control_2(data)
+            self.write_reg_2001(data)
         elif addr == 0x2003:
             self.write_reg_2003(data)
         elif addr == 0x2004:
@@ -214,10 +214,8 @@ class PPU(object):
         self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 10, d & 0x01)
         self._reg_vram_tmp = nesutils.set_bit(self._reg_vram_tmp, 11, d & 0x02)
 
-    def write_reg_control_1(self, data):
-        self._reg_control_1 = data & 0xFF
 
-    def write_reg_control_2(self, data):
+    def write_reg_2001(self, data):
         self._reg_control_2 = data & 0xFF
 
 
@@ -474,7 +472,8 @@ class PPU(object):
 
     # Finaliza un período VBLANK
     def end_vblank(self):
-        self._reg_status = self._reg_status & 0x7F
+        self._reg_status = 0
+        self._started_vblank = 0
 
 
     # Devuelve si hay una solicitud de interrupción vblank
@@ -491,7 +490,7 @@ class PPU(object):
 
     # Indica si nos encontramos en un periodo VBLANK
     def is_vblank(self):
-        return nesutils.get_bit(self._reg_status, 7)
+        return self._scanline_number > 240
 
     # FIXME: optimizar esta función que es la que se come toda la potencia (en draw_pixel())
     def draw_scanline(self):
