@@ -543,15 +543,11 @@ class PPU(object):
                 self.incr_yscroll()
 
             # Cuando se termina de dibujar el scanline siempre hay que usar otro "pattern"
-            if self._reg_x_offset == 0: self._fetch_pattern = True
+            self._fetch_pattern = True
 
 
     # Dibuja un pixel de la pantalla
     def draw_pixel(self, x, y):
-        #sprites_pt = self.control_1_sprites_pattern_bit_3()
-        #background_pt = self.control_1_background_pattern_bit_4()
-        #sprite_size = self.control_1_sprites_size_bit_5()
-
         is_background = True
 
         if self.control_2_background_bit_3():
