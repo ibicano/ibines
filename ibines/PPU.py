@@ -495,6 +495,7 @@ class PPU(object):
     # FIXME: optimizar esta función que es la que se come toda la potencia (en draw_pixel())
     def draw_scanline(self):
         if 1 <= self._scanline_number <= 240:
+            y = self._scanline_number - 1
             if self.control_2_background_bit_3():
                 # Copia el desplazamiento X del registro tmp al addr al principio del scanline
                 tmp = self._reg_vram_tmp
@@ -527,7 +528,7 @@ class PPU(object):
 
             # Pintamos el pixel
             for x in range(PPU.FRAME_WIDTH):
-                self.draw_pixel(x, self._scanline_number - 1)
+                self.draw_pixel(x, y)
 
                 # Incrementamos el registro de dirección horizontalmente si estamos pintando el background
                 if self.control_2_background_bit_3():
@@ -573,20 +574,23 @@ class PPU(object):
             else:
                 is_background = False
 
-            self._gfx.draw_pixel(x, y, self._pattern_rgb[pattern_pixel_x][pattern_pixel_y])
+            if self.control_2_clip_background_bit_1() or (not self.control_2_clip_background_bit_1() and x >= 8):
+                self._gfx.draw_pixel(x, y, self._pattern_rgb[pattern_pixel_x][pattern_pixel_y])
 
         # Dibuja los sprites que estén en el pixel
         if self.control_2_sprites_bit_4():
-            n = len(self._sprites_scanline)
-            while n > 0:
-                n -= 1
-                sprite = self._sprites_scanline[n]
+            if self.control_2_clip_sprites_bit_2() or (not self.control_2_clip_sprites_bit_2() and x >= 8):
+                n = len(self._sprites_scanline)
+                while n > 0:
+                    n -= 1
+                    sprite = self._sprites_scanline[n]
 
-                if sprite.is_in(x, y, self.control_1_sprites_size_bit_5()):
-                    transparent_pixel = self.draw_sprite_pixel(sprite, x, y, is_background)
+                    if sprite.is_in(x, y, self.control_1_sprites_size_bit_5()):
+                        transparent_pixel = self.draw_sprite_pixel(sprite, x, y, is_background)
 
-                    if sprite.sprite_zero and not transparent_pixel and not is_background and x != 255:
-                        self.set_sprite_hit(1)
+                        if self.control_2_clip_background_bit_1() or (not self.control_2_clip_background_bit_1() and x >= 8):
+                            if sprite.sprite_zero and not transparent_pixel and not is_background and x != 255:
+                                self.set_sprite_hit(1)
 
 
     # TODO: Acabar la implementación de los sprites
@@ -850,7 +854,7 @@ class Sprite(object):
 
 
     def load_by_addr(self, sprite_memory, sprite_addr):
-        self._offset_y = sprite_memory.read_data(sprite_addr)
+        self._offset_y = sprite_memory.read_data(sprite_addr) + 1
         self._index = sprite_memory.read_data(sprite_addr + 1)
         self._attributes = sprite_memory.read_data(sprite_addr + 2)
         self._offset_x = sprite_memory.read_data(sprite_addr + 3)
