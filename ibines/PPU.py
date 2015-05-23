@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import nesutils
-import time
+import copy
 from PPUMemory import PPUMemory
 from SpriteMemory import SpriteMemory
 from GFX import *
@@ -102,6 +102,11 @@ class PPU(object):
         for x in range(8):
             self._tile_sprite_rgb_1[x] = [(0, 0, 0)] * 8
 
+
+        # Cache de Tiles:
+        self._tiles_cache = {}
+
+
         # Registros
 
         # Registros I/O
@@ -157,6 +162,10 @@ class PPU(object):
             if self.control_2_background_bit_3():
                 self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
                 self._gfx.update()
+
+            #Reseteamos la cache de tiles al principio del frame:
+            self._tiles_cache = {}
+
             self._end_frame = False
 
 
@@ -591,7 +600,11 @@ class PPU(object):
 
                 attr_color = self.calc_attr_color(name_table_addr)
 
-                self.fetch_pattern(pattern_table_number, pattern_index, attr_color, PPUMemory.ADDR_IMAGE_PALETTE, self._tile_bg_index_palette, self._tile_bg_rgb)
+                if (pattern_table_number, pattern_index, attr_color) in self._tiles_cache:
+                    self._tile_bg_index_palette, self._tile_bg_rgb = self._tiles_cache[pattern_table_number, pattern_index, attr_color]
+                else:
+                    self._tile_bg_index_palette, self._tile_bg_rgb = self.fetch_pattern(pattern_table_number, pattern_index, attr_color, PPUMemory.ADDR_IMAGE_PALETTE)
+                    self._tiles_cache[(pattern_table_number, pattern_index, attr_color)] = (self._tile_bg_index_palette, self._tile_bg_rgb)
 
                 self._fetch_pattern = False
 
@@ -637,7 +650,7 @@ class PPU(object):
         # Si los sprites son 8x8
         if size_bit == 0:
             # Obtenemos el tile
-            self.fetch_pattern(pattern_table, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE, self._tile_sprite_index_palette, self._tile_sprite_rgb)
+            self._tile_sprite_index_palette, self._tile_sprite_rgb = self.fetch_pattern(pattern_table, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
 
             # Si está activado el flag de invertir horizontalmente
             if sprite.get_horizontal_flip():
@@ -649,8 +662,8 @@ class PPU(object):
         # Si los sprites son 8x16
         else:
             # Obtenemos los tiles
-            self.fetch_pattern(pattern_table & 0x01, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE, self._tile_sprite_index_palette_0, self._tile_sprite_rgb)
-            self.fetch_pattern(pattern_table & 0x01, sprite.get_index() + 1, sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE, self._tile_sprite_index_palette_1, self._tile_sprite_rgb)
+            self._tile_sprite_index_palette_0, self._tile_sprite_rgb_0 = self.fetch_pattern(pattern_table & 0x01, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
+            self._tile_sprite_index_palette_1, self._tile_sprite_rgb_1 = self.fetch_pattern(pattern_table & 0x01, sprite.get_index() + 1, sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
 
             pattern_palette = [None] * 16
             pattern_rgb = [None] * 16
@@ -773,7 +786,15 @@ class PPU(object):
     # Lee el patrón "pattern_index" de la tabla de patrones "pattern_table" con el color "attr_color" y la paleta
     # de colores ubicada en la dirección de memoria "palette_addr" y lo coloca en las variables de salida
     # "tile_palette_index" y "tile_rgb"
-    def fetch_pattern(self, pattern_table, pattern_index, attr_color, palette_addr, tile_palette_index, tile_rgb):
+    def fetch_pattern(self, pattern_table, pattern_index, attr_color, palette_addr):
+        tile_palette_index = [None] * 8
+        for x in range(8):
+            tile_palette_index[x] = [0] * 8
+
+        tile_rgb = [None] * 8
+        for x in range(8):
+            tile_rgb[x] = [(0, 0, 0)] * 8
+
         if pattern_table == 0:
             addr = 0x0000
         else:
@@ -799,6 +820,8 @@ class PPU(object):
                 tile_rgb[7 - x][y] = rgb
 
             y = (y + 1) % 8
+
+        return (tile_palette_index, tile_rgb)
 
 
     # TODO: Borrar función obsoleta
