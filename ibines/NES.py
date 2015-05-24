@@ -49,46 +49,39 @@ class NES(object):
 
         cycles = 0
 
-        try:
-            while 1:
-                # Si hay interrupciones y la CPU no está ocupada, las lanzamos
-                if self._ppu.get_int_vblank():
-                    self._cpu.interrupt_vblank()        # Procesamos VBLANK
-                    cycles += self._cpu.INT_LATENCY
 
-                # Fetch y Exec siguiente instrucción (si hemos ejecutado una
-                # interrupción en el paso anterior será su rutina de interrupción)
-                inst = self._cpu.fetch_inst()
-                cycles += inst.execute()
+        while 1:
+            # Si hay interrupciones y la CPU no está ocupada, las lanzamos
+            if self._ppu.get_int_vblank():
+                self._cpu.interrupt_vblank()        # Procesamos VBLANK
+                cycles += self._cpu.INT_LATENCY
 
-                # Restamos los ciclos de ejecución a la PPU
-                self._ppu.exec_cycle(cycles)
+            # Fetch y Exec siguiente instrucción (si hemos ejecutado una
+            # interrupción en el paso anterior será su rutina de interrupción)
+            inst = self._cpu.fetch_inst()
+            cycles += inst.execute()
 
-                # Estadísticas
-                stats_counter += 1
-                stats_cycles += cycles
+            # Restamos los ciclos de ejecución a la PPU
+            self._ppu.exec_cycle(cycles)
 
-                if stats_cycles > 5000:
-                    stats_clock = time.time()
+            # Estadísticas
+            stats_counter += 1
+            stats_cycles += cycles
 
-                    if stats_clock - stats_total_time >= 1:
-                        print str(stats_cycles) + " ciclos por segundo"
-                        stats_cycles = 0
-                        stats_total_time = stats_clock
+            if stats_cycles > 5000:
+                stats_clock = time.time()
+
+                if stats_clock - stats_total_time >= 1:
+                    print str(stats_cycles) + " ciclos por segundo"
+                    stats_cycles = 0
+                    stats_total_time = stats_clock
 
 
-                # Emula la velocidad de la NES
-                #time.sleep(0.0000006)
+            # Emula la velocidad de la NES
+            #time.sleep(0.0000006)
 
-                cycles = 0
-        except Exception as ex:
-            #print "Cerrando fichero test"
-            #test.close()
+            cycles = 0
 
-            traceback.print_exc()
-            raise ex
-
-        #test.close()
 
 
     def read_reg_4016(self):

@@ -560,6 +560,7 @@ class PPU(object):
             # Si hay 8 sprites en el scanline activamos el flag corespondiente del registro $2002
             if n == 9:
                 self._reg_status = nesutils.set_bit(self._reg_status, 5, 1)
+                n -= 1
 
 
             # Pintamos el pixel

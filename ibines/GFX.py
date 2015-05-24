@@ -2,6 +2,7 @@
 
 import sdl2.ext
 import time
+import array
 from sdl2 import *
 from ctypes import *
 
@@ -52,11 +53,11 @@ class GFX_PySdl2(GFX):
 
         # Información de los pixeles. Almacena los pixeles en un array líneal en el que cada
         # posición es un píxel representado por un entero de 32 bits en formato ARGB
-        self._pixels = (c_uint32 * 61440)()
+        self._pixels = array.array("I", [0] * 61440)
 
         # Actualiza la textura con el array de pixeles. El último parámetro es el número
         # de bytes que tiene una lñínea hortizontal (256*4=1024)
-        SDL_UpdateTexture(self._texture, None, self._pixels, 1024)
+        SDL_UpdateTexture(self._texture, None, self._pixels.buffer_info()[0], 1024)
 
         # Copia la textura al renderizador
         SDL_RenderCopy(self._renderer, self._texture, None, None)
@@ -86,6 +87,6 @@ class GFX_PySdl2(GFX):
 
 
     def update(self):
-        SDL_UpdateTexture(self._texture, None, self._pixels, 1024)
+        SDL_UpdateTexture(self._texture, None, self._pixels.buffer_info()[0], 1024)
         SDL_RenderCopy(self._renderer, self._texture, None, None)
         SDL_RenderPresent(self._renderer)
