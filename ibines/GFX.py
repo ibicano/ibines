@@ -71,9 +71,9 @@ class GFX_PySdl2(GFX):
         p = (y << 8) | x
 
         v = 0xFF000000 | color[0] << 16 | color[1] << 8 | color[2]
-        if self._pixels[p] != v:
+
         # Asigna el valos del pixel como un entero de 32 bits con formato ARGB
-            self._pixels[p] = v
+        self._pixels[p] = v
 
 
     def fill(self, color):
