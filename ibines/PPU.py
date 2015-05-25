@@ -53,7 +53,7 @@ class PPU(object):
         self._scanlines_pending = 0
 
         # Lista de sprites a dibujar en el scanline actual
-        self.sprites_scanline = []
+        self._sprites_scanline = []
 
         # Interrupciones
         self._int_vblank = 0
@@ -544,24 +544,9 @@ class PPU(object):
 
                 self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 10, tmp & 0x0400)
 
-
             # Preparamos la lista de sprites del scanline
-            sprites_list = self.get_sprites_list()
-            i = 0
-            n = 0
-            self._sprites_scanline = []
-            while i < 64 and n < 9:
-                sprite = sprites_list[i]
-                if sprite.is_in_scanline(self._scanline_number, self.control_1_sprites_size_bit_5()):
-                    self._sprites_scanline.append(sprite)
-                    n += 1
-                i += 1
-
-            # Si hay 8 sprites en el scanline activamos el flag corespondiente del registro $2002
-            if n == 9:
-                self._reg_status = nesutils.set_bit(self._reg_status, 5, 1)
-                n -= 1
-
+            #sprites_list, self._sprites_scanline = self.get_sprites_list()
+            self._sprites_scanline = self.get_sprites_scanline()
 
             # Pintamos el pixel
             for x in range(PPU.FRAME_WIDTH):
@@ -699,15 +684,50 @@ class PPU(object):
 
 
     # Devuelve una lista de objetos de clase Sprite con los sprites de la memoria de sprites
-    # FIX: Esto habría que reorganizarlo para que quede más claro
+    # FIXME: Borrar esta función que ya no se usa
     def get_sprites_list(self):
         sprites_list = []
+        sprites_scanline = []
+        n = 0
+
         for addr in range(0x00,0xFF,0x04):
             sprite = Sprite()
             sprite.load_by_addr(self._sprite_memory, addr)
             sprites_list.append(sprite)
 
-        return sprites_list
+            if sprite.is_in_scanline(self._scanline_number, self.control_1_sprites_size_bit_5()) and n < 9:
+                sprites_scanline.append(sprite)
+                n += 1
+
+        # Si hay 8 sprites en el scanline activamos el flag corespondiente del registro $2002
+        if n == 9:
+            self._reg_status = nesutils.set_bit(self._reg_status, 5, 1)
+            del sprites_scanline[8]
+
+        return sprites_list, sprites_scanline
+
+
+    # Devuelve una lista con los sprites del scanline
+    def get_sprites_scanline(self):
+        sprites_scanline = []
+        n = 0
+        addr = 0x00
+        while addr < 0x100 and n < 9:
+            sprite = Sprite()
+            sprite.load_by_addr(self._sprite_memory, addr)
+
+            if sprite.is_in_scanline(self._scanline_number, self.control_1_sprites_size_bit_5()):
+                sprites_scanline.append(sprite)
+                n += 1
+
+            addr += 0x04
+
+        # Si hay 8 sprites en el scanline activamos el flag corespondiente del registro $2002
+        if n == 9:
+            self._reg_status = nesutils.set_bit(self._reg_status, 5, 1)
+            del sprites_scanline[8]
+
+        return sprites_scanline
 
 
     # Devuelve el color almacenado en la attr table para el tile de una dirección de la name table
