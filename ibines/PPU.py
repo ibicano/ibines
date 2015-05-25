@@ -363,12 +363,12 @@ class PPU(object):
 
     def incr_xscroll(self):
         r = self._reg_vram_addr
-        self._reg_x_offset = (self._reg_x_offset + 1) % 8
+        self._reg_x_offset = (self._reg_x_offset + 1) & 0x07
         bit_10 = (r & 0x0400) >> 10
         bits_0_4 = r & 0x001F
 
         if self._reg_x_offset == 0:
-            bits_0_4 = (bits_0_4 + 1) % 32
+            bits_0_4 = (bits_0_4 + 1) & 0x1F
 
             if bits_0_4 == 0x0:
                 bit_10 = ~bit_10 & 0x1
@@ -380,7 +380,7 @@ class PPU(object):
 
     def incr_yscroll(self):
         r = self._reg_vram_addr
-        y_offset = (((r & 0x7000) >> 12) + 1) % 8
+        y_offset = (((r & 0x7000) >> 12) + 1) & 0x07
         bit_11 = (r & 0x0800) >> 11
         bits_5_9 = (r & 0x03E0) >> 5
 
@@ -532,7 +532,9 @@ class PPU(object):
     def draw_scanline(self):
         if 1 <= self._scanline_number <= 240:
             y = self._scanline_number - 1
-            if self.control_2_background_bit_3():
+            background_bit = self.control_2_background_bit_3()
+
+            if background_bit:
                 # Copia el desplazamiento X del registro tmp al addr al principio del scanline
                 tmp = self._reg_vram_tmp
 
@@ -549,7 +551,7 @@ class PPU(object):
                 self.draw_pixel(x, y)
 
                 # Incrementamos el registro de dirección horizontalmente si estamos pintando el background
-                if self.control_2_background_bit_3():
+                if background_bit:
                     self.incr_xscroll()
 
                 # Si hemos dibujado el último pixel en anchura del "pattern", indicamos que hay que usar otro
@@ -557,7 +559,7 @@ class PPU(object):
                     self._fetch_pattern = True
 
             # Incrementamos el registro de dirección verticalmente si estamos pintando el background
-            if self.control_2_background_bit_3():
+            if background_bit:
                 self.incr_yscroll()
 
             # Cuando se termina de dibujar el scanline siempre hay que usar otro "pattern"
@@ -598,16 +600,19 @@ class PPU(object):
 
         # Dibuja los sprites que estén en el pixel
         if self.control_2_sprites_bit_4():
-            if self.control_2_clip_sprites_bit_2() or (not self.control_2_clip_sprites_bit_2() and x >= 8):
+            if self.control_2_clip_sprites_bit_2() or x >= 8:
                 n = len(self._sprites_scanline)
+                bg_bit = self.control_2_clip_background_bit_1()
+                sprites_size_bit = self.control_1_sprites_size_bit_5()
+                clip_bg_bit = self.control_2_clip_background_bit_1()
                 while n > 0:
                     n -= 1
                     sprite = self._sprites_scanline[n]
 
-                    if sprite.is_in(x, y, self.control_1_sprites_size_bit_5()):
+                    if sprite.is_in(x, y, sprites_size_bit):
                         transparent_pixel = self.draw_sprite_pixel(sprite, x, y, is_background)
 
-                        if self.control_2_clip_background_bit_1() or (not self.control_2_clip_background_bit_1() and x >= 8):
+                        if clip_bg_bit or x >= 8:
                             if sprite.sprite_zero and not transparent_pixel and not is_background and x != 255:
                                 self.set_sprite_hit(1)
 
@@ -702,11 +707,12 @@ class PPU(object):
         sprites_scanline = []
         n = 0
         addr = 0x00
+        sprites_size_bit = self.control_1_sprites_size_bit_5()
         while addr < 0x100 and n < 9:
             sprite = Sprite()
             sprite.load_by_addr(self._sprite_memory, addr)
 
-            if sprite.is_in_scanline(self._scanline_number, self.control_1_sprites_size_bit_5()):
+            if sprite.is_in_scanline(self._scanline_number, sprites_size_bit):
                 sprites_scanline.append(sprite)
                 n += 1
 
