@@ -136,7 +136,7 @@ file_name = "../roms/Super Mario Bros. (E).nes"
 #file_name = "../tests/instr_test-v4/all_instrs.nes"
 nes = NES(file_name)
 
-nes.run()
+#nes.run()
 
 # Código de profiling
-#cProfile.run("nes.run()", "profiling.log")
+cProfile.run("nes.run()", "profiling.log")

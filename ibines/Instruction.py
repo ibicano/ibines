@@ -77,6 +77,9 @@ class Instruction(object):
     def get_operand(self):
         return self._operand
 
+    def set_operand(self, operand):
+        self._operand = operand
+
 
     ###########################################################################
     # Variables de clase
@@ -3485,241 +3488,217 @@ class TYA(Instruction):
     CYCLES = 2
 
 
-Instruction.OPCODE_INDEX = {
-        # ADC
-        0x69: ADC_inmediate,
-        0x65: ADC_zero,
-        0x75: ADC_zerox,
-        0x6D: ADC_abs,
-        0x7D: ADC_absx,
-        0x79: ADC_absy,
-        0x61: ADC_preindexi,
-        0x71: ADC_postindexi,
-        # AND
-        0x29: AND_inmediate,
-        0x25: AND_zero,
-        0x35: AND_zerox,
-        0x2D: AND_abs,
-        0x3D: AND_absx,
-        0x39: AND_absy,
-        0x21: AND_preindexi,
-        0x31: AND_postindexi,
-        # ASL
-        0x0A: ASL_accumulator,
-        0x06: ASL_zero,
-        0x16: ASL_zerox,
-        0x0E: ASL_abs,
-        0x1E: ASL_absx,
-        # BCC
-        0x90: BCC,
-        # BCS
-        0xB0: BCS,
-        # BEQ
-        0xF0: BEQ,
-        # BIT
-        0x24: BIT_zero,
-        0x2C: BIT_abs,
-        # BMI
-        0x30: BMI,
-        # BNE
-        0xD0: BNE,
-        # BPL
-        0x10: BPL,
-        # BRK
-        0x00: BRK,
-        # BVC
-        0x50: BVC,
-        # BVS
-        0x70: BVS,
-        # CLC
-        0x18: CLC,
-        # CLD
-        0xD8: CLD,
-        # CLI
-        0x58: CLI,
-        # CLV
-        0xB8: CLV,
-        # CMP
-        0xC9: CMP_inmediate,
-        0xC5: CMP_zero,
-        0xD5: CMP_zerox,
-        0xCD: CMP_abs,
-        0xDD: CMP_absx,
-        0xD9: CMP_absy,
-        0xC1: CMP_preindexi,
-        0xD1: CMP_postindexi,
-        # CPX
-        0xE0: CPX_inmediate,
-        0xE4: CPX_zero,
-        0xEC: CPX_abs,
-        # CPY
-        0xC0: CPY_inmediate,
-        0xC4: CPY_zero,
-        0xCC: CPY_abs,
-        # DEC
-        0xC6: DEC_zero,
-        0xD6: DEC_zerox,
-        0xCE: DEC_abs,
-        0xDE: DEC_absx,
-        # DEX
-        0xCA: DEX,
-        # DEY
-        0x88: DEY,
-        # EOR
-        0x49: EOR_inmediate,
-        0x45: EOR_zero,
-        0x55: EOR_zerox,
-        0x4D: EOR_abs,
-        0x5D: EOR_absx,
-        0x59: EOR_absy,
-        0x41: EOR_preindexi,
-        0x51: EOR_postindexi,
-        # INC
-        0xE6: INC_zero,
-        0xF6: INC_zerox,
-        0xEE: INC_abs,
-        0xFE: INC_absx,
-        # INX
-        0xE8: INX,
-        # INY
-        0xC8: INY,
-        # JMP
-        0x4C: JMP_abs,
-        0x6C: JMP_indirect,
-        # JSR
-        0x20: JSR,
-        # LDA
-        0xA9: LDA_inmediate,
-        0xA5: LDA_zero,
-        0xB5: LDA_zerox,
-        0xAD: LDA_abs,
-        0xBD: LDA_absx,
-        0xB9: LDA_absy,
-        0xA1: LDA_preindexi,
-        0xB1: LDA_postindexi,
-        # LDX
-        0xA2: LDX_inmediate,
-        0xA6: LDX_zero,
-        0xB6: LDX_zeroy,
-        0xAE: LDX_abs,
-        0xBE: LDX_absy,
-        # LDY
-        0xA0: LDY_inmediate,
-        0xA4: LDY_zero,
-        0xB4: LDY_zerox,
-        0xAC: LDY_abs,
-        0xBC: LDY_absx,
-        # LSR
-        0x4A: LSR_accumulator,
-        0x46: LSR_zero,
-        0x56: LSR_zerox,
-        0x4E: LSR_abs,
-        0x5E: LSR_absx,
-        # NOP
-        0xEA: NOP,
-        # 0x04: NOP_2,
-        # 0x0C: NOP_3,
-        # 0x14: NOP_2,
-        # 0x1A: NOP,
-        # 0x1C: NOP_3,
-        # 0x34: NOP_2,
-        # 0x3A: NOP,
-        # 0x3C: NOP_3,
-        # 0x44: NOP_2,
-        # 0x54: NOP_2,
-        # 0x5A: NOP,
-        # 0x5C: NOP_3,
-        # 0x64: NOP_2,
-        # 0x74: NOP_2,
-        # 0x7A: NOP,
-        # 0x7C: NOP_3,
-        # 0x80: NOP_2,
-        # 0x82: NOP_2,
-        # 0x89: NOP_2,
-        # 0xA3: NOP_2,
-        # 0xC2: NOP_2,
-        # 0xD4: NOP_2,
-        # 0xDA: NOP,
-        # 0xDC: NOP_3,
-        # 0xE2: NOP_2,
-        # 0xEA: NOP,
-        # 0xF4: NOP_2,
-        # 0xFA: NOP,
-        # 0xFC: NOP_3,
-        # ORA
-        0x09: ORA_inmediate,
-        0x05: ORA_zero,
-        0x15: ORA_zerox,
-        0x0D: ORA_abs,
-        0x1D: ORA_absx,
-        0x19: ORA_absy,
-        0x01: ORA_preindexi,
-        0x11: ORA_postindexi,
-        # PHA
-        0x48: PHA,
-        # PHP
-        0x08: PHP,
-        # PLA
-        0x68: PLA,
-        # PLP
-        0x28: PLP,
-        # ROL
-        0x2A: ROL_accumulator,
-        0x26: ROL_zero,
-        0x36: ROL_zerox,
-        0x2E: ROL_abs,
-        0x3E: ROL_absx,
-        # ROR
-        0x6A: ROR_accumulator,
-        0x66: ROR_zero,
-        0x76: ROR_zerox,
-        0x6E: ROR_abs,
-        0x7E: ROR_absx,
-        # RTI
-        0x40: RTI,
-        # RTS
-        0x60: RTS,
-        # SBC
-        0xE9: SBC_inmediate,
-        0xE5: SBC_zero,
-        0xF5: SBC_zerox,
-        0xED: SBC_abs,
-        0xFD: SBC_absx,
-        0xF9: SBC_absy,
-        0xE1: SBC_preindexi,
-        0xF1: SBC_postindexi,
-        # SEC
-        0x38: SEC,
-        # SED
-        0xF8: SED,
-        # SEI
-        0x78: SEI,
-        # STA
-        0x85: STA_zero,
-        0x95: STA_zerox,
-        0x8D: STA_abs,
-        0x9D: STA_absx,
-        0x99: STA_absy,
-        0x81: STA_preindexi,
-        0x91: STA_postindexi,
-        # STX
-        0x86: STX_zero,
-        0x96: STX_zeroy,
-        0x8E: STX_abs,
-        # STY
-        0x84: STY_zero,
-        0x94: STY_zerox,
-        0x8C: STY_abs,
-        # TAX
-        0xAA: TAX,
-        # TAY
-        0xA8: TAY,
-        # TSX
-        0xBA: TSX,
-        # TXA
-        0x8A: TXA,
-        # TXS
-        0x9A: TXS,
-        # TYA
-        0x98: TYA,
-    }
+class InstructionPool(object):
+    def __init__(self, cpu):
+        super(InstructionPool, self).__init__()
+
+        self._cpu = cpu
+        self.pool = {
+            # ADC
+            0x69: ADC_inmediate(None, cpu),
+            0x65: ADC_zero(None, cpu),
+            0x75: ADC_zerox(None, cpu),
+            0x6D: ADC_abs(None, cpu),
+            0x7D: ADC_absx(None, cpu),
+            0x79: ADC_absy(None, cpu),
+            0x61: ADC_preindexi(None, cpu),
+            0x71: ADC_postindexi(None, cpu),
+            # AND
+            0x29: AND_inmediate(None, cpu),
+            0x25: AND_zero(None, cpu),
+            0x35: AND_zerox(None, cpu),
+            0x2D: AND_abs(None, cpu),
+            0x3D: AND_absx(None, cpu),
+            0x39: AND_absy(None, cpu),
+            0x21: AND_preindexi(None, cpu),
+            0x31: AND_postindexi(None, cpu),
+            # ASL
+            0x0A: ASL_accumulator(cpu),
+            0x06: ASL_zero(None, cpu),
+            0x16: ASL_zerox(None, cpu),
+            0x0E: ASL_abs(None, cpu),
+            0x1E: ASL_absx(None, cpu),
+            # BCC
+            0x90: BCC(None, cpu),
+            # BCS
+            0xB0: BCS(None, cpu),
+            # BEQ
+            0xF0: BEQ(None, cpu),
+            # BIT
+            0x24: BIT_zero(None, cpu),
+            0x2C: BIT_abs(None, cpu),
+            # BMI
+            0x30: BMI(None, cpu),
+            # BNE
+            0xD0: BNE(None, cpu),
+            # BPL
+            0x10: BPL(None, cpu),
+            # BRK
+            0x00: BRK(cpu),
+            # BVC
+            0x50: BVC(None, cpu),
+            # BVS
+            0x70: BVS(None, cpu),
+            # CLC
+            0x18: CLC(cpu),
+            # CLD
+            0xD8: CLD(cpu),
+            # CLI
+            0x58: CLI(cpu),
+            # CLV
+            0xB8: CLV(cpu),
+            # CMP
+            0xC9: CMP_inmediate(None, cpu),
+            0xC5: CMP_zero(None, cpu),
+            0xD5: CMP_zerox(None, cpu),
+            0xCD: CMP_abs(None, cpu),
+            0xDD: CMP_absx(None, cpu),
+            0xD9: CMP_absy(None, cpu),
+            0xC1: CMP_preindexi(None, cpu),
+            0xD1: CMP_postindexi(None, cpu),
+            # CPX
+            0xE0: CPX_inmediate(None, cpu),
+            0xE4: CPX_zero(None, cpu),
+            0xEC: CPX_abs(None, cpu),
+            # CPY
+            0xC0: CPY_inmediate(None, cpu),
+            0xC4: CPY_zero(None, cpu),
+            0xCC: CPY_abs(None, cpu),
+            # DEC
+            0xC6: DEC_zero(None, cpu),
+            0xD6: DEC_zerox(None, cpu),
+            0xCE: DEC_abs(None, cpu),
+            0xDE: DEC_absx(None, cpu),
+            # DEX
+            0xCA: DEX(cpu),
+            # DEY
+            0x88: DEY(cpu),
+            # EOR
+            0x49: EOR_inmediate(None, cpu),
+            0x45: EOR_zero(None, cpu),
+            0x55: EOR_zerox(None, cpu),
+            0x4D: EOR_abs(None, cpu),
+            0x5D: EOR_absx(None, cpu),
+            0x59: EOR_absy(None, cpu),
+            0x41: EOR_preindexi(None, cpu),
+            0x51: EOR_postindexi(None, cpu),
+            # INC
+            0xE6: INC_zero(None, cpu),
+            0xF6: INC_zerox(None, cpu),
+            0xEE: INC_abs(None, cpu),
+            0xFE: INC_absx(None, cpu),
+            # INX
+            0xE8: INX(cpu),
+            # INY
+            0xC8: INY(cpu),
+            # JMP
+            0x4C: JMP_abs(None, cpu),
+            0x6C: JMP_indirect(None, cpu),
+            # JSR
+            0x20: JSR(None, cpu),
+            # LDA
+            0xA9: LDA_inmediate(None, cpu),
+            0xA5: LDA_zero(None, cpu),
+            0xB5: LDA_zerox(None, cpu),
+            0xAD: LDA_abs(None, cpu),
+            0xBD: LDA_absx(None, cpu),
+            0xB9: LDA_absy(None, cpu),
+            0xA1: LDA_preindexi(None, cpu),
+            0xB1: LDA_postindexi(None, cpu),
+            # LDX
+            0xA2: LDX_inmediate(None, cpu),
+            0xA6: LDX_zero(None, cpu),
+            0xB6: LDX_zeroy(None, cpu),
+            0xAE: LDX_abs(None, cpu),
+            0xBE: LDX_absy(None, cpu),
+            # LDY
+            0xA0: LDY_inmediate(None, cpu),
+            0xA4: LDY_zero(None, cpu),
+            0xB4: LDY_zerox(None, cpu),
+            0xAC: LDY_abs(None, cpu),
+            0xBC: LDY_absx(None, cpu),
+            # LSR
+            0x4A: LSR_accumulator(cpu),
+            0x46: LSR_zero(None, cpu),
+            0x56: LSR_zerox(None, cpu),
+            0x4E: LSR_abs(None, cpu),
+            0x5E: LSR_absx(None, cpu),
+            # NOP
+            0xEA: NOP(cpu),
+            # ORA
+            0x09: ORA_inmediate(None, cpu),
+            0x05: ORA_zero(None, cpu),
+            0x15: ORA_zerox(None, cpu),
+            0x0D: ORA_abs(None, cpu),
+            0x1D: ORA_absx(None, cpu),
+            0x19: ORA_absy(None, cpu),
+            0x01: ORA_preindexi(None, cpu),
+            0x11: ORA_postindexi(None, cpu),
+            # PHA
+            0x48: PHA(cpu),
+            # PHP
+            0x08: PHP(cpu),
+            # PLA
+            0x68: PLA(cpu),
+            # PLP
+            0x28: PLP(cpu),
+            # ROL
+            0x2A: ROL_accumulator(cpu),
+            0x26: ROL_zero(None, cpu),
+            0x36: ROL_zerox(None, cpu),
+            0x2E: ROL_abs(None, cpu),
+            0x3E: ROL_absx(None, cpu),
+            # ROR
+            0x6A: ROR_accumulator(cpu),
+            0x66: ROR_zero(None, cpu),
+            0x76: ROR_zerox(None, cpu),
+            0x6E: ROR_abs(None, cpu),
+            0x7E: ROR_absx(None, cpu),
+            # RTI
+            0x40: RTI(cpu),
+            # RTS
+            0x60: RTS(cpu),
+            # SBC
+            0xE9: SBC_inmediate(None, cpu),
+            0xE5: SBC_zero(None, cpu),
+            0xF5: SBC_zerox(None, cpu),
+            0xED: SBC_abs(None, cpu),
+            0xFD: SBC_absx(None, cpu),
+            0xF9: SBC_absy(None, cpu),
+            0xE1: SBC_preindexi(None, cpu),
+            0xF1: SBC_postindexi(None, cpu),
+            # SEC
+            0x38: SEC(cpu),
+            # SED
+            0xF8: SED(cpu),
+            # SEI
+            0x78: SEI(cpu),
+            # STA
+            0x85: STA_zero(None, cpu),
+            0x95: STA_zerox(None, cpu),
+            0x8D: STA_abs(None, cpu),
+            0x9D: STA_absx(None, cpu),
+            0x99: STA_absy(None, cpu),
+            0x81: STA_preindexi(None, cpu),
+            0x91: STA_postindexi(None, cpu),
+            # STX
+            0x86: STX_zero(None, cpu),
+            0x96: STX_zeroy(None, cpu),
+            0x8E: STX_abs(None, cpu),
+            # STY
+            0x84: STY_zero(None, cpu),
+            0x94: STY_zerox(None, cpu),
+            0x8C: STY_abs(None, cpu),
+            # TAX
+            0xAA: TAX(cpu),
+            # TAY
+            0xA8: TAY(cpu),
+            # TSX
+            0xBA: TSX(cpu),
+            # TXA
+            0x8A: TXA(cpu),
+            # TXS
+            0x9A: TXS(cpu),
+            # TYA
+            0x98: TYA(cpu),
+        }
