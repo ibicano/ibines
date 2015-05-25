@@ -547,7 +547,7 @@ class PPU(object):
             self._sprites_scanline = self.get_sprites_scanline()
 
             # Pintamos el pixel
-            for x in range(PPU.FRAME_WIDTH):
+            for x in xrange(PPU.FRAME_WIDTH):
                 self.draw_pixel(x, y)
 
                 # Incrementamos el registro de dirección horizontalmente si estamos pintando el background
@@ -648,13 +648,13 @@ class PPU(object):
             self._tile_sprite_index_palette_0, self._tile_sprite_rgb_0 = self.fetch_pattern(pattern_table & 0x01, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
             self._tile_sprite_index_palette_1, self._tile_sprite_rgb_1 = self.fetch_pattern(pattern_table & 0x01, sprite.get_index() + 1, sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
 
-            for y in range(0, 8):
-                for x in range(8):
+            for y in xrange(0, 8):
+                for x in xrange(8):
                     self._tile_sprite_index_palette[x][y] = self._tile_sprite_index_palette_0[x][y]
                     self._tile_sprite_rgb[x][y] = self._tile_sprite_rgb_0[x][y]
 
-            for y in range(8, 16):
-                for x in range(8):
+            for y in xrange(8, 16):
+                for x in xrange(8):
                     self._tile_sprite_index_palette[x][y] = self._tile_sprite_index_palette_1[x][y]
                     self._tile_sprite_rgb[x][y] = self._tile_sprite_rgb_1[x][y]
 
@@ -685,7 +685,7 @@ class PPU(object):
         sprites_scanline = []
         n = 0
 
-        for addr in range(0x00,0xFF,0x04):
+        for addr in xrange(0x00,0xFF,0x04):
             sprite = Sprite()
             sprite.load_by_addr(self._sprite_memory, addr)
             sprites_list.append(sprite)
@@ -774,11 +774,11 @@ class PPU(object):
     # "tile_palette_index" y "tile_rgb"
     def fetch_pattern(self, pattern_table, pattern_index, attr_color, palette_addr):
         tile_palette_index = [None] * 8
-        for x in range(8):
+        for x in xrange(8):
             tile_palette_index[x] = [0] * 8
 
         tile_rgb = [None] * 8
-        for x in range(8):
+        for x in xrange(8):
             tile_rgb[x] = [(0, 0, 0)] * 8
 
         if pattern_table == 0:
@@ -790,11 +790,11 @@ class PPU(object):
 
         y = 0
         # Lee los bytes del patrón de memoria y lo guarda en una lista
-        for a in range(addr, addr + 8):
+        for a in xrange(addr, addr + 8):
             byte_1 = self._memory.read_data(a)
             byte_2 = self._memory.read_data(a + 8)
 
-            for x in range(8):
+            for x in xrange(8):
                 # Calcula la dirección del color en la paleta de memoria y lo extrae de la tabla de colores
                 palette_index = (0x00 | ((byte_1 & (0x01 << x)) >> x) | (((byte_2 & (0x01 << x)) >> x) << 1) | ((attr_color & 0x03) << 2))
 

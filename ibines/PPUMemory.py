@@ -163,7 +163,7 @@ class PPUMemory(object):
                 # Si se escribe en el elemento de background o su mirror se escribe el valor de background
                 # en todas las paletas mod 4 (pero no al contrario)
                 if a == 0x3F00 or a == 0x3F10:
-                    for x in range(0x3F00, 0x4000, 0x04):
+                    for x in xrange(0x3F00, 0x4000, 0x04):
                         self._set_memory(d, x)
                 # Si no es un elemento de background escribimos normalmente la paleta
                 elif a & 0x03 != 0:
