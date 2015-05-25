@@ -591,10 +591,7 @@ class PPU(object):
                 self._fetch_pattern = False
 
             # Comprueba si el pixel actual es de background
-            if self._tile_bg_index_palette[pattern_pixel_x][pattern_pixel_y] & 0x03 == 0:
-                is_background = True
-            else:
-                is_background = False
+            is_background = not (self._tile_bg_index_palette[pattern_pixel_x][pattern_pixel_y] & 0x03)
 
             if self.control_2_clip_background_bit_1() or (not self.control_2_clip_background_bit_1() and x >= 8):
                 self._gfx.draw_pixel(x, y, self._tile_bg_rgb[pattern_pixel_x][pattern_pixel_y])
@@ -615,7 +612,6 @@ class PPU(object):
                                 self.set_sprite_hit(1)
 
 
-    # TODO: Acabar la implementación de los sprites
     def draw_sprite_pixel(self, sprite, x, y, is_background):
         # Tamaño de los sprites
         size_bit = self.control_1_sprites_size_bit_5()
@@ -647,9 +643,6 @@ class PPU(object):
             self._tile_sprite_index_palette_0, self._tile_sprite_rgb_0 = self.fetch_pattern(pattern_table & 0x01, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
             self._tile_sprite_index_palette_1, self._tile_sprite_rgb_1 = self.fetch_pattern(pattern_table & 0x01, sprite.get_index() + 1, sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
 
-            pattern_palette = [None] * 16
-            pattern_rgb = [None] * 16
-
             for y in range(0, 8):
                 for x in range(8):
                     self._tile_sprite_index_palette[x][y] = self._tile_sprite_index_palette_0[x][y]
@@ -670,13 +663,14 @@ class PPU(object):
 
 
         # Si el pixel del sprite no es vacío
-        if self._tile_sprite_index_palette[pixel_x][pixel_y] & 0x03 != 0:
+        transparent = not self._tile_sprite_index_palette[pixel_x][pixel_y] & 0x03
+        if not transparent:
             # Pinta el pixel si tiene prioridad sobre las nametables, o en caso contrario si el color de fondo es transparente
             if sprite.get_priority() == 0 or is_background:
                 self._gfx.draw_pixel(x, y, self._tile_sprite_rgb[pixel_x][pixel_y])
 
         # Devuelve True si el pixel es transparente
-        return not self._tile_sprite_index_palette[pixel_x][pixel_y] & 0x03
+        return transparent
 
 
     # Devuelve una lista de objetos de clase Sprite con los sprites de la memoria de sprites
@@ -764,40 +758,9 @@ class PPU(object):
             else:
                 attr_area = 3
 
-        color = (attr_data >> (attr_area * 2)) & 0x03
+        color = (attr_data >> (attr_area << 1)) & 0x03
 
         return color
-
-
-    # TODO: Borrar función obsoleta
-    def fetch_pattern_old(self, pattern_table, pattern_index, attr_color, palette_addr):
-        pattern_palette = [None] * 8
-        for x in range(8):
-            pattern_palette[x] = [0] * 8
-
-        pattern_rgb = [None] * 8
-        for x in range(8):
-            pattern_rgb[x] = [0] * 8
-
-        pattern = self.fetch_pattern_mem(pattern_table, pattern_index)
-
-        # Procesa los bytes del patrón para formatearlos en el valor de retorno
-        for y in range(8):
-            byte_1 = pattern[y]
-            byte_2 = pattern[y + 8]
-
-            for x in range(8):
-                # Calcula la dirección del color en la paleta de memoria y lo extrae de la tabla de colores
-                palette_index = (0x00 | ((byte_1 & (0x01 << x)) >> x) | (((byte_2 & (0x01 << x)) >> x) << 1) | ((attr_color & 0x03) << 2))
-
-                # Asigna el índice de la paleta a la posición correspondiente:
-                pattern_palette[7 - x][y] = palette_index
-
-                color_index = self._memory.read_data(palette_addr + palette_index) & 0x3F
-                rgb = self.get_color(color_index)
-                pattern_rgb[7 - x][y] = rgb
-
-        return (pattern_palette, pattern_rgb)
 
 
     # Lee el patrón "pattern_index" de la tabla de patrones "pattern_table" con el color "attr_color" y la paleta
@@ -839,24 +802,6 @@ class PPU(object):
             y = (y + 1) % 8
 
         return (tile_palette_index, tile_rgb)
-
-
-    # TODO: Borrar función obsoleta
-    # Devuelve los 16 bytes del patrón indicado tal como se almacenan en la tabla de patrones especificada
-    def fetch_pattern_mem(self, pattern_table, pattern_index):
-        if pattern_table == 0:
-            addr = 0x0000
-        else:
-            addr = 0x1000
-
-        addr = addr + pattern_index * 16
-
-        # Lee los bytes del patrón de memoria y lo guarda en una lista
-        pattern = []
-        for a in range(addr, addr + 16):
-            pattern.append(self._memory.read_data(a))
-
-        return pattern
 
 
     def get_color(self, index):
