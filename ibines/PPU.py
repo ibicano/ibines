@@ -536,13 +536,9 @@ class PPU(object):
                 # Copia el desplazamiento X del registro tmp al addr al principio del scanline
                 tmp = self._reg_vram_tmp
 
-                self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 0, tmp & 0x0001)
-                self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 1, tmp & 0x0002)
-                self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 2, tmp & 0x0004)
-                self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 3, tmp & 0x0008)
-                self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 4, tmp & 0x0010)
-
-                self._reg_vram_addr = nesutils.set_bit(self._reg_vram_addr, 10, tmp & 0x0400)
+                # Copia los bits correspondientes del registro temporal al de dirección al principio
+                # del scanline
+                self._reg_vram_addr = (self._reg_vram_addr & 0b1111101111100000) | (tmp & 0x41F)
 
             # Preparamos la lista de sprites del scanline
             #sprites_list, self._sprites_scanline = self.get_sprites_list()

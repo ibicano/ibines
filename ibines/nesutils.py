@@ -25,6 +25,10 @@ def set_bit(word, bit_number, bit_value):
     return result
 
 
+def set_bits(word, mask, value):
+    return (word & mask) | value
+
+
 # Devuelve el valor entero de un byte en complemento a 2
 def c2_to_int(byte):
     if byte & 0x80:
