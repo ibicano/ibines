@@ -363,12 +363,12 @@ class PPU(object):
 
     def incr_xscroll(self):
         r = self._reg_vram_addr
-        self._reg_x_offset = (self._reg_x_offset + 1) & 0x07
+        self._reg_x_offset = (self._reg_x_offset + 1) % 8
         bit_10 = (r & 0x0400) >> 10
         bits_0_4 = r & 0x001F
 
         if self._reg_x_offset == 0:
-            bits_0_4 = (bits_0_4 + 1) & 0x1F
+            bits_0_4 = (bits_0_4 + 1) % 32
 
             if bits_0_4 == 0x0:
                 bit_10 = ~bit_10 & 0x1
@@ -380,7 +380,7 @@ class PPU(object):
 
     def incr_yscroll(self):
         r = self._reg_vram_addr
-        y_offset = (((r & 0x7000) >> 12) + 1) & 0x07
+        y_offset = (((r & 0x7000) >> 12) + 1) % 8
         bit_11 = (r & 0x0800) >> 11
         bits_5_9 = (r & 0x03E0) >> 5
 
@@ -547,7 +547,8 @@ class PPU(object):
             self._sprites_scanline = self.get_sprites_scanline()
 
             # Pintamos el pixel
-            for x in xrange(PPU.FRAME_WIDTH):
+            x = 0
+            while x < 256:
                 self.draw_pixel(x, y)
 
                 # Incrementamos el registro de dirección horizontalmente si estamos pintando el background
@@ -557,6 +558,8 @@ class PPU(object):
                 # Si hemos dibujado el último pixel en anchura del "pattern", indicamos que hay que usar otro
                 if self._reg_x_offset == 0:
                     self._fetch_pattern = True
+
+                x += 1
 
             # Incrementamos el registro de dirección verticalmente si estamos pintando el background
             if background_bit:

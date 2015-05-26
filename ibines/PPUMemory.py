@@ -191,7 +191,7 @@ class PPUMemory(object):
 
     # Establece el valor de una posición de memoria con los mirrors
     def _set_memory(self, d, addr):
-        a = addr & 0x3FFF
+        a = addr % 0x4000
         self._memory[a] = d
         self._memory[a + 0x4000] = d
         self._memory[a + 0x8000] = d
