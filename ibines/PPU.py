@@ -53,7 +53,13 @@ class PPU(object):
         self._scanlines_pending = 0
 
         # Lista de sprites a dibujar en el scanline actual
+        self._sprites_scanline_number = 0
         self._sprites_scanline = []
+        for s in range(9):
+            self._sprites_scanline.append(Sprite())
+
+        # Indica si los píxeles de un scanline son background (transparentes) o no
+        self._is_background = [True] * 256
 
         # Interrupciones
         self._int_vblank = 0
@@ -544,7 +550,7 @@ class PPU(object):
 
             # Preparamos la lista de sprites del scanline
             #sprites_list, self._sprites_scanline = self.get_sprites_list()
-            self._sprites_scanline = self.get_sprites_scanline()
+            self.get_sprites_scanline()
 
             # Pintamos el pixel
             x = 0
@@ -561,6 +567,22 @@ class PPU(object):
 
                 x += 1
 
+            # Dibujamos los sprites
+            if self.control_2_sprites_bit_4() and (self.control_2_clip_sprites_bit_2() or x >= 8):
+                n = self._sprites_scanline_number
+                while n > 0:
+                    n -= 1
+                    sprite = self._sprites_scanline[n]
+                    spr_x = sprite.get_offset_x()
+
+                    for off in range(spr_x, spr_x + 8):
+                        if off < 256:
+                            transparent_pixel = self.draw_sprite_pixel(sprite, off, y, self._is_background[off])
+
+                            if sprite.sprite_zero and not transparent_pixel and not self._is_background[off] and off != 255:
+                                self.set_sprite_hit(1)
+
+
             # Incrementamos el registro de dirección verticalmente si estamos pintando el background
             if background_bit:
                 self.incr_yscroll()
@@ -571,7 +593,7 @@ class PPU(object):
 
     # Dibuja un pixel de la pantalla
     def draw_pixel(self, x, y):
-        is_background = True
+        self._is_background[x] = True
 
         if self.control_2_background_bit_3():
             # Dibuja el fondo
@@ -595,29 +617,10 @@ class PPU(object):
 
                 self._fetch_pattern = False
 
-            # Comprueba si el pixel actual es de background
-            is_background = not (self._tile_bg_index_palette[pattern_pixel_x][pattern_pixel_y] & 0x03)
-
-            if self.control_2_clip_background_bit_1() or (not self.control_2_clip_background_bit_1() and x >= 8):
+            if self.control_2_clip_background_bit_1() or x >= 8:
+                # Comprueba si el pixel actual es de background
+                self._is_background[x] = not (self._tile_bg_index_palette[pattern_pixel_x][pattern_pixel_y] & 0x03)
                 self._gfx.draw_pixel(x, y, self._tile_bg_rgb[pattern_pixel_x][pattern_pixel_y])
-
-        # Dibuja los sprites que estén en el pixel
-        if self.control_2_sprites_bit_4():
-            if self.control_2_clip_sprites_bit_2() or x >= 8:
-                n = len(self._sprites_scanline)
-                bg_bit = self.control_2_clip_background_bit_1()
-                sprites_size_bit = self.control_1_sprites_size_bit_5()
-                clip_bg_bit = self.control_2_clip_background_bit_1()
-                while n > 0:
-                    n -= 1
-                    sprite = self._sprites_scanline[n]
-
-                    if sprite.is_in(x, y, sprites_size_bit):
-                        transparent_pixel = self.draw_sprite_pixel(sprite, x, y, is_background)
-
-                        if clip_bg_bit or x >= 8:
-                            if sprite.sprite_zero and not transparent_pixel and not is_background and x != 255:
-                                self.set_sprite_hit(1)
 
 
     def draw_sprite_pixel(self, sprite, x, y, is_background):
@@ -712,11 +715,9 @@ class PPU(object):
         addr = 0x00
         sprites_size_bit = self.control_1_sprites_size_bit_5()
         while addr < 0x100 and n < 9:
-            sprite = Sprite()
-            sprite.load_by_addr(self._sprite_memory, addr)
+            self._sprites_scanline[n].load_by_addr(self._sprite_memory, addr)
 
-            if sprite.is_in_scanline(self._scanline_number, sprites_size_bit):
-                sprites_scanline.append(sprite)
+            if self._sprites_scanline[n].is_in_scanline(self._scanline_number, sprites_size_bit):
                 n += 1
 
             addr += 0x04
@@ -724,9 +725,9 @@ class PPU(object):
         # Si hay 8 sprites en el scanline activamos el flag corespondiente del registro $2002
         if n == 9:
             self._reg_status = nesutils.set_bit(self._reg_status, 5, 1)
-            del sprites_scanline[8]
+            n -= 1
 
-        return sprites_scanline
+        self._sprites_scanline_number = n
 
 
     # Devuelve el color almacenado en la attr table para el tile de una dirección de la name table
