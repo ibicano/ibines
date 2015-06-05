@@ -9,6 +9,7 @@ from PPU import *
 from CPU import *
 from Memory import Memory
 from Instruction import *
+from Input import Joypad
 import os
 import cProfile
 import pstats
@@ -28,7 +29,9 @@ class NES(object):
 
         self._ppu = PPU(self._mapper)
 
-        self._memory = Memory(self, self._ppu, self._mapper)
+        self._joypad_1 = Joypad()
+
+        self._memory = Memory(self._ppu, self._mapper, self._joypad_1)
 
         self._cpu = CPU(self._memory, self._ppu)
 
@@ -45,8 +48,8 @@ class NES(object):
     def run(self):
         stats_cycles = 0
         stats_total_time = time.time()
-        stats_counter = 0
-
+        total_cycles = 0
+        key_counter = 0
         cycles = 0
 
 
@@ -64,8 +67,53 @@ class NES(object):
             # Restamos los ciclos de ejecución a la PPU
             self._ppu.exec_cycle(cycles)
 
+            key_counter += cycles
+            if key_counter > 10000:
+                # Eventos SDL (entrada por ejemplo)
+                sdl_events = sdl2.ext.get_events()
+                for e in sdl_events:
+                    if e.type == sdl2.SDL_KEYDOWN:
+                        if e.key.keysym.sym == sdl2.SDLK_w:
+                            self._joypad_1.set_up(1)
+                        elif e.key.keysym.sym == sdl2.SDLK_s:
+                            self._joypad_1.set_down(1)
+                        elif e.key.keysym.sym == sdl2.SDLK_a:
+                            self._joypad_1.set_left(1)
+                        elif e.key.keysym.sym == sdl2.SDLK_d:
+                            self._joypad_1.set_right(1)
+                        elif e.key.keysym.sym == sdl2.SDLK_o:
+                            self._joypad_1.set_b(1)
+                        elif e.key.keysym.sym == sdl2.SDLK_p:
+                            self._joypad_1.set_a(1)
+                        elif e.key.keysym.sym == sdl2.SDLK_RETURN:
+                            self._joypad_1.set_start(1)
+                        elif e.key.keysym.sym == sdl2.SDLK_RSHIFT:
+                            self._joypad_1.set_select(1)
+                    elif e.type == sdl2.SDL_KEYUP:
+                        if e.key.keysym.sym == sdl2.SDLK_w:
+                            self._joypad_1.set_up(0)
+                        elif e.key.keysym.sym == sdl2.SDLK_s:
+                            self._joypad_1.set_down(0)
+                        elif e.key.keysym.sym == sdl2.SDLK_a:
+                            self._joypad_1.set_left(0)
+                        elif e.key.keysym.sym == sdl2.SDLK_d:
+                            self._joypad_1.set_right(0)
+                        elif e.key.keysym.sym == sdl2.SDLK_o:
+                            self._joypad_1.set_b(0)
+                        elif e.key.keysym.sym == sdl2.SDLK_p:
+                            self._joypad_1.set_a(0)
+                        elif e.key.keysym.sym == sdl2.SDLK_RETURN:
+                            self._joypad_1.set_start(0)
+                        elif e.key.keysym.sym == sdl2.SDLK_RSHIFT:
+                            self._joypad_1.set_select(0)
+
+                key_counter = 0
+
+
+            total_cycles += cycles
+
+
             # Estadísticas
-            stats_counter += 1
             stats_cycles += cycles
 
             if stats_cycles > 5000:
@@ -81,24 +129,7 @@ class NES(object):
             #time.sleep(0.0000006)
 
             cycles = 0
-
-
-
-    def read_reg_4016(self):
-        return self._reg_joypad_1
-
-
-    def read_reg_4017(self):
-        return self._reg_joypad_2
-
-
-    def write_reg_4016(self, data):
-        self._reg_joypad_1 = nesutils.set_bit(self._reg_joypad_1, 0, data & 0x01)
-
-
-    def write_reg_4017(self, data):
-        self._reg_joypad_2 = nesutils.set_bit(self._reg_joypad_2, 0, data & 0x01)
-
+            
 
     def _log_inst(self, inst):
         s = str(hex(self._cpu._reg_pc))

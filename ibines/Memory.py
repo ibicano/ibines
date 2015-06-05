@@ -13,14 +13,14 @@ class Memory(object):
 
     # Constructor
     # Se le pasa una instancia de la PPU y otra de la ROM para el mapeo en memoria de ambos
-    def __init__(self, nes, ppu, mapper):
+    def __init__(self, ppu, mapper, joypad_1):
         #######################################################################
         # Variables de instancia
         #######################################################################
 
         # Array para almacenar el contenido de la memoria
         self._memory = [0x00] * Memory.SIZE
-        self._nes = nes
+        self._joypad_1 = joypad_1
         self._ppu = ppu
         self._mapper = mapper
 
@@ -39,9 +39,9 @@ class Memory(object):
             d = self._ppu.read_reg(0x2000 + (addr & 0x07))
         elif addr >= 0x4000 and addr < 0x4020:
             if addr == 0x4016:
-                d = self._nes.read_reg_4016();
+                d = self._joypad_1.read_reg()
             elif addr == 0x4017:
-                d = self._nes.read_reg_4017();
+                pass
         elif 0x6000 <= addr <= 0x7FFF:
             d = self._memory[addr]
 
@@ -70,9 +70,9 @@ class Memory(object):
             if addr == 0x4014:
                 self._ppu.write_sprite_dma(self, d)
             elif addr == 0x4016:
-                self._nes.write_reg_4016(d)
+                self._joypad_1.write_reg(d)
             elif addr == 0x4017:
-                self._nes.write_reg_4017(d)
+                pass
         elif 0x6000 <= addr <= 0x7FFF:
             self._memory[addr] = d
         elif addr >= 0x8000:
