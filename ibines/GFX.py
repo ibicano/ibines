@@ -15,8 +15,8 @@ implementación inicial utiliza SDL a través de PyGame.
 
 class GFX(object):
     def __init__(self):
-        self._viewport_width = 256
-        self._viewport_height = 240
+        self._viewport_width = 1024
+        self._viewport_height = 960
 
     def draw_pixel(self, x, y, color=(0, 0, 0)):
         pass

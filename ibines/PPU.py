@@ -967,5 +967,5 @@ class Sprite(object):
         return (self._attributes & 0x40) >> 6
 
     def get_vertical_flip(self):
-        return (self._attributes & 0x40) >> 7
+        return (self._attributes & 0x80) >> 7
 
