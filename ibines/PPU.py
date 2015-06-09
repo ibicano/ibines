@@ -58,6 +58,24 @@ class PPU(object):
         for s in range(9):
             self._sprites_scanline.append(Sprite())
 
+        self._sprites_list = []
+        for s in range(64):
+            self._sprites_list.append(Sprite())
+
+        self._sprite_zero = self._sprites_list[0]
+
+        # Variables que almacenan el tile del sprite que se está procesando
+        self._tile_sprite_zero_index_palette = [None] * 8
+        for x in range(8):
+            self._tile_sprite_zero_index_palette[x] = [0] * 8
+
+        self._tile_sprite_zero_rgb = [None] * 8
+        for x in range(8):
+            self._tile_sprite_zero_rgb[x] = [(0, 0, 0)] * 8
+
+        # Indica si ha avido ya un sprite hit en el frame
+        self._sprite_hit = 0
+
         # Indica si los píxeles de un scanline son background (transparentes) o no
         self._is_background = [True] * 256
 
@@ -165,7 +183,11 @@ class PPU(object):
         if self._end_frame:
             self._reg_status = 0
             self._started_vblank = 0    # En el nuevo frame indicamos que no se ha procesado el período VBLANK aún
-            #self.end_vblank() # Finalizamos el período VBLANK
+
+            # Dibujamos los sprites
+            if self.control_2_sprites_bit_4() and self.control_2_clip_sprites_bit_2():
+                self.draw_sprites()
+
             if self.control_2_background_bit_3():
                 self._reg_vram_addr = self._reg_vram_tmp     # Esto es así al principio de cada frame
                 self._gfx.update()
@@ -173,6 +195,15 @@ class PPU(object):
             #Reseteamos la cache de tiles al principio del frame:
             self._tiles_cache = {}
 
+            # Cargamos los sprites para el siguiente frame
+            self.get_sprites_list()
+            self._sprite_zero = self._sprites_list[0]
+            pattern_table = self.control_1_sprites_pattern_bit_3()
+            self._tile_sprite_zero_index_palette, self._tile_sprite_zero_rgb = self.fetch_pattern(pattern_table, self._sprite_zero.get_index(), self._sprite_zero.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
+
+            self._sprite_hit = 0
+
+            # Indicamos que ha finalizado el frame
             self._end_frame = False
 
 
@@ -564,24 +595,10 @@ class PPU(object):
             # Incrementamos el registro de dirección verticalmente si estamos pintando el background
             self.incr_yscroll()
 
-        # Preparamos la lista de sprites del scanline
-        #sprites_list, self._sprites_scanline = self.get_sprites_list()
-        self.get_sprites_scanline()
+        # Si aún no se ha producido, calculamos si ha habido impacto del Sprite zero con el fondo
+        if not self._sprite_hit:
+            self._calc_sprite_hit()
 
-        # Dibujamos los sprites
-        if self.control_2_sprites_bit_4() and (self.control_2_clip_sprites_bit_2() or x >= 8):
-            n = self._sprites_scanline_number
-            while n > 0:
-                n -= 1
-                sprite = self._sprites_scanline[n]
-                spr_x = sprite.get_offset_x()
-
-                for off in range(spr_x, spr_x + 8):
-                    if off < 256:
-                        transparent_pixel = self.draw_sprite_pixel(sprite, off, y, self._is_background[off])
-
-                        if sprite.sprite_zero and not transparent_pixel and not self._is_background[off] and off != 255:
-                            self.set_sprite_hit(1)
 
         # Cuando se termina de dibujar el scanline siempre hay que usar otro "pattern"
         self._fetch_pattern = True
@@ -616,6 +633,20 @@ class PPU(object):
             # Comprueba si el pixel actual es de background
             self._is_background[x] = not (self._tile_bg_index_palette[pattern_pixel_x][pattern_pixel_y] & 0x03)
             self._gfx.draw_pixel(x, y, self._tile_bg_rgb[pattern_pixel_x][pattern_pixel_y])
+
+
+    def draw_sprites(self):
+        n = 64
+        while n > 0:
+            n -= 1
+            sprite = self._sprites_list[n]
+            spr_x = sprite.get_offset_x()
+            spr_y = sprite.get_offset_y()
+
+            for offx in range(spr_x, spr_x + 8):
+                for offy in range(spr_y, spr_y + 8):
+                    if offx < 256 and offy < 240:
+                        self.draw_sprite_pixel(sprite, offx, offy, self._is_background[offx])
 
 
     def draw_sprite_pixel(self, sprite, x, y, is_background):
@@ -682,25 +713,25 @@ class PPU(object):
     # Devuelve una lista de objetos de clase Sprite con los sprites de la memoria de sprites
     # FIXME: Borrar esta función que ya no se usa
     def get_sprites_list(self):
-        sprites_list = []
-        sprites_scanline = []
         n = 0
+        addr = 0x00
 
-        for addr in xrange(0x00,0xFF,0x04):
-            sprite = Sprite()
-            sprite.load_by_addr(self._sprite_memory, addr)
-            sprites_list.append(sprite)
+        while n < 64:
+            self._sprites_list[n].load_by_addr(self._sprite_memory, addr)
+            addr += 0x04
+            n += 1
 
-            if sprite.is_in_scanline(self._scanline_number, self.control_1_sprites_size_bit_5()) and n < 9:
-                sprites_scanline.append(sprite)
-                n += 1
 
-        # Si hay 8 sprites en el scanline activamos el flag corespondiente del registro $2002
-        if n == 9:
-            self._reg_status = nesutils.set_bit(self._reg_status, 5, 1)
-            del sprites_scanline[8]
-
-        return sprites_list, sprites_scanline
+    def _calc_sprite_hit(self):
+        if self._sprite_zero.is_in_scanline(self._scanline_number, self.control_1_sprites_size_bit_5()):
+            y = self._scanline_number - 1
+            offset_x = self._sprite_zero.get_offset_x()
+            spr_y = y - self._sprite_zero.get_offset_y()
+            for spr_x in range(8):
+                x = offset_x + spr_x
+                if x < 255:
+                    if (self._tile_sprite_zero_index_palette[spr_x][spr_y] & 0x03 != 0) and not self._is_background[x]:
+                        self.set_sprite_hit(1)
 
 
     # Devuelve una lista con los sprites del scanline
