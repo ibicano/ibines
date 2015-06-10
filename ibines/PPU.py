@@ -146,6 +146,7 @@ class PPU(object):
 
         # Registros estado
         self._reg_x_offset = 0x0             # Scroll patrón (3-bit)
+        self._tmp_y_offset = 0x0             # Alamcena el offset y de forma temporal para leerlo más rápido
         self._reg_vram_switch = 0            # Indica si estamos en la 1ª(0) o 2ª(1) escritura de los registros vram
 
         #######################################################################
@@ -401,12 +402,12 @@ class PPU(object):
 
     def incr_xscroll(self):
         r = self._reg_vram_addr
-        self._reg_x_offset = (self._reg_x_offset + 1) % 8
+        self._reg_x_offset = (self._reg_x_offset + 1) & 0x07
         bit_10 = (r & 0x0400) >> 10
         bits_0_4 = r & 0x001F
 
         if self._reg_x_offset == 0:
-            bits_0_4 = (bits_0_4 + 1) % 32
+            bits_0_4 = (bits_0_4 + 1) & 0x1F
 
             if bits_0_4 == 0x0:
                 bit_10 = ~bit_10 & 0x1
@@ -418,17 +419,17 @@ class PPU(object):
 
     def incr_yscroll(self):
         r = self._reg_vram_addr
-        y_offset = (((r & 0x7000) >> 12) + 1) % 8
+        self._tmp_y_offset = (((r & 0x7000) >> 12) + 1) & 0x07
         bit_11 = (r & 0x0800) >> 11
         bits_5_9 = (r & 0x03E0) >> 5
 
-        if y_offset == 0:
+        if self._tmp_y_offset == 0:
             bits_5_9 = (bits_5_9 + 1) % 30
 
             if bits_5_9 == 0x0:
                 bit_11 = ~bit_11 & 0x1
 
-        r = (r & 0x41F) | (y_offset << 12) | (bit_11 << 11) | (bits_5_9 << 5)
+        r = (r & 0x41F) | (self._tmp_y_offset << 12) | (bit_11 << 11) | (bits_5_9 << 5)
 
         self._reg_vram_addr = r
 
@@ -610,8 +611,8 @@ class PPU(object):
         self._is_background[x] = True
 
         # Dibuja el fondo
-        pattern_pixel_x = self.get_x_offset()
-        pattern_pixel_y = self.get_y_offset()
+        pattern_pixel_x = self._reg_x_offset
+        pattern_pixel_y = self._tmp_y_offset
 
         # Calcula la dirección en la Name Table activa
         name_table_addr = 0x2000 + (self._reg_vram_addr & 0x0FFF)
@@ -630,10 +631,12 @@ class PPU(object):
 
             self._fetch_pattern = False
 
-        if self.control_2_clip_background_bit_1() or x >= 8:
-            # Comprueba si el pixel actual es de background
-            self._is_background[x] = not (self._tile_bg_index_palette[pattern_pixel_x][pattern_pixel_y] & 0x03)
-            self._gfx.draw_pixel(x, y, self._tile_bg_rgb[pattern_pixel_x][pattern_pixel_y])
+        # Desactivado el clipping por custeiones de rendimiento
+        #if self.control_2_clip_background_bit_1() or x >= 8:
+
+        # Comprueba si el pixel actual es de background
+        self._is_background[x] = not (self._tile_bg_index_palette[pattern_pixel_x][pattern_pixel_y] & 0x03)
+        self._gfx.draw_pixel(x, y, self._tile_bg_rgb[pattern_pixel_x][pattern_pixel_y])
 
 
     def draw_sprites(self):
@@ -834,7 +837,7 @@ class PPU(object):
                 rgb = self.get_color(color_index)
                 tile_rgb[7 - x][y] = rgb
 
-            y = (y + 1) % 8
+            y = (y + 1) & 0x07
 
         return (tile_palette_index, tile_rgb)
 
