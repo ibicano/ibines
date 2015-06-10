@@ -773,7 +773,6 @@ class PPU(object):
         # Dirección de memoria de la "attr table"
         attr_addr = (name_table_addr & 0xF400)  | (0x03C0 | attr_pos)
 
-
         # Byte leído de la attr table que contiene la info de color
         attr_data = self._memory.read_data(attr_addr)
 
@@ -784,17 +783,8 @@ class PPU(object):
         # La posición y dentro del grupo 4x4 la dan los bits 5 y 6 de la posición del tile en la name table
         pos_y = (pos >> 5) & 0x03
 
-        # En función de la posición dentro del grupo 4x4 devolvemos los 2 bits de color que correspondan
-        if pos_x < 2:
-            if pos_y < 2:
-                attr_area = 0
-            else:
-                attr_area = 2
-        else:
-            if pos_y < 2:
-                attr_area = 1
-            else:
-                attr_area = 3
+        # Calcula el area que le corresponde al tile dentro del grupo 4x4
+        attr_area = (pos_y & 0x02) | (pos_x >> 1)
 
         color = (attr_data >> (attr_area << 1)) & 0x03
 
