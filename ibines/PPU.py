@@ -560,6 +560,7 @@ class PPU(object):
 
     # Establece el flag sprite hit del registro de status
     def set_sprite_hit(self, v):
+        self._sprite_hit = v
         self._reg_status = nesutils.set_bit(self._reg_status, 6, v)
 
     # Indica si nos encontramos en un periodo VBLANK
@@ -702,7 +703,7 @@ class PPU(object):
 
 
             # Si el pixel del sprite no es vacío
-            transparent = not self._tile_sprite_index_palette[spr_x][spr_y] & 0x03
+            transparent = not (self._tile_sprite_index_palette[spr_x][spr_y] & 0x03)
             if not transparent:
                 # Pinta el pixel si tiene prioridad sobre las nametables, o en caso contrario si el color de fondo es transparente
                 if sprite.get_priority() == 0 or is_background:
@@ -710,7 +711,6 @@ class PPU(object):
 
 
     # Devuelve una lista de objetos de clase Sprite con los sprites de la memoria de sprites
-    # FIXME: Borrar esta función que ya no se usa
     def get_sprites_list(self):
         n = 0
         addr = 0x00
@@ -926,6 +926,7 @@ class Sprite(object):
         self._attributes = 0x00
         self._offset_x = 0x00
         self.sprite_zero = False
+
         #######################################################################
 
 
@@ -973,15 +974,13 @@ class Sprite(object):
     def is_in_scanline(self, scanline, size_bit):
         is_in = False
 
-        if size_bit == 0:
-            size_y = 8
-        else:
+        size_y = 8
+        if size_bit:
             size_y = 16
 
-        if self._offset_y <= 0xEF:
-            y = scanline - 1
-            if y >= self._offset_y and y < self._offset_y + size_y:
-                is_in = True
+        y = scanline - 1
+        if self._offset_y <= y < (self._offset_y + size_y):
+            is_in = True
 
         return is_in
 
