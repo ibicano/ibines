@@ -640,74 +640,73 @@ class PPU(object):
         while n > 0:
             n -= 1
             sprite = self._sprites_list[n]
-            spr_x = sprite.get_offset_x()
-            spr_y = sprite.get_offset_y()
 
-            for offx in range(spr_x, spr_x + 8):
-                for offy in range(spr_y, spr_y + 8):
-                    if offx < 256 and offy < 240:
-                        self.draw_sprite_pixel(sprite, offx, offy, self._is_background[offx])
+            size_y = 8
+            if self.control_1_sprites_size_bit_5() == 1:
+                size_y = 16
+
+            for spr_x in range(8):
+                for spr_y in range(size_y):
+                    self.draw_sprite_pixel(sprite, spr_x, spr_y)
 
 
-    def draw_sprite_pixel(self, sprite, x, y, is_background):
+    def draw_sprite_pixel(self, sprite, spr_x, spr_y):
         # Tamaño de los sprites
         size_bit = self.control_1_sprites_size_bit_5()
 
         off_x = sprite.get_offset_x()
         off_y = sprite.get_offset_y()
 
-        pixel_x = x - off_x
-        pixel_y = y - off_y
+        screen_x = off_x + spr_x
+        screen_y = off_y + spr_y
 
         pattern_table = self.control_1_sprites_pattern_bit_3()
 
+        if screen_x < 256 and screen_y < 240:
+            is_background = self._is_background[sprite.get_offset_x() + spr_x]
+            # Si los sprites son 8x8
+            if size_bit == 0:
+                # Obtenemos el tile
+                self._tile_sprite_index_palette, self._tile_sprite_rgb = self.fetch_pattern(pattern_table, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
 
-        # Si los sprites son 8x8
-        if size_bit == 0:
-            # Obtenemos el tile
-            self._tile_sprite_index_palette, self._tile_sprite_rgb = self.fetch_pattern(pattern_table, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
+                # Si está activado el flag de invertir horizontalmente
+                if sprite.get_horizontal_flip():
+                    spr_x = 7 - spr_x
 
-            # Si está activado el flag de invertir horizontalmente
-            if sprite.get_horizontal_flip():
-                pixel_x = 7 - pixel_x
+                # Si está activado el flag de invertir verticalmente
+                if sprite.get_vertical_flip():
+                    spr_y = 7 - spr_y
+            # Si los sprites son 8x16
+            else:
+                # Obtenemos los tiles
+                self._tile_sprite_index_palette_0, self._tile_sprite_rgb_0 = self.fetch_pattern(pattern_table & 0x01, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
+                self._tile_sprite_index_palette_1, self._tile_sprite_rgb_1 = self.fetch_pattern(pattern_table & 0x01, sprite.get_index() + 1, sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
 
-            # Si está activado el flag de invertir verticalmente
-            if sprite.get_vertical_flip():
-                pixel_y = 7 - pixel_y
-        # Si los sprites son 8x16
-        else:
-            # Obtenemos los tiles
-            self._tile_sprite_index_palette_0, self._tile_sprite_rgb_0 = self.fetch_pattern(pattern_table & 0x01, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
-            self._tile_sprite_index_palette_1, self._tile_sprite_rgb_1 = self.fetch_pattern(pattern_table & 0x01, sprite.get_index() + 1, sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
+                for y in xrange(0, 8):
+                    for x in xrange(8):
+                        self._tile_sprite_index_palette[x][y] = self._tile_sprite_index_palette_0[x][y]
+                        self._tile_sprite_rgb[x][y] = self._tile_sprite_rgb_0[x][y]
 
-            for y in xrange(0, 8):
-                for x in xrange(8):
-                    self._tile_sprite_index_palette[x][y] = self._tile_sprite_index_palette_0[x][y]
-                    self._tile_sprite_rgb[x][y] = self._tile_sprite_rgb_0[x][y]
+                for y in xrange(8, 16):
+                    for x in xrange(8):
+                        self._tile_sprite_index_palette[x][y] = self._tile_sprite_index_palette_1[x][y]
+                        self._tile_sprite_rgb[x][y] = self._tile_sprite_rgb_1[x][y]
 
-            for y in xrange(8, 16):
-                for x in xrange(8):
-                    self._tile_sprite_index_palette[x][y] = self._tile_sprite_index_palette_1[x][y]
-                    self._tile_sprite_rgb[x][y] = self._tile_sprite_rgb_1[x][y]
+                # Si está activado el flag de invertir horizontalmente
+                if sprite.get_horizontal_flip():
+                    spr_x = 7 - spr_x
 
-            # Si está activado el flag de invertir horizontalmente
-            if sprite.get_horizontal_flip():
-                pixel_x = 7 - pixel_x
-
-            # Si está activado el flag de invertir verticalmente
-            if sprite.get_vertical_flip():
-                pixel_y = 15 - pixel_y
+                # Si está activado el flag de invertir verticalmente
+                if sprite.get_vertical_flip():
+                    spr_y = 15 - spr_y
 
 
-        # Si el pixel del sprite no es vacío
-        transparent = not self._tile_sprite_index_palette[pixel_x][pixel_y] & 0x03
-        if not transparent:
-            # Pinta el pixel si tiene prioridad sobre las nametables, o en caso contrario si el color de fondo es transparente
-            if sprite.get_priority() == 0 or is_background:
-                self._gfx.draw_pixel(x, y, self._tile_sprite_rgb[pixel_x][pixel_y])
-
-        # Devuelve True si el pixel es transparente
-        return transparent
+            # Si el pixel del sprite no es vacío
+            transparent = not self._tile_sprite_index_palette[spr_x][spr_y] & 0x03
+            if not transparent:
+                # Pinta el pixel si tiene prioridad sobre las nametables, o en caso contrario si el color de fondo es transparente
+                if sprite.get_priority() == 0 or is_background:
+                    self._gfx.draw_pixel(screen_x, screen_y, self._tile_sprite_rgb[spr_x][spr_y])
 
 
     # Devuelve una lista de objetos de clase Sprite con los sprites de la memoria de sprites
