@@ -156,8 +156,8 @@ class NES(object):
 # Inicio del programa
 ###############################################################################
 
-file_name = "../roms/Super Mario Bros. (E).nes"
-#file_name = "../roms/Donkey Kong Classics (USA, Europe).nes"
+#file_name = "../roms/Super Mario Bros. (E).nes"
+file_name = "../roms/Donkey Kong Classics (USA, Europe).nes"
 #file_name = "../tests/nestest.nes"
 #file_name = "../tests/instr_test-v4/rom_singles/10-branches.nes"
 #file_name = "../tests/instr_test-v4/official_only.nes"
