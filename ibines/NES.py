@@ -15,44 +15,40 @@ import cProfile
 import pstats
 
 
-
+###############################################################################
+# Clase: NES
+# Descripción: Clase que implementa el sistema completo
+###############################################################################
 class NES(object):
 
     DEBUG = True
 
     def __init__(self, file_name):
-        #######################################################################
-        # Variables de instancia
-        #######################################################################
         self._rom = ROM(file_name)
         self._mapper = Mapper.instance_mapper(self._rom.get_mapper_code(), self._rom)
-
         self._ppu = PPU(self._mapper)
-
         self._joypad_1 = Joypad()
-
         self._memory = Memory(self._ppu, self._mapper, self._joypad_1)
-
         self._cpu = CPU(self._memory, self._ppu)
-
 
         # Registros I/O del  JoyPad
         self._reg_joypad_1 = 0x00       # Dirección 0x4016 - read/write
         self._reg_joypad_2 = 0x00       # Dirección 0x4017 - read/write
-        #######################################################################
-        #######################################################################
 
-
-    # Aquí se implementa el bucle principal de la NES. Cada iteración equivale a un
-    # ciclo de reloj, para más precisión y exactitud conceptual
+    ###############################################################################
+    # Función: run()
+    # Descripción: Aquí se implementa el bucle principal de la NES. Cada iteración
+    # ejecuta una instrucción llevando la cuenta de los ciclos de CPU consumidos
+    # para sincronizarse con la PPU
+    ###############################################################################
     def run(self):
-        stats_cycles = 0
-        stats_total_time = time.time()
-        total_cycles = 0
-        key_counter = 0
-        cycles = 0
+        stats_cycles = 0                    # Ciclos de CPU ejecutados para fines estadisticos
+        stats_total_time = time.time()      # Tiempo de ejecución transcurrido para fines estadísticos
+        total_cycles = 0                    # Ciclos totales de CPU desde que se inicia el emulador
+        key_counter = 0                     # Contador de ciclos hasta la siguiente comprobación de una pulsación de tecla
+        cycles = 0                          # Ciclos de CPU de una iteración del bucle
 
-
+        # Bucle principal
         while 1:
             # Si hay interrupciones y la CPU no está ocupada, las lanzamos
             if self._ppu.get_int_vblank():
@@ -67,6 +63,8 @@ class NES(object):
             # Restamos los ciclos de ejecución a la PPU
             self._ppu.exec_cycle(cycles)
 
+            # Aquí se detectan las pulsaciones en los dispositivos de entrada. Por cuestiones de rendimiento, ya que
+            # es bastante caro comprobar en cada iteración del bucle, se hace solo cada 10000 ciclos de CPU
             key_counter += cycles
             if key_counter > 10000:
                 # Eventos SDL (entrada por ejemplo)
@@ -109,14 +107,13 @@ class NES(object):
 
                 key_counter = 0
 
-
-            total_cycles += cycles
-
+            total_cycles += cycles              # Incrementamos el contador de ciclos totales
 
             # Estadísticas
             stats_cycles += cycles
 
-            if stats_cycles > 5000:
+            # Hacemos la media de ciclos ejecutados por segundo para fines estadísticos
+            if stats_cycles > 20000:
                 stats_clock = time.time()
 
                 if stats_clock - stats_total_time >= 1:
@@ -167,7 +164,7 @@ file_name = "../roms/Super Mario Bros. (E).nes"
 #file_name = "../tests/instr_test-v4/all_instrs.nes"
 nes = NES(file_name)
 
-nes.run()
+nes.run()               # Ejecutamos
 
 # Código de profiling
 #cProfile.run("nes.run()", "profiling.log")
