@@ -310,7 +310,6 @@ class CNROM(Mapper):
             self._prg_rom_0 = self._rom.get_prg(0)
             self._prg_rom_1 = self._rom.get_prg(1)
 
-        self._chr_rom = [0x00] * 8192
         self._chr_rom = self._rom.get_chr(0)
 
 

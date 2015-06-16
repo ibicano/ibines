@@ -186,7 +186,7 @@ class PPU(object):
             self._started_vblank = 0    # En el nuevo frame indicamos que no se ha procesado el período VBLANK aún
 
             # Dibujamos los sprites
-            if self.control_2_sprites_bit_4() and self.control_2_clip_sprites_bit_2():
+            if self.control_2_sprites_bit_4():
                 self.draw_sprites()
 
             if self.control_2_background_bit_3():
