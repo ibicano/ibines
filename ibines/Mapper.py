@@ -346,6 +346,50 @@ class CNROM(Mapper):
         return self._rom.get_mirroring()
 
 
+class MMC3(Mapper):
+
+    MAPPER_CODE = 4
+
+    def __init__(self, rom):
+        super(MMC3, self).__init__(rom)
+
+        #Carga los bancos
+        self._prg_rom_0 = [0x00] * 16384
+        self._prg_rom_1 = [0x00] * 16384
+
+        # Modo mirror
+        self._mirror_mode = 0
+
+        # Estado de save RAM
+        self._save_ram = 0
+
+        # Banco seleccionado
+        self._bank_select = 0
+
+        # Modo de swap
+        self._bank_mode = 0
+
+        # Indica si se debe hacer XOR 0x1000 cuando bank_select es 0-5
+        self._bank_inversion = 0
+
+
+    def mirror_mode(self):
+        return self._mirror_mode
+
+
+    def write_prg(self, data, addr):
+        if (not addr & 0x01) and (0x8000 <= addr < 0xA000):
+            self._bank_select = data & 0x07
+            self._bank_mode = (data & 0x40) >> 6
+            self._bank_inversion = (data & 0x80) >> 7
+        elif (addr & 0x01) and (0x8000 <= addr < 0xA000):
+            pass
+        elif (not addr & 0x01) and (0xA000 <= addr < 0xC000):
+            self._mirror_mode = data & 0x01
+        elif (addr & 0x01) and (0xA000 <= addr < 0xC000):
+            self._save_ram = (data & 0xC0) >> 6
+
+
 
 
 
