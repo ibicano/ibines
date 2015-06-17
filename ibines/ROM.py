@@ -43,7 +43,7 @@ class ROM(object):
             self._reserved = self._rom[9:16]
 
             # Reserva la memoria para almacenar los bancos en función del número de estos
-            self._pgr_banks = [None] * self._prg_count
+            self._prg_banks = [None] * self._prg_count
             self._chr_banks = [None] * self._chr_count
             self._ram_banks = [None] * self._ram_count
 
@@ -61,9 +61,9 @@ class ROM(object):
                 self._trainer = self._rom[i:i + 512]
                 i += 512
 
-            # Carga los bancos PGR
+            # Carga los bancos PRG
             for n in range(self._prg_count):
-                self._pgr_banks[n] = self._rom[i:i + 16384]
+                self._prg_banks[n] = self._rom[i:i + 16384]
                 i += 16384
 
             # Carga los bancos CHR
@@ -123,7 +123,20 @@ class ROM(object):
 
     # Devuelve el banco PGR especificado por n
     def get_prg(self, n):
-        return self._pgr_banks[n]
+        return self._prg_banks[n]
+
+
+    # Devuelve un banco PRG con direccionamiento como si fuesen de 8k en vez de 16k
+    def get_prg_8k(self, n):
+        number = n >> 1
+        part = n & 0x01
+
+        if part == 0:
+            bank = self._prg_banks[number][0:8192]
+        else:
+            bank = self._prg_banks[number][8192:16384]
+
+        return bank
 
 
     # Devuelve el banco CHR especificado por n
@@ -139,6 +152,17 @@ class ROM(object):
             return self._chr_banks[bank_number][0x0000:0x1000]
         else:
             return self._chr_banks[bank_number][0x1000:0x2000]
+
+
+    # Devuelve un banco CHR con direccionamiento como si fuesen de 1k en vez de 8k
+    def get_chr_1k(self, n):
+        number = n >> 3
+        part = n & 0x07
+        addr = part * 1024
+
+        bank = self._chr_banks[number][addr:addr + 8192]
+
+        return bank
 
 
 
