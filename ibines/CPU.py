@@ -61,6 +61,9 @@ class CPU(object):
         # Contadores de ciclos
         self._cycles_inst = 0
 
+        # Indica si hay una IRQ pendiente
+        self._irq = 0
+
         # Pool de instrucciones
         self._inst_pool = Instruction.InstructionPool(self)
         #######################################################################
@@ -79,11 +82,26 @@ class CPU(object):
         self._reg_pc = addr
 
 
+    # procesa una interrupción IRQ
+    def interrupt_irq(self):
+        self._irq = 0
+        self.interrupt(self.INT_ADDR_IRQ)
+
 
     # Procesa la interrupción VBlank
     def interrupt_vblank(self):
         self._ppu.set_int_vblank(0)
-        return self.interrupt(self.INT_ADDR_VBLANK)
+        self.interrupt(self.INT_ADDR_VBLANK)
+
+
+    # Indica si hay una IRQ pendiente de ejecución
+    def get_irq(self):
+        return self._irq
+
+
+    # Establece el valor del flag de activación de una IRQ
+    def set_irq(self, v):
+        self._irq = v
 
 
     # Devuelve una referencia a la memoria

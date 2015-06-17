@@ -33,6 +33,9 @@ class PPU(object):
         self._memory = PPUMemory(self, mapper)
         self._sprite_memory = SpriteMemory()
 
+        # Mapper
+        self._mapper = mapper
+
         # Motor gráfico del emulador
         self._gfx = GFX_PySdl2()
 
@@ -174,6 +177,7 @@ class PPU(object):
             # Dibujamos el scanline
             if 1 <= self._scanline_number <= 240:
                 self.draw_scanline()
+                self._mapper.scanline_tick()
 
             self._scanline_number = (self._scanline_number + 1) % PPU.FRAME_SCANLINES
             pending_scanlines -= 1
@@ -724,6 +728,7 @@ class PPU(object):
             n += 1
 
 
+    # FIXME: implementar para sprites de 8x16
     def _calc_sprite_hit(self):
         if self._sprite_zero.is_in_scanline(self._scanline_number, self.control_1_sprites_size_bit_5()):
             y = self._scanline_number - 1

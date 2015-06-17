@@ -31,6 +31,9 @@ class NES(object):
         self._memory = Memory(self._ppu, self._mapper, self._joypad_1)
         self._cpu = CPU(self._memory, self._ppu)
 
+        if self._mapper.MAPPER_CODE == 4:
+            self._mapper.set_cpu(self._cpu)
+
         # Registros I/O del  JoyPad
         self._reg_joypad_1 = 0x00       # Dirección 0x4016 - read/write
         self._reg_joypad_2 = 0x00       # Dirección 0x4017 - read/write
@@ -54,6 +57,9 @@ class NES(object):
             if self._ppu.get_int_vblank():
                 self._cpu.interrupt_vblank()        # Procesamos VBLANK
                 cycles += self._cpu.INT_LATENCY
+
+            if self._cpu.get_irq():
+                self._cpu.interrupt_irq()
 
             # Fetch y Exec siguiente instrucción (si hemos ejecutado una
             # interrupción en el paso anterior será su rutina de interrupción)
