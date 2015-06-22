@@ -5,6 +5,7 @@ import copy
 from PPUMemory import PPUMemory
 from SpriteMemory import SpriteMemory
 from GFX import *
+from Sprite import *
 
 """
 PPU
@@ -59,22 +60,31 @@ class PPU(object):
         self._sprites_scanline_number = 0
         self._sprites_scanline = []
         for s in range(9):
-            self._sprites_scanline.append(Sprite())
+            self._sprites_scanline.append(Sprite(self))
 
         self._sprites_list = []
         for s in range(64):
-            self._sprites_list.append(Sprite())
+            self._sprites_list.append(Sprite(self))
 
         self._sprite_zero = self._sprites_list[0]
 
         # Variables que almacenan el tile del sprite que se está procesando
-        self._tile_sprite_zero_index_palette = [None] * 8
+        self._tile_sprite_zero_index_palette_0 = [None] * 8
         for x in range(8):
-            self._tile_sprite_zero_index_palette[x] = [0] * 8
+            self._tile_sprite_zero_index_palette_0[x] = [0] * 8
 
-        self._tile_sprite_zero_rgb = [None] * 8
+        self._tile_sprite_zero_rgb_0 = [None] * 8
         for x in range(8):
-            self._tile_sprite_zero_rgb[x] = [(0, 0, 0)] * 8
+            self._tile_sprite_zero_rgb_0[x] = [(0, 0, 0)] * 8
+
+        self._tile_sprite_zero_index_palette_1 = [None] * 8
+        for x in range(8):
+            self._tile_sprite_zero_index_palette_1[x] = [0] * 8
+
+        self._tile_sprite_zero_rgb_1 = [None] * 8
+        for x in range(8):
+            self._tile_sprite_zero_rgb_1[x] = [(0, 0, 0)] * 8
+
 
         # Indica si ha avido ya un sprite hit en el frame
         self._sprite_hit = 0
@@ -111,23 +121,6 @@ class PPU(object):
         self._tile_sprite_rgb = [None] * 8
         for x in range(8):
             self._tile_sprite_rgb[x] = [(0, 0, 0)] * 8
-
-        # Estos sólo se usan de forma temporal si los srpites son de 16 bits
-        self._tile_sprite_index_palette_0 = [None] * 8
-        for x in range(8):
-            self._tile_sprite_index_palette_0[x] = [0] * 8
-
-        self._tile_sprite_index_palette_1 = [None] * 8
-        for x in range(8):
-            self._tile_sprite_index_palette_1[x] = [0] * 8
-
-        self._tile_sprite_rgb_0 = [None] * 8
-        for x in range(8):
-            self._tile_sprite_rgb_0[x] = [(0, 0, 0)] * 8
-
-        self._tile_sprite_rgb_1 = [None] * 8
-        for x in range(8):
-            self._tile_sprite_rgb_1[x] = [(0, 0, 0)] * 8
 
 
         # Cache de Tiles:
@@ -204,7 +197,7 @@ class PPU(object):
             self.get_sprites_list()
             self._sprite_zero = self._sprites_list[0]
             pattern_table = self.control_1_sprites_pattern_bit_3()
-            self._tile_sprite_zero_index_palette, self._tile_sprite_zero_rgb = self.fetch_pattern(pattern_table, self._sprite_zero.get_index(), self._sprite_zero.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
+            (self._tile_sprite_zero_index_palette_0, self._tile_sprite_zero_rgb_0), (self._tile_sprite_zero_index_palette_1, self._tile_sprite_zero_rgb_1) = self._sprite_zero.get_tiles()
 
             self._sprite_hit = 0
 
@@ -572,7 +565,7 @@ class PPU(object):
     def is_vblank(self):
         return self._scanline_number > 240
 
-    # FIXME: optimizar esta función que es la que se come toda la potencia (en draw_pixel())
+
     def draw_scanline(self):
         y = self._scanline_number - 1
 
@@ -658,6 +651,7 @@ class PPU(object):
                     self.draw_sprite_pixel(sprite, spr_x, spr_y)
 
 
+    # TODO: terminar las modificaciones del nuevo sistema de dibujado de Sprites
     def draw_sprite_pixel(self, sprite, spr_x, spr_y):
         # Tamaño de los sprites
         size_bit = self.control_1_sprites_size_bit_5()
@@ -668,14 +662,12 @@ class PPU(object):
         screen_x = off_x + spr_x
         screen_y = off_y + spr_y
 
-        pattern_table = self.control_1_sprites_pattern_bit_3()
-
         if screen_x < 256 and screen_y < 240:
-            is_background = self._is_background[sprite.get_offset_x() + spr_x]
+            is_background = self._is_background[off_x + spr_x]
             # Si los sprites son 8x8
             if size_bit == 0:
                 # Obtenemos el tile
-                self._tile_sprite_index_palette, self._tile_sprite_rgb = self.fetch_pattern(pattern_table, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
+                self._tile_sprite_index_palette, self._tile_sprite_rgb = sprite.get_tiles()[0]
 
                 # Si está activado el flag de invertir horizontalmente
                 if sprite.get_horizontal_flip():
@@ -686,28 +678,22 @@ class PPU(object):
                     spr_y = 7 - spr_y
             # Si los sprites son 8x16
             else:
+                vertical_flip = sprite.get_vertical_flip()
+
                 # Obtenemos los tiles
-                self._tile_sprite_index_palette_0, self._tile_sprite_rgb_0 = self.fetch_pattern(pattern_table & 0x01, sprite.get_index(), sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
-                self._tile_sprite_index_palette_1, self._tile_sprite_rgb_1 = self.fetch_pattern(pattern_table & 0x01, sprite.get_index() + 1, sprite.get_attr_color(), PPUMemory.ADDR_SPRITE_PALETTE)
-
-                for y in xrange(0, 8):
-                    for x in xrange(8):
-                        self._tile_sprite_index_palette[x][y] = self._tile_sprite_index_palette_0[x][y]
-                        self._tile_sprite_rgb[x][y] = self._tile_sprite_rgb_0[x][y]
-
-                for y in xrange(8, 16):
-                    for x in xrange(8):
-                        self._tile_sprite_index_palette[x][y] = self._tile_sprite_index_palette_1[x][y]
-                        self._tile_sprite_rgb[x][y] = self._tile_sprite_rgb_1[x][y]
+                if spr_y < 8:
+                    self._tile_sprite_index_palette, self._tile_sprite_rgb = sprite.get_tiles()[vertical_flip]
+                else:
+                    self._tile_sprite_index_palette, self._tile_sprite_rgb = sprite.get_tiles()[not vertical_flip]
+                    spr_y = spr_y & 0x07
 
                 # Si está activado el flag de invertir horizontalmente
                 if sprite.get_horizontal_flip():
                     spr_x = 7 - spr_x
 
                 # Si está activado el flag de invertir verticalmente
-                if sprite.get_vertical_flip():
-                    spr_y = 15 - spr_y
-
+                if vertical_flip:
+                    spr_y = 7 - spr_y
 
             # Si el pixel del sprite no es vacío
             transparent = not (self._tile_sprite_index_palette[spr_x][spr_y] & 0x03)
@@ -730,15 +716,24 @@ class PPU(object):
 
     # FIXME: implementar para sprites de 8x16
     def _calc_sprite_hit(self):
-        if self._sprite_zero.is_in_scanline(self._scanline_number, self.control_1_sprites_size_bit_5()):
+        sprites_size_bit = self.control_1_sprites_size_bit_5()
+        if self._sprite_zero.is_in_scanline(self._scanline_number, sprites_size_bit):
             y = self._scanline_number - 1
             offset_x = self._sprite_zero.get_offset_x()
             spr_y = y - self._sprite_zero.get_offset_y()
+
+            if spr_y < 8:
+                tile_sprite_zero_index_palette, tile_sprite_zero_rgb = self._sprite_zero.get_tiles()[0]
+            else:
+                tile_sprite_zero_index_palette, tile_sprite_zero_rgb = self._sprite_zero.get_tiles()[1]
+                spr_y = spr_y & 0x07
+
             for spr_x in range(8):
                 x = offset_x + spr_x
                 if x < 255:
-                    if (self._tile_sprite_zero_index_palette[spr_x][spr_y] & 0x03 != 0) and not self._is_background[x]:
+                    if (tile_sprite_zero_index_palette[spr_x][spr_y] & 0x03 != 0) and not self._is_background[x]:
                         self.set_sprite_hit(1)
+
 
 
     # Devuelve una lista con los sprites del scanline
@@ -912,87 +907,5 @@ class PPU(object):
 
 
 
-# Clase que implmenta la info de un sprite de la ram de sprites
-class Sprite(object):
 
-    def __init__(self):
-        #######################################################################
-        # Variables de instancia
-        #######################################################################
-        self._offset_y = 0x00
-        self._index = 0x00
-        self._attributes = 0x00
-        self._offset_x = 0x00
-        self.sprite_zero = False
-
-        #######################################################################
-
-
-    def load_by_addr(self, sprite_memory, sprite_addr):
-        self._offset_y = sprite_memory.read_data(sprite_addr) + 1
-        self._index = sprite_memory.read_data(sprite_addr + 1)
-        self._attributes = sprite_memory.read_data(sprite_addr + 2)
-        self._offset_x = sprite_memory.read_data(sprite_addr + 3)
-
-        if sprite_addr == 0x00:
-            self.sprite_zero = True
-        else:
-            self.sprite_zero = False
-
-
-    def load_by_number(self, sprite_memory, sprite_number):
-        sprite_addr = sprite_number * 4
-        self.load_by_addr(sprite_memory, sprite_addr)
-
-
-    def get_offset_x(self):
-        return self._offset_x
-
-
-    def get_offset_y(self):
-        return self._offset_y
-
-
-    def get_index(self):
-        return self._index
-
-    # Indica si el sprite aparece en el pixel de pantalla indicado
-    def is_in(self, x, y, size_bit):
-        if size_bit == 0:
-            size_y = 8
-        else:
-            size_y = 16
-
-        if (x >= self._offset_x and x < self._offset_x + 8) and (y >= self._offset_y and y < self._offset_y + size_y):
-            return True
-        else:
-            return False
-
-
-    def is_in_scanline(self, scanline, size_bit):
-        is_in = False
-
-        size_y = 8
-        if size_bit:
-            size_y = 16
-
-        y = scanline - 1
-        if self._offset_y <= y < (self._offset_y + size_y):
-            is_in = True
-
-        return is_in
-
-
-    # Devuelve atributos:
-    def get_attr_color(self):
-        return self._attributes & 0x03
-
-    def get_priority(self):
-        return (self._attributes & 0x20) >> 5
-
-    def get_horizontal_flip(self):
-        return (self._attributes & 0x40) >> 6
-
-    def get_vertical_flip(self):
-        return (self._attributes & 0x80) >> 7
 

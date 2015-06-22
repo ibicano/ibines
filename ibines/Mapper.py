@@ -443,7 +443,7 @@ class MMC3(Mapper):
 
     def read_chr(self, addr):
         data = 0x0
-        a = addr & 0x400
+        a = addr % 0x400
 
         if 0x0000 <= addr <= 0x03FF:
             data = self._chr_rom_0[a]
@@ -460,7 +460,7 @@ class MMC3(Mapper):
         elif 0x1800 <= addr <= 0x1BFF:
             data = self._chr_rom_6[a]
         elif 0x1C00 <= addr <= 0x1FFF:
-            data = self._chr_rom_1[a]
+            data = self._chr_rom_7[a]
 
         return data
 
@@ -507,11 +507,11 @@ class MMC3(Mapper):
     def _swap_banks(self):
         # Bancos CHR
         if self._bank_inversion == 0:
-            self._chr_rom_0 = self._rom.get_chr_1k(self._r0)
-            self._chr_rom_1 = self._rom.get_chr_1k(self._r0 + 1)
+            self._chr_rom_0 = self._rom.get_chr_1k(self._r0 & 0xFE)
+            self._chr_rom_1 = self._rom.get_chr_1k(self._r0 | 0x01)
 
-            self._chr_rom_2 = self._rom.get_chr_1k(self._r1)
-            self._chr_rom_3 = self._rom.get_chr_1k(self._r1 + 1)
+            self._chr_rom_2 = self._rom.get_chr_1k(self._r1 & 0xFE)
+            self._chr_rom_3 = self._rom.get_chr_1k(self._r1 | 0x01)
 
             self._chr_rom_4 = self._rom.get_chr_1k(self._r2)
 
@@ -521,11 +521,11 @@ class MMC3(Mapper):
 
             self._chr_rom_7 = self._rom.get_chr_1k(self._r5)
         else:
-            self._chr_rom_4 = self._rom.get_chr_1k(self._r0)
-            self._chr_rom_5 = self._rom.get_chr_1k(self._r0 + 1)
+            self._chr_rom_4 = self._rom.get_chr_1k(self._r0 & 0xFE)
+            self._chr_rom_5 = self._rom.get_chr_1k(self._r0 | 0x01)
 
-            self._chr_rom_6 = self._rom.get_chr_1k(self._r1)
-            self._chr_rom_7 = self._rom.get_chr_1k(self._r1 + 1)
+            self._chr_rom_6 = self._rom.get_chr_1k(self._r1 & 0xFE)
+            self._chr_rom_7 = self._rom.get_chr_1k(self._r1 | 0x01)
 
             self._chr_rom_0 = self._rom.get_chr_1k(self._r2)
 
