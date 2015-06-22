@@ -42,7 +42,7 @@ class PPUMemory(object):
         a = addr & 0xFFFF
         d = 0x00
 
-        if (a & 0x2000):
+        if (a >= 0x2000):
             d = self._memory[a]
         else:
             d = self._mapper.read_chr(a)

@@ -58,7 +58,7 @@ class NES(object):
                 self._cpu.interrupt_vblank()        # Procesamos VBLANK
                 cycles += self._cpu.INT_LATENCY
 
-            if self._cpu.get_irq():
+            if (not self._cpu.get_reg_p_i_bit()) & self._cpu.get_irq():
                 self._cpu.interrupt_irq()
 
             # Fetch y Exec siguiente instrucción (si hemos ejecutado una

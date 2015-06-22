@@ -488,7 +488,7 @@ class MMC3(Mapper):
             elif self._bank_select == 7:
                 self._r7 = data
         elif (not addr & 0x01) and (0xA000 <= addr < 0xC000):
-            self._mirror_mode = data & 0x01
+            self._mirror_mode = (~data) & 0x01
         elif (addr & 0x01) and (0xA000 <= addr < 0xC000):
             self._save_ram = (data & 0xC0) >> 6
         # IRQs
@@ -556,6 +556,8 @@ class MMC3(Mapper):
             self._irq_counter -= 1
             if self._irq_reload_flag:
                 self._irq_counter = self._irq_latch
+                self._irq_reload_flag = 0
+
 
 
 

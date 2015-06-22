@@ -771,7 +771,7 @@ class PPU(object):
         attr_pos = (group_y * 8) + group_x
 
         # Dirección de memoria de la "attr table"
-        attr_addr = (name_table_addr & 0xF400)  | (0x03C0 | attr_pos)
+        attr_addr = (name_table_addr & 0xFC00)  | (0x03C0 + attr_pos)
 
         # Byte leído de la attr table que contiene la info de color
         attr_data = self._memory.read_data(attr_addr)
