@@ -160,7 +160,7 @@ class ROM(object):
         part = n & 0x07
         addr = part * 1024
 
-        bank = self._chr_banks[number][addr:addr + 8192]
+        bank = self._chr_banks[number][addr:addr + 1024]
 
         return bank
 
