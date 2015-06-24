@@ -82,7 +82,7 @@ class NROM(Mapper):
 
 
     def read_chr(self, addr):
-        a = addr % 0x4000
+        a = addr & 0x3FFF
         d = 0x00
         if 0x0000 <= a < 0x2000:
             d = self._chr_rom_0[a]
@@ -94,10 +94,10 @@ class NROM(Mapper):
         d = 0x00
 
         if 0x8000 <= addr < 0xC000:
-            a = (addr - 0x8000) % 0x4000
+            a = (addr - 0x8000) & 0x3FFF
             d = self._prg_rom_0[a]
         elif 0xC000 <= addr < 0x10000:
-            a = (addr - 0x8000) % 0x4000
+            a = (addr - 0x8000) & 0x3FFF
             if self._rom.get_prg_count() == 1:
                 d = self._prg_rom_0[a]
             elif self._rom.get_prg_count() == 2:
@@ -150,7 +150,7 @@ class MMC1(Mapper):
 
 
     def read_chr(self, addr):
-        a = addr % 0x4000
+        a = addr & 0x3FFF
         d = 0x00
 
         if 0x0000 <= a <= 0x0FFF:
@@ -174,7 +174,7 @@ class MMC1(Mapper):
 
     def write_chr(self, data, addr):
         if self._rom.get_chr_count() == 0:
-            a = addr % 0x4000
+            a = addr & 0x3FFF
             d = data & 0xFF
 
             if 0x0000 <= a <= 0x0FFF:
@@ -322,7 +322,7 @@ class CNROM(Mapper):
 
 
     def read_chr(self, addr):
-        a = addr % 0x4000
+        a = addr & 0x3FFF
         d = 0x00
         if 0x0000 <= a < 0x2000:
             d = self._chr_rom[a]
@@ -334,10 +334,10 @@ class CNROM(Mapper):
         d = 0x00
 
         if 0x8000 <= addr < 0xC000:
-            a = (addr - 0x8000) % 0x4000
+            a = (addr - 0x8000) & 0x3FFF
             d = self._prg_rom_0[a]
         elif 0xC000 <= addr < 0x10000:
-            a = (addr - 0x8000) % 0x4000
+            a = (addr - 0x8000) & 0x3FFF
             if self._rom.get_prg_count() == 1:
                 d = self._prg_rom_0[a]
             elif self._rom.get_prg_count() == 2:
@@ -428,7 +428,7 @@ class MMC3(Mapper):
 
     def read_prg(self, addr):
         data = 0x0
-        a = addr % 0x2000
+        a = addr & 0x1FFF
 
         if 0x8000 <= addr <= 0x9FFF:
             data = self._prg_rom_0[a]
@@ -444,7 +444,7 @@ class MMC3(Mapper):
 
     def read_chr(self, addr):
         data = 0x0
-        a = addr % 0x400
+        a = addr & 0x03FF
 
         if 0x0000 <= addr <= 0x03FF:
             data = self._chr_rom_0[a]

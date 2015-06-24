@@ -58,7 +58,7 @@ class Memory(object):
         addr = addr & 0xFFFF
 
         if addr >= 0x0000 and addr < 0x2000:        # Espacio de memoria RAM
-            n = addr % 0x800
+            n = addr & 0x7FF
             self._memory[n] = d
             self._memory[0x0800 + n] = d
             self._memory[0x1000 + n] = d

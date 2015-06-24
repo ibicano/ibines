@@ -47,7 +47,7 @@ class PPUMemory(object):
         elif 0x2000 <= 0x2000 < 0x4000:
             d = self._memory[a]
         else:
-            self.read_data(a % 0x4000)
+            self.read_data(a & 0x3FFF)
 
         return d
 
@@ -188,14 +188,14 @@ class PPUMemory(object):
 
         # Mirrors generales
         elif a >= 0x4000:
-            self.write_data(d, a % 0x4000)
+            self.write_data(d, a & 0x3FFF)
 
 
     # Funciones de ayuda
 
     # Establece el valor de una posición de memoria con los mirrors
     def _set_memory(self, d, addr):
-        a = addr % 0x4000
+        a = addr & 0x3FFF
         self._memory[a] = d
         self._memory[a + 0x4000] = d
         self._memory[a + 0x8000] = d
