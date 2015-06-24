@@ -42,10 +42,12 @@ class PPUMemory(object):
         a = addr & 0xFFFF
         d = 0x00
 
-        if (a >= 0x2000):
+        if a < 0x2000:
+            d = self._mapper.read_chr(a)
+        elif 0x2000 <= 0x2000 < 0x4000:
             d = self._memory[a]
         else:
-            d = self._mapper.read_chr(a)
+            self.read_data(a % 0x4000)
 
         return d
 
@@ -58,6 +60,8 @@ class PPUMemory(object):
         # Pattern tables:
         if (0x0000 <= a <= 0x1FFF) and self._mapper.get_chr_count() == 0:
             self._mapper.write_chr(d, a)
+            # reseteamos la cache de Tiles por si hay un cambio de banco en el Mapper
+            self._ppu.reset_tiles_cache()
         # Name tables y attribute tables:
         elif 0x2000 <= a < 0x4000:
             # Name Table 0

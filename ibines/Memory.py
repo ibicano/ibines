@@ -77,3 +77,5 @@ class Memory(object):
             self._memory[addr] = d
         elif addr >= 0x8000:            # Memoria de programa. Escribe al mapper.
             self._mapper.write_prg(d, addr)
+            # reseteamos la cache de Tiles por si hay un cambio de banco en el Mapper
+            self._ppu.reset_tiles_cache()

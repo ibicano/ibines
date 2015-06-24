@@ -836,6 +836,11 @@ class PPU(object):
         return PPU._COLOR_PALETTE[index & 0x3F]
 
 
+    # Borra la cache de Tiles
+    def reset_tiles_cache(self):
+        self._tiles_cache = {}
+
+
     #######################################################################
     # Variables de clase
     #######################################################################

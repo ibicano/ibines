@@ -110,6 +110,7 @@ class NROM(Mapper):
         return self._rom.get_mirroring()
 
 
+# TODO: no está implementado al completo
 class MMC1(Mapper):
 
     MAPPER_CODE = 1

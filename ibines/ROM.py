@@ -32,7 +32,7 @@ class ROM(object):
         self._rom = bytearray(f.read())
         f.close()
 
-        # Comprueba que el formato de la cabecera sea corrector
+        # Comprueba que el formato de la cabecera sea correcto
         if (str(self._rom[0:3]) == "NES") and self._rom[3] == 0x1A:
             # Carga la cabecera
             self._prg_count = self._rom[4]
@@ -116,7 +116,7 @@ class ROM(object):
         return self._prg_count
 
 
-    # Devuelve el número de bancos de 16KB de memoria de patrones gráficos disponibles
+    # Devuelve el número de bancos de 8KB de memoria de patrones gráficos disponibles
     def get_chr_count(self):
         return self._chr_count
 
