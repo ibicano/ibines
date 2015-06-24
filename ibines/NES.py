@@ -4,15 +4,20 @@
 import time
 import traceback
 from ROM import ROM
-from Mapper import Mapper
-from PPU import *
-from CPU import *
+from mappers.Mapper import Mapper
+from ppu.PPU import *
+from cpu.CPU import *
 from Memory import Memory
-from Instruction import *
+from cpu.Instruction import *
 from Input import Joypad
 import os
 import cProfile
 import pstats
+
+from mappers.NROM import NROM
+from mappers.CNROM import CNROM
+from mappers.MMC1 import MMC1
+from mappers.MMC3 import MMC3
 
 
 ###############################################################################
@@ -25,7 +30,16 @@ class NES(object):
 
     def __init__(self, file_name):
         self._rom = ROM(file_name)
-        self._mapper = Mapper.instance_mapper(self._rom.get_mapper_code(), self._rom)
+
+        if self._rom.get_mapper_code() == 0:
+            self._mapper = NROM(self._rom)
+        elif self._rom.get_mapper_code() == 1:
+            self._mapper = MMC1(self._rom)
+        elif self._rom.get_mapper_code() == 3:
+            self._mapper = CNROM(self._rom)
+        elif self._rom.get_mapper_code() == 4:
+            self._mapper = MMC3(self._rom)
+
         self._ppu = PPU(self._mapper)
         self._joypad_1 = Joypad()
         self._memory = Memory(self._ppu, self._mapper, self._joypad_1)

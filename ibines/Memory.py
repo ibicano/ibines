@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import Mapper
-
 ###############################################################################
 # Clase: NES
 # Descripción: Implementa la memoria principal de la NES
