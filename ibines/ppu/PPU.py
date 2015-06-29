@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import nesutils
+from ibines import nesutils
 import copy
 from PPUMemory import PPUMemory
 from SpriteMemory import SpriteMemory
-from GFX import *
+from ibines.GFX import *
 from Sprite import *
 
 """
@@ -89,8 +89,10 @@ class PPU(object):
         # Indica si ha avido ya un sprite hit en el frame
         self._sprite_hit = 0
 
-        # Indica si los píxeles de un scanline son background (transparentes) o no
-        self._is_background = [True] * 256
+        # Indica si los píxeles son de background transparentes (0), de background sólidos (1) o de sprite (2)
+        self.pixel_background = [None] * 256
+        for x in range(256):
+            self.pixel_background[x] = [0] * 240
 
         # Interrupciones
         self._int_vblank = 0
@@ -605,7 +607,7 @@ class PPU(object):
 
     # Dibuja un pixel de la pantalla
     def draw_pixel(self, x, y):
-        self._is_background[x] = True
+        self.pixel_background[x][y] = 0
 
         # Dibuja el fondo
         pattern_pixel_x = self._reg_x_offset
@@ -632,14 +634,14 @@ class PPU(object):
         #if self.control_2_clip_background_bit_1() or x >= 8:
 
         # Comprueba si el pixel actual es de background
-        self._is_background[x] = not (self._tile_bg_index_palette[pattern_pixel_x][pattern_pixel_y] & 0x03)
+        if self._tile_bg_index_palette[pattern_pixel_x][pattern_pixel_y] & 0x03:
+            self.pixel_background[x][y] = 1
         self._gfx.draw_pixel(x, y, self._tile_bg_rgb[pattern_pixel_x][pattern_pixel_y])
 
 
     def draw_sprites(self):
-        n = 64
-        while n > 0:
-            n -= 1
+        n = 0
+        while n < 64:
             sprite = self._sprites_list[n]
 
             size_y = 8
@@ -649,6 +651,8 @@ class PPU(object):
             for spr_x in range(8):
                 for spr_y in range(size_y):
                     self.draw_sprite_pixel(sprite, spr_x, spr_y)
+
+            n += 1
 
 
     # TODO: terminar las modificaciones del nuevo sistema de dibujado de Sprites
@@ -663,7 +667,7 @@ class PPU(object):
         screen_y = off_y + spr_y
 
         if screen_x < 256 and screen_y < 240:
-            is_background = self._is_background[off_x + spr_x]
+            pixel_background = self.pixel_background[screen_x][screen_y]
             # Si los sprites son 8x8
             if size_bit == 0:
                 # Obtenemos el tile
@@ -699,8 +703,10 @@ class PPU(object):
             transparent = not (self._tile_sprite_index_palette[spr_x][spr_y] & 0x03)
             if not transparent:
                 # Pinta el pixel si tiene prioridad sobre las nametables, o en caso contrario si el color de fondo es transparente
-                if sprite.get_priority() == 0 or is_background:
+                if (pixel_background != 2) and (sprite.get_priority() == 0 or not pixel_background):
                     self._gfx.draw_pixel(screen_x, screen_y, self._tile_sprite_rgb[spr_x][spr_y])
+
+                self.pixel_background[screen_x][screen_y] = 2
 
 
     # Devuelve una lista de objetos de clase Sprite con los sprites de la memoria de sprites
@@ -729,9 +735,9 @@ class PPU(object):
                 spr_y = spr_y & 0x07
 
             for spr_x in range(8):
-                x = offset_x + spr_x
-                if x < 255:
-                    if (tile_sprite_zero_index_palette[spr_x][spr_y] & 0x03 != 0) and not self._is_background[x]:
+                screen_x = offset_x + spr_x
+                if screen_x < 255:
+                    if (tile_sprite_zero_index_palette[spr_x][spr_y] & 0x03 != 0) and (self.pixel_background[screen_x][y] == 1):
                         self.set_sprite_hit(1)
 
 
