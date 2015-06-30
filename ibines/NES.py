@@ -4,15 +4,11 @@
 import time
 import traceback
 from ROM import ROM
-from mappers.Mapper import Mapper
 from ppu.PPU import *
 from cpu.CPU import *
 from Memory import Memory
-from cpu.Instruction import *
 from Input import Joypad
-import os
-import cProfile
-import pstats
+
 
 from mappers.NROM import NROM
 from mappers.CNROM import CNROM

@@ -89,29 +89,17 @@ class Sprite(object):
 
     # Indica si el sprite aparece en el pixel de pantalla indicado
     def is_in(self, x, y, size_bit):
-        if size_bit == 0:
-            size_y = 8
-        else:
-            size_y = 16
+        size_y = size_bit * 8 + 8
 
-        if (x >= self._offset_x and x < self._offset_x + 8) and (y >= self._offset_y and y < self._offset_y + size_y):
-            return True
-        else:
-            return False
+        return ((x >= self._offset_x and x < self._offset_x + 8) and (y >= self._offset_y and y < self._offset_y + size_y))
 
 
     def is_in_scanline(self, scanline, size_bit):
-        is_in = False
-
-        size_y = 8
-        if size_bit:
-            size_y = 16
+        size_y = size_bit * 8 + 8
 
         y = scanline - 1
-        if self._offset_y <= y < (self._offset_y + size_y):
-            is_in = True
 
-        return is_in
+        return (self._offset_y <= y < (self._offset_y + size_y))
 
 
     # Devuelve atributos:
