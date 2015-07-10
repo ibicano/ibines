@@ -77,7 +77,7 @@ class MMC3(Mapper):
 
     def read_prg(self, addr):
         data = 0x0
-        a = addr % 0x2000
+        a = addr & 0x1FFF
 
         if 0x8000 <= addr <= 0x9FFF:
             data = self._prg_rom_0[a]
@@ -93,7 +93,7 @@ class MMC3(Mapper):
 
     def read_chr(self, addr):
         data = 0x0
-        a = addr % 0x400
+        a = addr & 0x03FF
 
         if 0x0000 <= addr <= 0x03FF:
             data = self._chr_rom_0[a]

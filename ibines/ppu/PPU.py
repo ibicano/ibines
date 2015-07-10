@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from ibines import nesutils
+import nesutils
 import copy
 from PPUMemory import PPUMemory
 from SpriteMemory import SpriteMemory
-from ibines.GFX import *
+from GFX import *
 from Sprite import *
 
 """
@@ -124,10 +124,8 @@ class PPU(object):
         for x in range(8):
             self._tile_sprite_rgb[x] = [(0, 0, 0)] * 8
 
-
         # Cache de Tiles:
         self._tiles_cache = {}
-
 
         # Registros
 
@@ -151,7 +149,6 @@ class PPU(object):
         #######################################################################
 
 
-    # TODO: toda la chicha
     # Ejecuta un ciclo de reloj. Aquí va toda la chicha del dibujado y de
     # activación de cosas en función del ciclo del frame en el que nos
     # encontremos
@@ -180,8 +177,9 @@ class PPU(object):
         if self._cycles_frame < self.VBLANK_CYCLES and not self._started_vblank:     # Este es el ciclo en el que entramos en VBLANK
                 self.start_vblank()    # Activamos el período VBLANK al inicio del período
 
+        # Cuando se termina el frame se hace todo ésto
         if self._end_frame:
-            self._reg_status = 0
+            self._reg_status = 0        # reseteamos el registro de estado
             self._started_vblank = 0    # En el nuevo frame indicamos que no se ha procesado el período VBLANK aún
 
             # Dibujamos los sprites
@@ -198,7 +196,6 @@ class PPU(object):
             # Cargamos los sprites para el siguiente frame
             self.get_sprites_list()
             self._sprite_zero = self._sprites_list[0]
-            pattern_table = self.control_1_sprites_pattern_bit_3()
             (self._tile_sprite_zero_index_palette_0, self._tile_sprite_zero_rgb_0), (self._tile_sprite_zero_index_palette_1, self._tile_sprite_zero_rgb_1) = self._sprite_zero.get_tiles()
 
             self._sprite_hit = 0
@@ -628,25 +625,27 @@ class PPU(object):
                 self._tile_bg_index_palette, self._tile_bg_rgb = self.fetch_pattern(pattern_table_number, pattern_index, attr_color, PPUMemory.ADDR_IMAGE_PALETTE)
                 self._tiles_cache[(pattern_table_number, pattern_index, attr_color)] = (self._tile_bg_index_palette, self._tile_bg_rgb)
 
+
             self._fetch_pattern = False
 
-        # Desactivado el clipping por custeiones de rendimiento
+        # Desactivado el clipping por cuestiones de rendimiento
         #if self.control_2_clip_background_bit_1() or x >= 8:
 
         # Comprueba si el pixel actual es de background
         if self._tile_bg_index_palette[pattern_pixel_x][pattern_pixel_y] & 0x03:
             self.pixel_background[x][y] = 1
+
         self._gfx.draw_pixel(x, y, self._tile_bg_rgb[pattern_pixel_x][pattern_pixel_y])
 
 
+    # Dibuja todos los sprites de la lista de sprites
     def draw_sprites(self):
+        size_bit = self.control_1_sprites_size_bit_5()
         n = 0
         while n < 64:
             sprite = self._sprites_list[n]
 
-            size_y = 8
-            if self.control_1_sprites_size_bit_5() == 1:
-                size_y = 16
+            size_y = size_bit * 8 + 8
 
             for spr_x in range(8):
                 for spr_y in range(size_y):
@@ -655,7 +654,7 @@ class PPU(object):
             n += 1
 
 
-    # TODO: terminar las modificaciones del nuevo sistema de dibujado de Sprites
+    # Dibuja el pixel (spr_x, spr_y) del sprite en pantalla en su posición correspondiente
     def draw_sprite_pixel(self, sprite, spr_x, spr_y):
         # Tamaño de los sprites
         size_bit = self.control_1_sprites_size_bit_5()
@@ -720,7 +719,6 @@ class PPU(object):
             n += 1
 
 
-    # FIXME: implementar para sprites de 8x16
     def _calc_sprite_hit(self):
         sprites_size_bit = self.control_1_sprites_size_bit_5()
         if self._sprite_zero.is_in_scanline(self._scanline_number, sprites_size_bit):
@@ -728,40 +726,16 @@ class PPU(object):
             offset_x = self._sprite_zero.get_offset_x()
             spr_y = y - self._sprite_zero.get_offset_y()
 
-            if spr_y < 8:
-                tile_sprite_zero_index_palette, tile_sprite_zero_rgb = self._sprite_zero.get_tiles()[0]
-            else:
-                tile_sprite_zero_index_palette, tile_sprite_zero_rgb = self._sprite_zero.get_tiles()[1]
-                spr_y = spr_y & 0x07
+            # Obtiene el tile del Sprite y su posición vertical
+            tile_sprite_zero_index_palette, tile_sprite_zero_rgb = self._sprite_zero.get_tiles()[sprites_size_bit]
+            spr_y = spr_y & 0x07
 
+            # Calcula si hay alguna colisión
             for spr_x in range(8):
                 screen_x = offset_x + spr_x
                 if screen_x < 255:
                     if (tile_sprite_zero_index_palette[spr_x][spr_y] & 0x03 != 0) and (self.pixel_background[screen_x][y] == 1):
                         self.set_sprite_hit(1)
-
-
-
-    # Devuelve una lista con los sprites del scanline
-    def get_sprites_scanline(self):
-        sprites_scanline = []
-        n = 0
-        addr = 0x00
-        sprites_size_bit = self.control_1_sprites_size_bit_5()
-        while addr < 0x100 and n < 9:
-            self._sprites_scanline[n].load_by_addr(self._sprite_memory, addr)
-
-            if self._sprites_scanline[n].is_in_scanline(self._scanline_number, sprites_size_bit):
-                n += 1
-
-            addr += 0x04
-
-        # Si hay 8 sprites en el scanline activamos el flag corespondiente del registro $2002
-        if n == 9:
-            self._reg_status = nesutils.set_bit(self._reg_status, 5, 1)
-            n -= 1
-
-        self._sprites_scanline_number = n
 
 
     # Devuelve el color almacenado en la attr table para el tile de una dirección de la name table

@@ -31,7 +31,7 @@ class NROM(Mapper):
 
 
     def read_chr(self, addr):
-        a = addr % 0x4000
+        a = addr & 0x3FFF
         d = 0x00
         if 0x0000 <= a < 0x2000:
             d = self._chr_rom_0[a]
