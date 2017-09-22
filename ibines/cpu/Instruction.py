@@ -552,6 +552,7 @@ class BCC(Instruction):
     OPCODE = 0x90
     BYTES = 2
     CYCLES = 2
+    
 
 ###############################################################################
 # BCS Branch on carry set
