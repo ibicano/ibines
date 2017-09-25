@@ -1,18 +1,20 @@
 # ibines
-
 # Author: Ibon Cano Sanz
 
-# A NES emulator coded in Python. Just for fun.
+A NES emulator coded in Python. Just for fun.
 
-# CPython virtual machine is just not powerful enough to run this kind of code at decent speeds,
-# so I recommend to use Pypy inside a Virtualenv to be playable. 
+CPython virtual machine is just not powerful enough to run this kind of code at decent speeds,
+so I recommend to use Pypy inside a Virtualenv to be playable. 
 
-# PySdl2 and Numpy packages are mandatory!
+PySdl2 and Numpy packages are mandatory!
 
 
-# Running instructions:
+Running instructions:
 
-# cd ibines
-# python NES.py
+cd ibines
+python NES.py
+
+Control keys
+up -> a, down -> s, left -> a, right -> d, start -> enter, B -> o, A -> p
 
 
